@@ -1,0 +1,59 @@
+# 1) System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace
+
+# 2) Env & secrets
+.env
+.env.*.local
+*.secret.*
+
+# 3) Node deps
+node_modules/
+
+# 4) Build outputs
+#  - Vite / React
+/dist/
+/build/
+/.vite/
+/public/build/
+/client/dist/
+/client/build/
+
+#  - Server
+/server/dist/
+/server/build/
+
+# 5) Logs & runtime
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+pids/
+*.pid
+*.seed
+
+# 6) Coverage & tests
+coverage/
+*.lcov
+jest.config.ts
+
+# 7) Database & migration artifacts
+*.sqlite
+*.sqlite3
+/server/migrations/*.lock
+/server/knexfile.ts.lock
+
+# 8) Misc caches
+.cache/
+tmp/
+*.tmp
+thumbs.db
+
+# 9) Optional: lockfiles you do NOT want to commit
+yarn.lock
+package-lock.json
+
+*.txt

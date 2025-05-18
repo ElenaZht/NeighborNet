@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signUpUser } from '../features/user/thunks/signUpThunk';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -224,6 +224,14 @@ export default function SignUpForm() {
             </span>
           ) : 'Sign Up'}
         </button>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+              Log in
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );

@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { signUpUser } from './thunks/signUpThunk';
 import { deleteAccount } from './thunks/deleteAccountThunk';
 import { loginUser } from './thunks/LogInThunk';
+import { logoutUser } from './thunks/logoutThunk';
 
 const initialState = {
     currentUser: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
@@ -88,7 +89,7 @@ const usersSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'Failed to delete account';
             })
-            
+
             // Login
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
@@ -106,6 +107,25 @@ const usersSlice = createSlice({
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to login';
+            })
+
+            // Logout
+            .addCase(logoutUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                state.loading = false;
+                state.currentUser = null;
+                state.isAuthenticated = false;
+                state.accessToken = null;
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.error = null;
+            })
+            .addCase(logoutUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to logout';
             });
 
             

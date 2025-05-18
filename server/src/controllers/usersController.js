@@ -138,3 +138,27 @@ export const loginUser = async (req, res) => {
         });
     }
 }
+
+export const logoutUser = async (req, res) => {
+    try {
+        // Clear the refresh token cookie
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production'
+        });
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+    } catch (error) {
+        console.error('Error in logoutUser:', error);
+        return res.status(500).json({
+            message: 'Logout failed',
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
+    }
+}

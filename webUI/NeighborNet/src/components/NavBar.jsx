@@ -18,6 +18,9 @@ function NavBar() {
       <div className="flex-none">
         <Link to="/account" className="btn btn-primary">Account</Link>
       </div>
+      <div className="flex-none">
+        <Link to="/login" className="btn btn-primary">LogInForm</Link>
+      </div>
     </div>
   )
 }

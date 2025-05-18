@@ -1,4 +1,5 @@
 import { db } from '../config/db.js'
+import bcrypt from 'bcrypt'
 
 
 export const addUser = async (userData) => {
@@ -65,6 +66,31 @@ export const deleteUser = async (user_id) => {
         return result;
     } catch (error) {
         console.error('Error deleting user:', error);
+        throw error;
+    }
+}
+
+export const authenticateUser = async (email, password) => {
+    try {
+        // Find the user with the given email
+        const user = await db('users').where({ email }).first();
+        
+        if (!user) {
+            return null;
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
+        
+        if (!isPasswordValid) {
+            return null;
+        }
+        
+        // Return user data without sensitive information
+        const { hashed_password, ...userData } = user;
+        return userData;
+        
+    } catch (error) {
+        console.error('Error authenticating user:', error);
         throw error;
     }
 }

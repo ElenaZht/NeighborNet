@@ -1,6 +1,15 @@
-import {addUser, deleteUser, authenticateUser} from '../models/usersModel.js'
+import {
+    addUser, 
+    deleteUser, 
+    authenticateUser,
+    updateUserInDB
+} from '../models/usersModel.js'
 import bcrypt from 'bcrypt'
-import { generateAccessToken, generateRefreshToken } from '../middleware/jwt_helper.js';
+import { 
+    generateAccessToken, 
+    generateRefreshToken, 
+    validateToken 
+} from '../middleware/jwt_helper.js';
 
 
 export const signUpUser = async (req, res) => {
@@ -69,12 +78,19 @@ export const deleteAccount = async (req, res) => {
         }
         
         const result = await deleteUser(user_id);
+
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production'
+        });
         
         return res.status(200).json({
             success: result.success,
             message: result.message,
             deletedUser: result.user
         });
+
     } catch (error) {
         console.error('Error in deleteAccount:', error);
         
@@ -156,6 +172,64 @@ export const logoutUser = async (req, res) => {
         console.error('Error in logoutUser:', error);
         return res.status(500).json({
             message: 'Logout failed',
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
+    }
+}
+
+export const refreshUserToken = async (req, res) => {
+    try {
+
+        const oldRefreshToken = req.cookies.refreshToken
+        if (!oldRefreshToken){
+            res.status(401).json({message: "Refresh token is missing"})
+            return
+        }
+
+        const decoded = validateToken(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+        if(!decoded){
+            res.status(401).json({message: "Refresh token not valid"})
+            return
+        }
+
+        const newAccessToken = generateAccessToken(decoded)
+        return res.status(200).json({ 
+            message: 'Access token refreshed successfully', 
+            accessToken: newAccessToken,
+            user_id: decoded.id
+        });        
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        res.status(403).json({ message: 'Invalid or expired refresh token.' })
+    }
+}
+
+export const editUser = async (req, res) => {
+    try {
+        const user_id = req.params.user_id
+        if (!user_id){
+            res.status(400).json({message: "User id is missing"})
+            return
+        }
+
+        const userData = req.body
+        if (!userData){
+            res.status(400).json({message: "User data is missing"})
+            return
+        }
+
+        const editedUser = await updateUserInDB(user_id, userData)
+        if (editUser){
+            res.status(200).json({message: 'User info edited successfully', editedUser})
+            return
+        }
+        
+    } catch (error) {
+        console.error('Error in editUser:', error);
+        return res.status(500).json({
+            message: 'Failed to edit user',
             error: process.env.NODE_ENV === 'production' 
                 ? 'An unexpected error occurred' 
                 : error.message

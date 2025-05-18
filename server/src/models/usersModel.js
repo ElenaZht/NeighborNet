@@ -94,3 +94,43 @@ export const authenticateUser = async (email, password) => {
         throw error;
     }
 }
+
+export const updateUserInDB = async (user_id, userData) => {
+    try {
+        const user = await db('users')
+            .select('*')
+            .where({id: user_id})
+            .first()
+        
+            if (!user){
+                return null
+            }
+
+        let userInfo = {}
+        
+        if (userData.username) userInfo['username'] = userData.username
+        if (userData.email) userInfo['email'] = userData.email;
+        if (userData.photo_url) userInfo['photo_url'] = userData.photo_url;
+        if (userData.address) userInfo['address'] = userData.address;
+        if (userData.hashed_password) userInfo['hashed_password'] = userData.hashed_password;
+        if (userData.longitude && userData.latitude) {
+            userInfo.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', 
+                [userData.longitude, userData.latitude]);
+        }
+        
+        const result = await db.transaction(async trx => {
+            const [updatedUser] = await trx('users')
+                .where({ id: user_id })
+                .update(userInfo)
+                .returning(['id', 'username', 'email', 'photo_url', 'address', 'location']);
+            
+            return updatedUser;
+        });
+        
+        return result;
+
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw error;
+    }
+}

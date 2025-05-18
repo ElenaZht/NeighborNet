@@ -3,6 +3,8 @@ import { signUpUser } from './thunks/signUpThunk';
 import { deleteAccount } from './thunks/deleteAccountThunk';
 import { loginUser } from './thunks/LogInThunk';
 import { logoutUser } from './thunks/logoutThunk';
+import { refreshToken } from './thunks/refreshTokenThunk';
+import { editUser } from './thunks/editUserThunk';
 
 const initialState = {
     currentUser: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
@@ -126,7 +128,45 @@ const usersSlice = createSlice({
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to logout';
-            });
+            })
+
+            // Refresh token
+            .addCase(refreshToken.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(refreshToken.fulfilled, (state, action) => {
+                state.loading = false;
+                state.accessToken = action.payload.accessToken;
+                localStorage.setItem('token', action.payload.accessToken);
+                state.error = null;
+            })
+            .addCase(refreshToken.rejected, (state, action) => {
+                state.loading = false;
+                // On token refresh failure, user needs to re-login
+                state.currentUser = null;
+                state.isAuthenticated = false;
+                state.accessToken = null;
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.error = action.payload || 'Failed to refresh token';
+            })
+
+            // Edit user
+            .addCase(editUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editUser.fulfilled, (state, action) => {
+                // User data is already updated via the 
+                // setCurrentUser action in the thunk
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(editUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to update profile';
+            })
 
             
     }

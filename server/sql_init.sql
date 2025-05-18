@@ -13,6 +13,17 @@ CREATE TABLE IF NOT EXISTS users (
   location        GEOGRAPHY(POINT),
   address         TEXT             -- Added address field
 );
+
+-- Example of how to set up cascade deletion in a related table
+-- This demonstrates the pattern for any table that references users
+CREATE TABLE IF NOT EXISTS example_related_table (
+  id              SERIAL       PRIMARY KEY,
+  name            TEXT         NOT NULL,
+  user_id         INTEGER      NOT NULL,
+  -- This foreign key constraint enables cascade deletion
+  CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+  
 INSERT INTO users (username, email, photo_url, hashed_password, location, address)
 VALUES (
   'dima',

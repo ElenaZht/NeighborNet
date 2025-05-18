@@ -1,4 +1,4 @@
-import {addUser} from '../models/usersModel.js'
+import {addUser, deleteUser} from '../models/usersModel.js'
 import bcrypt from 'bcrypt'
 import { generateAccessToken, generateRefreshToken } from '../middleware/jwt_helper.js';
 
@@ -53,6 +53,37 @@ export const signUpUser = async (req, res) => {
         
         return res.status(500).json({ 
             message: 'Failed to create user',
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
+    }
+}
+
+export const deleteAccount = async (req, res) => {
+    try {
+        const user_id = req.params.user_id;
+        
+        if (!user_id) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+        
+        const result = await deleteUser(user_id);
+        
+        return res.status(200).json({
+            success: result.success,
+            message: result.message,
+            deletedUser: result.user
+        });
+    } catch (error) {
+        console.error('Error in deleteAccount:', error);
+        
+        if (error.message === 'User not found') {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        return res.status(500).json({
+            message: 'Failed to delete user',
             error: process.env.NODE_ENV === 'production' 
                 ? 'An unexpected error occurred' 
                 : error.message

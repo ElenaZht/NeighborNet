@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { signUpUser } from './thunks/signUpThunk';
+import { deleteAccount } from './thunks/deleteAccountThunk';
 
 
 const initialState = {
@@ -67,6 +68,25 @@ const usersSlice = createSlice({
             .addCase(signUpUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to sign up';
+            })
+            
+            // Delete account
+            .addCase(deleteAccount.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteAccount.fulfilled, (state) => {
+                state.loading = false;
+                state.currentUser = null;
+                state.isAuthenticated = false;
+                state.accessToken = null;
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.error = null;
+            })
+            .addCase(deleteAccount.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to delete account';
             });
     }
 })

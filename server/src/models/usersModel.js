@@ -35,3 +35,36 @@ export const addUser = async (userData) => {
         throw error;
     }
 }
+
+export const deleteUser = async (user_id) => {
+    try {
+        const result = await db.transaction(async trx => {
+            // check if user exists
+            const user = await trx('users')
+                .where({ id: user_id })
+                .first();
+                
+            if (!user) {
+                throw new Error('User not found');
+            }
+            
+            // PostgreSQL will handle cascading deletes if foreign key constraints 
+            // are properly set up with ON DELETE CASCADE
+            const deletedCount = await trx('users')
+                .where({ id: user_id })
+                .del();
+                
+            return {
+                success: deletedCount > 0,
+                message: deletedCount > 0 ? 'User successfully deleted' : 'No user deleted',
+                deletedCount, 
+                user
+            };
+        });
+        
+        return result;
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        throw error;
+    }
+}

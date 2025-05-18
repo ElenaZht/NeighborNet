@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 
-export default function NavBar() {
+function NavBar() {
   const currentUser = useSelector(state => state.user.currentUser) || null
 
   return (
@@ -11,10 +11,14 @@ export default function NavBar() {
       <p>{currentUser?.username}</p>
       <div className="flex-1">
        <Link to='/' className="btn btn-ghost normal-case text-xl">NeighborNet</Link>
-     </div>
-     <div className="flex-none">
+      </div>
+      <div className="flex-none">
         <Link to="/signup" className="btn btn-primary">Sign Up</Link>
+      </div>
+      <div className="flex-none">
+        <Link to="/account" className="btn btn-primary">Account</Link>
       </div>
     </div>
   )
 }
+export default NavBar

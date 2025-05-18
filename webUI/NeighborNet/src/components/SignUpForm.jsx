@@ -10,6 +10,8 @@ export default function SignUpForm() {
     password: '',
     confirmPassword: '',
     address: '',
+    lat: '',
+    lon: '',
   });
   
   const [errors, setErrors] = useState({});
@@ -63,7 +65,20 @@ export default function SignUpForm() {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    console.log("newErrors", newErrors)
+    // Validate latitude and longitude
+    if (formData.lat && (isNaN(formData.lat) || formData.lat < -90 || formData.lat > 90)) {
+      newErrors.lat = 'Latitude must be between -90 and 90';
+    }
+    
+    if (formData.lon && (isNaN(formData.lon) || formData.lon < -180 || formData.lon > 180)) {
+      newErrors.lon = 'Longitude must be between -180 and 180';
+    }
+    
+    // If one coordinate is provided, both should be provided
+    if ((formData.lat && !formData.lon) || (!formData.lat && formData.lon)) {
+      if (!newErrors.lat) newErrors.lat = 'Both latitude and longitude must be provided';
+      if (!newErrors.lon) newErrors.lon = 'Both latitude and longitude must be provided';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -164,7 +179,39 @@ export default function SignUpForm() {
             placeholder="Enter your address (optional)"
           />
         </div>
-        
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text">Latitude</span>
+            </label>
+            <input 
+              type="number" 
+              name="lat"
+              step="any"
+              value={formData.lat}
+              onChange={handleChange}
+              className="input input-bordered w-full"
+              placeholder="e.g. 40.7128"
+            />
+            {errors.lat && <span className="text-error text-xs mt-1">{errors.lat}</span>}
+          </div>
+          
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text">Longitude</span>
+            </label>
+            <input 
+              type="number" 
+              name="lon"
+              step="any"
+              value={formData.lon}
+              onChange={handleChange}
+              className="input input-bordered w-full"
+              placeholder="e.g. -74.0060"
+            />
+            {errors.lon && <span className="text-error text-xs mt-1">{errors.lon}</span>}
+          </div>
+        </div>
         <button 
           type="submit" 
           className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}

@@ -12,33 +12,19 @@ function NavBar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const toggleAuthDropdown = () => {
-    setShowAuthDropdown(!showAuthDropdown);
-  };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setIsLoggingOut(true);
     
-    dispatch(logoutUser())
-      .unwrap()
-      .then(() => {
-        navigate('/login');
-      })
-      .catch(error => {
-        console.error('Logout failed:', error);
-      })
-      .finally(() => {
-        setIsLoggingOut(false);
-        setShowLogoutConfirmation(false);
-      });
-  };
-
-  const handleLogoutRequest = () => {
-    setShowLogoutConfirmation(true);
-  };
-
-  const handleCancelLogout = () => {
-    setShowLogoutConfirmation(false);
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutConfirmation(false);
+    }
   };
 
   return (
@@ -51,7 +37,7 @@ function NavBar() {
       {!currentUser ? (
         <div className="flex-none relative">
           <button 
-            onClick={toggleAuthDropdown} 
+            onClick={() => setShowAuthDropdown(!showAuthDropdown)} 
             className="btn btn-primary"
           >
             Authenticate
@@ -84,7 +70,7 @@ function NavBar() {
             <Link to="/account" className="btn btn-primary">Account</Link>
           </div>
           <div className="flex-none">
-            <button onClick={handleLogoutRequest} className="btn btn-primary">Logout</button>
+            <button onClick={() => setShowLogoutConfirmation(true)} className="btn btn-primary">Logout</button>
           </div>
         </>
       )}
@@ -99,7 +85,7 @@ function NavBar() {
             
             <div className="flex flex-row gap-3 sm:flex-row sm:justify-between">
               <button 
-                onClick={handleCancelLogout}
+                onClick={() => setShowLogoutConfirmation(false)}
                 className="btn btn-outline flex-1 order-2 sm:order-1"
                 disabled={isLoggingOut}
               >

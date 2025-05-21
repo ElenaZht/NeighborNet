@@ -49,17 +49,23 @@ function LogInForm() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (validateForm()) {
-      dispatch(loginUser({
-        email: formData.email,
-        password: formData.password
-      })).then((result) => {
+      try {
+        const result = await dispatch(loginUser({
+          email: formData.email,
+          password: formData.password
+        }));
+        
         if (!result.error) {
           navigate('/'); // Redirect on successful login
         }
-      });
+      } catch (error) {
+        console.error('Login failed:', error);
+        // Optional: handle any unexpected errors not caught by the Redux action
+      }
     }
   };
   
@@ -116,24 +122,6 @@ function LogInForm() {
             <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
           )}
         </div>
-        
-        {/* <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <input
-              id="remember"
-              name="remember"
-              type="checkbox"
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-            />
-            <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-              Remember me
-            </label>
-          </div>
-          
-          <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-            Forgot password?
-          </a>
-        </div> */}
         
         <button
           type="submit"

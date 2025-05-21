@@ -43,15 +43,6 @@ const usersSlice = createSlice({
                 localStorage.setItem('token', accessToken);
             }
         },
-        setLoading: (state, action) => {
-            state.loading = action.payload;
-        },
-        setError: (state, action) => {
-            state.error = action.payload;
-        },
-        clearError: (state) => {
-            state.error = null;
-        },
     },
     extraReducers: (builder) => {
         builder
@@ -158,8 +149,15 @@ const usersSlice = createSlice({
                 state.error = null;
             })
             .addCase(editUser.fulfilled, (state, action) => {
-                // User data is already updated via the 
-                // setCurrentUser action in the thunk
+                // Merge the edited user data with current user data
+                if (action.payload && action.payload.editedUser) {
+                    state.currentUser = {
+                        ...state.currentUser,
+                        ...action.payload.editedUser
+                    };
+                    
+                    localStorage.setItem('user', JSON.stringify(state.currentUser));
+                }
                 state.loading = false;
                 state.error = null;
             })
@@ -173,9 +171,6 @@ const usersSlice = createSlice({
 })
 
 export const {
-    setCurrentUser, 
-    setLoading, 
-    setError,
     clearError
 } = usersSlice.actions
 export default usersSlice.reducer;

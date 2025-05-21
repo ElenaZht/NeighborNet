@@ -1,4 +1,4 @@
-import { validateToken } from './jwt_helper.js';
+import { validateToken } from '../helpers/jwt_utils.js';
 
 
 export const authenticate = async (req, res, next) => {

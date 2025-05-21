@@ -1,36 +1,5 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import { validateToken } from '../helpers/jwt_utils';
 
-dotenv.config();
-
-const ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes
-const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days
-
-export const generateAccessToken = (user) => {
-    const payload = {
-      id: user.id,
-      username: user.username,
-      email: user.email
-    };
-    
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
-};
-
-export const generateRefreshToken = (user) => {
-    const payload = {
-        id: user.id
-    };
-
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
-};
-
-export const validateToken = (token, secret) => {
-    try {
-      return jwt.verify(token, secret);
-    } catch (error) {
-      return null;
-    }
-};
 
 export const verifyAccessToken = (req, res, next) => {
   console.log("jwt verifyAccessToken req.", req)

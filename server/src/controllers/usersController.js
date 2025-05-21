@@ -4,12 +4,11 @@ import {
     authenticateUser,
     updateUserInDB
 } from '../models/usersModel.js'
-import bcrypt from 'bcrypt'
 import { 
+    validateToken,    
     generateAccessToken, 
     generateRefreshToken, 
-    validateToken 
-} from '../middleware/jwt_helper.js';
+} from '../helpers/jwt_utils.js';
 
 
 export const signUpUser = async (req, res) => {
@@ -26,18 +25,16 @@ export const signUpUser = async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({ message: 'Invalid email format' });
         }
-
-        const saltRounds = 10;
-        const hashed_password = await bcrypt.hash(password, saltRounds);
-        const userData = { username, email, hashed_password, photo_url, longitude, latitude, address };
+        const userData = { username, email, password, photo_url, longitude, latitude, address };
         const user = await addUser(userData)
 
         if (user && user.id){
+            console.info("User created: ", user)
             const accessToken = generateAccessToken(user);
             const refreshToken = generateRefreshToken(user);
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                maxAge: process.env.REFRESH_DEFAULT_MAX_AGE,
                 sameSite: 'strict',
                 secure: process.env.NODE_ENV === 'production'
             });
@@ -52,6 +49,7 @@ export const signUpUser = async (req, res) => {
                 },
                 accessToken
             });
+            
         }
 
     } catch (error) {
@@ -78,6 +76,7 @@ export const deleteAccount = async (req, res) => {
         }
         
         const result = await deleteUser(user_id);
+        console.info("User deleted: ", result)
 
         res.clearCookie('refreshToken', {
             httpOnly: true,
@@ -121,13 +120,14 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         
+        console.info("User logged in: ", user)
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
         
         // Set refresh token as HTTP-only cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: process.env.REFRESH_DEFAULT_MAX_AGE,
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production'
         });
@@ -163,7 +163,7 @@ export const logoutUser = async (req, res) => {
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production'
         });
-        
+        console.info("User logout: ", req?.user)
         return res.status(200).json({
             success: true,
             message: 'Logged out successfully'
@@ -193,8 +193,9 @@ export const refreshUserToken = async (req, res) => {
             res.status(401).json({message: "Refresh token not valid"})
             return
         }
-
+        console.info("User refreshed tokens: ", decoded)
         const newAccessToken = generateAccessToken(decoded)
+
         return res.status(200).json({ 
             message: 'Access token refreshed successfully', 
             accessToken: newAccessToken,
@@ -219,9 +220,9 @@ export const editUser = async (req, res) => {
             res.status(400).json({message: "User data is missing"})
             return
         }
-
         const editedUser = await updateUserInDB(user_id, userData)
         if (editUser){
+            console.info("User edited: ", editUser)
             res.status(200).json({message: 'User info edited successfully', editedUser})
             return
         }

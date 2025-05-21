@@ -3,6 +3,8 @@ let storeRef = null;
 export const setStoreRef = (store) => {
     storeRef = store;
   };
+
+
 // Track if we're already refreshing to prevent multiple refresh requests
 let isRefreshing = false;
 let failedRequestsQueue = [];

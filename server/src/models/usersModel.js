@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 
 export const addUser = async (userData) => {
     try {
-        const { username, email, photo_url, hashed_password, longitude, latitude, address } = userData;
+        const { username, email, photo_url, password, longitude, latitude, address } = userData;
 
         // check if email already exists
         const existingUser = await db('users').where({ email }).first();
@@ -12,6 +12,7 @@ export const addUser = async (userData) => {
             throw new Error('Email already exists');
         }
         
+        const hashed_password = await bcrypt.hash(password, process.env.SALT);
         // crepare data object for insertion
         const newUser = {
             username,
@@ -39,9 +40,8 @@ export const addUser = async (userData) => {
 
 export const deleteUser = async (user_id) => {
     try {
-        const result = await db.transaction(async trx => {
             // check if user exists
-            const user = await trx('users')
+            const user = await db('users')
                 .where({ id: user_id })
                 .first();
                 
@@ -49,9 +49,7 @@ export const deleteUser = async (user_id) => {
                 throw new Error('User not found');
             }
             
-            // PostgreSQL will handle cascading deletes if foreign key constraints 
-            // are properly set up with ON DELETE CASCADE
-            const deletedCount = await trx('users')
+            const deletedCount = await db('users')
                 .where({ id: user_id })
                 .del();
                 
@@ -61,9 +59,7 @@ export const deleteUser = async (user_id) => {
                 deletedCount, 
                 user
             };
-        });
         
-        return result;
     } catch (error) {
         console.error('Error deleting user:', error);
         throw error;
@@ -107,7 +103,9 @@ export const updateUserInDB = async (user_id, userData) => {
             }
 
         let userInfo = {}
-        
+        //client form passes only needed fields
+        //fields can be rewritten with non-null values and not deletes
+
         if (userData.username) userInfo['username'] = userData.username
         if (userData.email) userInfo['email'] = userData.email;
         if (userData.photo_url) userInfo['photo_url'] = userData.photo_url;
@@ -118,17 +116,13 @@ export const updateUserInDB = async (user_id, userData) => {
                 [userData.longitude, userData.latitude]);
         }
         
-        const result = await db.transaction(async trx => {
-            const [updatedUser] = await trx('users')
-                .where({ id: user_id })
-                .update(userInfo)
-                .returning(['id', 'username', 'email', 'photo_url', 'address', 'location']);
-            
-            return updatedUser;
-        });
+        const [updatedUser] = await db('users')
+            .where({ id: user_id })
+            .update(userInfo)
+            .returning(['id', 'username', 'email', 'photo_url', 'address', 'location']);
         
-        return result;
-
+        return updatedUser;
+        
     } catch (error) {
         console.error('Error updating user:', error);
         throw error;

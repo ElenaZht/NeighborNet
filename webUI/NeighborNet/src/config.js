@@ -1,1 +1,1 @@
-export const BASE_URL = import.meta.env.process.env.VITE_DEV_BASE_URL || '';
+export const BASE_URL = process.env.VITE_DEV_BASE_URL || '';

@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { patch } from "../../../utils/apiClient";
+import { BASE_URL } from "../../../config.js";
 
 
 export const editUser = createAsyncThunk(
@@ -7,7 +8,7 @@ export const editUser = createAsyncThunk(
     async ({ userId, userData }, { rejectWithValue }) => {
         
         try {
-            const response = await patch(`${import.meta.env.VITE_DEV_BASE_URL}/users/${userId}`, 
+            const response = await patch(`${BASE_URL}/users/${userId}`, 
                 userData,
                 {credentials: 'include'}
             );

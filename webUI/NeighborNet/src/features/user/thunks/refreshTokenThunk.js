@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { BASE_URL } from "../../../config.js";
 
 
 export const refreshToken = createAsyncThunk(
@@ -7,7 +8,7 @@ export const refreshToken = createAsyncThunk(
         
         try {
 
-            const response = await fetch(`${import.meta.env.VITE_DEV_BASE_URL}/users/refresh-token`, {
+            const response = await fetch(`${BASE_URL}/users/refresh-token`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

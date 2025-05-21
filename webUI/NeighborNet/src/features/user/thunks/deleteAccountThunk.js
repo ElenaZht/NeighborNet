@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {del} from '../../../utils/apiClient.js'
+import { BASE_URL } from "../../../config.js";
 
 
 export const deleteAccount = createAsyncThunk(
@@ -9,7 +10,7 @@ export const deleteAccount = createAsyncThunk(
         try {
             const { accessToken } = getState().user;
             
-            const response = await del(`${import.meta.env.VITE_DEV_BASE_URL}/users/${userId}`, 
+            const response = await del(`${BASE_URL}/users/${userId}`, 
                 userId,
                 {credentials: 'include'}
         );

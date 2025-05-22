@@ -39,3 +39,17 @@ VALUES (
 SELECT username, ST_Distance(location, ST_Point(32.010069, 34.800074)::GEOGRAPHY) AS distance
 FROM users
 WHERE ST_DWithin(location, ST_Point(32.010069, 34.800074)::GEOGRAPHY , 11000);
+
+
+CREATE TABLE issue_reports (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    userid INTEGER NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    img_url VARCHAR(2048),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(100),
+    upvotes INTEGER DEFAULT 0,
+    followers INTEGER DEFAULT 0,
+    verifies INTEGER DEFAULT 0
+);

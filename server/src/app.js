@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import issueReportsRouter from './routes/issueReportsRouter.js'
 import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 import offerHelpReportsRouter from './routes/offerHelpRouter.js'
+import helpRequestReporstRouter from './routes/helpRequestRouter.js'
 
 const app = express()
 
@@ -32,6 +33,7 @@ app.use('/users', usersRouter)
 app.use('/issue-reports', issueReportsRouter)
 app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)
+app.use('/help-request', helpRequestReporstRouter)
 
 app.listen(3001, (error) => {
     if (error){

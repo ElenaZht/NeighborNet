@@ -8,7 +8,7 @@ import { editUser } from './thunks/editUserThunk';
 
 const initialState = {
     currentUser: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
-    isAuthenticated: false,
+    isAuthenticated: !!localStorage.getItem('user'),
     accessToken: localStorage.getItem('token') || null,
     loading: false,
     error: null,

@@ -83,3 +83,18 @@ CREATE TABLE offer_help (
     barter_options TEXT,
     followers INTEGER DEFAULT 0
 );
+
+CREATE TABLE help_requests (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    userid INTEGER NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    img_url VARCHAR(2048),
+    location GEOGRAPHY(POINT),
+    address TEXT,
+    category VARCHAR(50) NOT NULL,
+    urgency VARCHAR(10) DEFAULT 'normal',
+    followers INTEGER DEFAULT 0
+);

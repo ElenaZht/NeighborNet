@@ -2,7 +2,7 @@ import { createReport } from "../models/issueReportsModel.js"
 
 export const addIssueReport = async (req, res) => {
     try {
-        const { title, img_url, description } = req.body;
+        const { title, img_url, description, address, lat, lon } = req.body;
         const {id: userid, username} = req.user
   
         // Validation checks
@@ -21,8 +21,13 @@ export const addIssueReport = async (req, res) => {
             username, 
             title,
             img_url: img_url || null,
-            description: description || null
+            description: description || null,
+            address: address || null
         };
+        if (lat && lon) {
+            // Create a PostGIS point from lat/lon
+            reportData.location = `POINT(${lon} ${lat})`;  // Note: PostGIS expects lon/lat order
+        }
         
         // Call model function
         const report = await createReport(reportData);

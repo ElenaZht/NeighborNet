@@ -48,7 +48,9 @@ CREATE TABLE issue_reports (
     username VARCHAR(255) NOT NULL,
     img_url VARCHAR(2048),
     title VARCHAR(255) NOT NULL,
-    description VARCHAR(100),
+    description VARCHAR(500),
+    location GEOGRAPHY(POINT),  -- Added location coordinates
+    address TEXT,               -- Added address field
     upvotes INTEGER DEFAULT 0,
     followers INTEGER DEFAULT 0,
     verifies INTEGER DEFAULT 0

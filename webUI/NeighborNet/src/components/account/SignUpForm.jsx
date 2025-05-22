@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { signUpUser } from '../features/user/thunks/signUpThunk';
+import { signUpUser } from '../../features/user/thunks/signUpThunk';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function SignUpForm() {

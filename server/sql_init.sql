@@ -69,3 +69,17 @@ CREATE TABLE give_aways (
     is_free BOOLEAN DEFAULT TRUE,
     swap_options TEXT
 );
+
+CREATE TABLE offer_help (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    userid INTEGER NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    img_url VARCHAR(2048),
+    topic VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    location GEOGRAPHY(POINT),  
+    address TEXT,
+    barter_options TEXT,
+    followers INTEGER DEFAULT 0
+);

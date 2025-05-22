@@ -55,3 +55,17 @@ CREATE TABLE issue_reports (
     followers INTEGER DEFAULT 0,
     verifies INTEGER DEFAULT 0
 );
+
+CREATE TABLE give_aways (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    userid INTEGER NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    img_url VARCHAR(2048),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    location GEOGRAPHY(POINT),  
+    address TEXT,
+    is_free BOOLEAN DEFAULT TRUE,
+    swap_options TEXT
+);

@@ -8,6 +8,7 @@ import usersRouter from './routes/usersRouter.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 import issueReportsRouter from './routes/issueReportsRouter.js'
+import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 
 const app = express()
 
@@ -28,6 +29,7 @@ app.use('/users', usersRouter)
 //todo * route for any unmatched routes
 
 app.use('/issue-reports', issueReportsRouter)
+app.use('/give-aways', giveAwaysReportsRouter)
 
 
 app.listen(3001, (error) => {

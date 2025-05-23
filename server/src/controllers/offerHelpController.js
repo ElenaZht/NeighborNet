@@ -1,4 +1,4 @@
-import { createReport } from "../models/offerHelpModel.js";
+import { createReport, getReportById, removeReport } from "../models/offerHelpModel.js";
 
 export const addOfferHelp = async (req, res) => {
     try {
@@ -56,5 +56,42 @@ export const addOfferHelp = async (req, res) => {
                 ? 'An unexpected error occurred' 
                 : error.message
         });
+    }
+}
+
+export const removeOfferHelpReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId
+        if (!reportId){
+            res.status(400).json({message: "Report id is missing"})
+            return
+        }
+
+        // check if user an owner
+        const report = await getReportById(reportId)
+        if (!report){
+            res.status(404).json({message: "Report not found"})
+            return
+        }
+        if (report.userid !== req.user.id){
+            res.status(403).json({message: "User is not an owner"})
+            return
+        }
+
+
+        const deletedReport = await removeReport(reportId)
+        if (deletedReport){
+            // returns deleted report
+            console.info("Report deleted, ", deletedReport)
+            res.status(200).json({message: "Report deleted successfully", deletedReport})
+            return
+        }
+        
+    } catch (error) {
+        if (error.type == 'NOT_FOUND'){
+            res.status(404).json({message: "Report not found"})
+            return
+        }
+        res.status(500).json({message: "Failed to delete report: ", error})
     }
 }

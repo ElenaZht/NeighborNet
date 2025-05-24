@@ -81,3 +81,48 @@ export const removeReport = async (reportId) => {
         throw error;
     }
 }
+
+export const updateReport = async (reportData) => {
+  try {
+    const {
+      id, // Report ID
+      img_url,
+      topic,
+      description,
+      address,
+      latitude,
+      longitude,
+      barter_options
+    } = reportData;
+    
+    if (!id) {
+      throw new Error('Report ID is required for update');
+    }
+    
+    const updateData = {};
+    
+    // Only add fields that are explicitly provided
+    if (img_url !== undefined) updateData.img_url = img_url;
+    if (topic !== undefined) updateData.topic = topic;
+    if (description !== undefined) updateData.description = description;
+    if (address !== undefined) updateData.address = address;
+    if (barter_options !== undefined) {
+      updateData.barter_options = barter_options ? JSON.stringify(barter_options) : null;
+    }
+    
+    if (latitude !== undefined && longitude !== undefined) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+    }
+    
+    // Update the database record
+    const [updatedReport] = await db('offer_help')
+      .where({ id })
+      .update(updateData)
+      .returning('*');
+      
+    return updatedReport;
+  } catch (error) {
+    console.error('Error updating offer help report:', error);
+    throw error;
+  }
+}

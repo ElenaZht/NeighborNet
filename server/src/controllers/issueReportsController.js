@@ -1,4 +1,9 @@
-import { createReport, removeReport, getReportById } from "../models/issueReportsModel.js"
+import { 
+    createReport, 
+    removeReport, 
+    getReportById,
+    updateReport
+} from "../models/issueReportsModel.js"
 
 export const addIssueReport = async (req, res) => {
     try {
@@ -82,5 +87,63 @@ export const removeIssueReport = async (req, res) => {
             return
         }
         res.status(500).json({message: "Failed to delete report: ", error})
+    }
+}
+
+export const editIssueReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId;
+        if (!reportId) {
+            return res.status(400).json({ message: "Report id is missing" });
+        }
+
+        // Check if report exists and user is the owner
+        const report = await getReportById(reportId);
+        if (!report) {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        
+        if (report.userid !== req.user.id) {
+            return res.status(403).json({ message: "User is not an owner" });
+        }
+
+        const { title, img_url, description, address, lat, lon, upvotes, followers, verifies } = req.body;
+        
+        const updateData = { id: reportId };
+        
+        // Only add fields that are explicitly provided
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (img_url !== undefined) updateData.img_url = img_url;
+        if (address !== undefined) updateData.address = address;
+        if (upvotes !== undefined) updateData.upvotes = upvotes;
+        if (followers !== undefined) updateData.followers = followers;
+        if (verifies !== undefined) updateData.verifies = verifies;
+        
+        if (lat !== undefined && lon !== undefined) {
+            updateData.lat = lat;
+            updateData.lon = lon;
+        }
+
+        // Update the report
+        const updatedReport = await updateReport(updateData);
+        
+        console.info("Issue report updated: ", updatedReport);
+        return res.status(200).json({
+            message: "Issue report updated successfully",
+            updatedReport
+        });
+        
+    } catch (error) {
+        console.error('Error updating issue report:', error);
+        if (error.type === 'NOT_FOUND') {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        return res.status(500).json({
+            message: "Failed to update issue report",
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
     }
 }

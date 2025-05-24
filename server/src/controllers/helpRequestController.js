@@ -1,4 +1,9 @@
-import { createReport, getReportById, removeReport } from "../models/helpRequestModel.js";
+import { 
+    createReport, 
+    getReportById, 
+    removeReport,
+    updateReport
+ } from "../models/helpRequestModel.js";
 
 export const addHelpRequest = async (req, res) => {
     try {
@@ -103,5 +108,63 @@ export const removeHelpReport = async (req, res) => {
             return
         }
         res.status(500).json({message: "Failed to delete report: ", error})
+    }
+}
+
+export const editHelpRequestReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId;
+        if (!reportId) {
+            return res.status(400).json({ message: "Report id is missing" });
+        }
+
+        const report = await getReportById(reportId);
+        if (!report) {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        
+        if (report.userid !== req.user.id) {
+            return res.status(403).json({ message: "User is not an owner" });
+        }
+
+        // Extract fields from request body
+        const { title, img_url, description, address, lat, lon, category, urgency } = req.body;
+        
+        // Create update data object with only the ID initially
+        const updateData = { id: reportId };
+        
+        // Only add fields that are explicitly provided
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (img_url !== undefined) updateData.img_url = img_url;
+        if (address !== undefined) updateData.address = address;
+        if (category !== undefined) updateData.category = category;
+        if (urgency !== undefined) updateData.urgency = urgency;
+        
+        if (lat !== undefined && lon !== undefined) {
+            updateData.latitude = lat;
+            updateData.longitude = lon;
+        }
+
+        // Update the report
+        const updatedReport = await updateReport(updateData);
+        
+        console.info("Help request updated: ", updatedReport);
+        return res.status(200).json({
+            message: "Help request updated successfully",
+            updatedReport
+        });
+        
+    } catch (error) {
+        console.error('Error updating help request:', error);
+        if (error.type === 'NOT_FOUND') {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        return res.status(500).json({
+            message: "Failed to update help request",
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
     }
 }

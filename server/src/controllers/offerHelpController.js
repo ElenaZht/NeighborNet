@@ -1,4 +1,9 @@
-import { createReport, getReportById, removeReport } from "../models/offerHelpModel.js";
+import { 
+    createReport, 
+    getReportById, 
+    removeReport,
+    updateReport
+} from "../models/offerHelpModel.js";
 
 export const addOfferHelp = async (req, res) => {
     try {
@@ -93,5 +98,61 @@ export const removeOfferHelpReport = async (req, res) => {
             return
         }
         res.status(500).json({message: "Failed to delete report: ", error})
+    }
+}
+
+export const editOfferHelpReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId;
+        if (!reportId) {
+            return res.status(400).json({ message: "Report id is missing" });
+        }
+
+        // Check if report exists and user is the owner
+        const report = await getReportById(reportId);
+        if (!report) {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        
+        if (report.userid !== req.user.id) {
+            return res.status(403).json({ message: "User is not an owner" });
+        }
+
+        const { topic, img_url, description, address, lat, lon, barter_options } = req.body;
+        
+        const updateData = { id: reportId };
+        
+        // Only add fields that are explicitly provided
+        if (topic !== undefined) updateData.topic = topic;
+        if (description !== undefined) updateData.description = description;
+        if (img_url !== undefined) updateData.img_url = img_url;
+        if (address !== undefined) updateData.address = address;
+        if (barter_options !== undefined) updateData.barter_options = barter_options;
+        
+        if (lat !== undefined && lon !== undefined) {
+            updateData.latitude = lat;
+            updateData.longitude = lon;
+        }
+
+        // Update the report
+        const updatedReport = await updateReport(updateData);
+        
+        console.info("Help offer updated: ", updatedReport);
+        return res.status(200).json({
+            message: "Help offer updated successfully",
+            updatedReport
+        });
+        
+    } catch (error) {
+        console.error('Error updating help offer:', error);
+        if (error.type === 'NOT_FOUND') {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        return res.status(500).json({
+            message: "Failed to update help offer",
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
     }
 }

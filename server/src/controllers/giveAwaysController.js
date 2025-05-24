@@ -1,4 +1,9 @@
-import { createReport, getReportById, removeReport } from "../models/giveAwaysModel.js";
+import { 
+    createReport, 
+    getReportById, 
+    removeReport,
+    updateReport
+} from "../models/giveAwaysModel.js";
 
 
 export const addGiveAwayReport = async (req, res) => {
@@ -93,5 +98,73 @@ export const removeGiveAwayReport = async (req, res) => {
             return
         }
         res.status(500).json({message: "Failed to delete report: ", error})
+    }
+}
+
+export const editGiveAwayReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId;
+        if (!reportId) {
+            return res.status(400).json({ message: "Report id is missing" });
+        }
+
+        // Check if user is the owner
+        const report = await getReportById(reportId);
+        if (!report) {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        if (report.userid !== req.user.id) {
+            return res.status(403).json({ message: "User is not an owner" });
+        }
+
+        // Extract update data
+        const { title, img_url, description, address, lat, lon, is_free, swap_options } = req.body;
+        
+        // Check required fields
+        if (title !== undefined && (!title || !title.trim())) {
+            return res.status(400).json({ message: "Title cannot be empty" });
+        }
+        
+        if (address !== undefined && (!address || !address.trim())) {
+            return res.status(400).json({ message: "Address cannot be empty" });
+        }
+
+        // Prepare update data
+        const updateData = {
+            id: reportId,
+            title,
+            img_url,
+            description,
+            address,
+            is_free,
+            swap_options
+        };
+
+        // Add latitude and longitude if both are provided
+        if (lat !== undefined && lon !== undefined) {
+            updateData.latitude = lat;
+            updateData.longitude = lon;
+        }
+
+        // Update the report
+        const updatedReport = await updateReport(updateData);
+        
+        console.info("Report updated: ", updatedReport);
+        return res.status(200).json({
+            message: "Report updated successfully",
+            updatedReport
+        });
+        
+    } catch (error) {
+        console.error('Error updating report:', error);
+        if (error.type === 'NOT_FOUND') {
+            return res.status(404).json({ message: "Report not found" });
+        }
+        return res.status(500).json({
+            message: "Failed to update report",
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An unexpected error occurred' 
+                : error.message
+        });
     }
 }

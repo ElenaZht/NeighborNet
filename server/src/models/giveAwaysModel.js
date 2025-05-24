@@ -82,3 +82,48 @@ export const removeReport = async (reportId) => {
         throw error;
     }
 }
+
+export const updateReport = async (reportData) => {
+  try {
+    const {
+      id, // Report ID 
+      img_url,
+      title,
+      description,
+      address,
+      latitude,
+      longitude,
+      is_free,
+      swap_options
+    } = reportData;
+    
+    if (!id) {
+      throw new Error('Report ID is required for update');
+    }
+    
+    const updateData = {};
+    
+    if (img_url !== undefined) updateData.img_url = img_url;
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (address !== undefined) updateData.address = address;
+    if (is_free !== undefined) updateData.is_free = is_free;
+    if (swap_options !== undefined) updateData.swap_options = swap_options;
+    
+    if (latitude !== undefined && longitude !== undefined) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+    }
+    
+    // Update the database record
+    const [updatedReport] = await db('give_aways')
+      .where({ id })
+      .update(updateData)
+      .returning('*');
+      
+    return updatedReport;
+
+  } catch (error) {
+    console.error('Error updating report:', error);
+    throw error;
+  }
+}

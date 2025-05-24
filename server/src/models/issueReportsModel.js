@@ -79,3 +79,50 @@ export const getReportById = async (reportId) => {
         throw new Error(error)
     }
 }
+
+export const updateReport = async (reportData) => {
+  try {
+    const {
+      id, // Report ID
+      title,
+      description,
+      img_url,
+      address,
+      lat,
+      lon,
+      upvotes,
+      followers,
+      verifies
+    } = reportData;
+    
+    if (!id) {
+      throw new Error('Report ID is required for update');
+    }
+    
+    const updateData = {};
+    
+    // Only add fields that are explicitly provided
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (img_url !== undefined) updateData.img_url = img_url;
+    if (address !== undefined) updateData.address = address;
+    if (upvotes !== undefined) updateData.upvotes = upvotes;
+    if (followers !== undefined) updateData.followers = followers;
+    if (verifies !== undefined) updateData.verifies = verifies;
+    
+    if (lat !== undefined && lon !== undefined) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [lon, lat]);
+    }
+    
+    // Update the database record
+    const [updatedReport] = await db('issue_reports')
+      .where({ id })
+      .update(updateData)
+      .returning('*');
+      
+    return updatedReport;
+  } catch (error) {
+    console.error('Error updating issue report:', error);
+    throw error;
+  }
+}

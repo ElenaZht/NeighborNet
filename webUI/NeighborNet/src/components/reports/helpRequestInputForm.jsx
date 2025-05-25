@@ -235,7 +235,6 @@ export default function HelpReportInputForm() {
           
           <form onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Left Column - Category & Image */}
               <div className="flex flex-col gap-4">
                 {/* Category Dropdown */}
                 <div className="form-control w-full">
@@ -323,7 +322,6 @@ export default function HelpReportInputForm() {
                   </div>
                 </div>
                 
-                {/* Image URL Field */}
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text font-medium">Image URL (Optional)</span>
@@ -335,7 +333,7 @@ export default function HelpReportInputForm() {
                       value={formData.img_url}
                       onChange={handleChange}
                       className={`input input-bordered w-full ${imageError ? 'input-error' : ''}`}
-                      placeholder="https://example.com/image.jpg"
+                      placeholder="../../assets/help_request_placeholder.jpeg"
                       disabled={isSubmitting}
                     />
                     {formData.img_url && (
@@ -372,7 +370,6 @@ export default function HelpReportInputForm() {
                 </div>
               </div>
               
-              {/* Right Column - Form Fields */}
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">

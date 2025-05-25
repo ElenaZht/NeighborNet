@@ -5,7 +5,7 @@ export const addHelpRequest = createAsyncThunk(
     'helpRequests/add',
     async (helpRequestData, { rejectWithValue }) => {
         try {
-            const response = await post(`${import.meta.env.VITE_DEV_BASE_URL}/help-request`, 
+            const response = await post(`${import.meta.env.VITE_DEV_BASE_URL}/help-requests`, 
                 helpRequestData,
                 { credentials: 'include' } // Include cookies for authentication
             );

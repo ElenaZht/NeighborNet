@@ -168,3 +168,27 @@ export const editHelpRequestReport = async (req, res) => {
         });
     }
 }
+
+export const getHelpRequestReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId
+        if (!reportId){
+            res.status(400).json({message: "Report id is missing"})
+            return
+        }
+
+        const report = await getReportById(reportId)
+        if (!report){
+            res.status(404).json({message: "Report not found"})
+            return
+        }
+
+        res.status(200).json({message: "Report found successfully", report})
+        return
+
+    } catch (error) {
+        res.status(500).json({message: `Failed to fetch report: ${error.toString()}`})
+        console.info("Faile to get report: ", error)
+    }
+
+}

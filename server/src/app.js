@@ -11,6 +11,8 @@ import issueReportsRouter from './routes/issueReportsRouter.js'
 import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 import offerHelpReportsRouter from './routes/offerHelpRouter.js'
 import helpRequestReporstRouter from './routes/helpRequestRouter.js'
+import commentsRouter from './routes/commentsRouter.js'
+
 
 const app = express()
 
@@ -18,7 +20,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
     origin: 
-        process.env.DEV_FRONTEND_SERVER_URL 
+        process.env.DEV_FRONTEND_SERVER_URL2 
         || process.env.DEV_FRONTEND_SERVER_URL2, // Vite default port
     credentials: true
   }));
@@ -33,7 +35,8 @@ app.use('/users', usersRouter)
 app.use('/issue-reports', issueReportsRouter)
 app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)
-app.use('/help-request', helpRequestReporstRouter)
+app.use('/help-requests', helpRequestReporstRouter)
+app.use('/comments', commentsRouter)
 
 app.listen(3001, (error) => {
     if (error){

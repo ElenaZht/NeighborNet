@@ -1,38 +1,86 @@
-import React, { useState } from 'react'
-import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaThumbsUp } from 'react-icons/fa'
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaThumbsUp, FaComment } from 'react-icons/fa'
+import { Comments } from '../reports/comments'
+import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
+import { format, parseISO } from 'date-fns'
 
-export default function HelpRequest() {
-  const [showActions, setShowActions] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+export default function HelpRequest({reportId}) {
+  const dispatch = useDispatch()
+  const { currentHelpRequest, loading, error } = useSelector(state => state.helpRequests)
+  
+  const [showActions, setShowActions] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  
+  useEffect(() => {
+    if (reportId) {
+      dispatch(getHelpRequest(reportId))
+    }
+  }, [dispatch, reportId])
   
   const toggleActionBar = () => {
-    setShowActions(!showActions);
-  };
+    setShowActions(!showActions)
+  }
   
   const toggleForm = () => {
-    setShowForm(!showForm);
-  };
+    setShowForm(!showForm)
+  }
+  
+  const toggleComments = () => {
+    setShowComments(!showComments)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-error max-w-4xl mx-auto m-4">
+        <span>{error}</span>
+      </div>
+    )
+  }
+
+  if (!currentHelpRequest) {
+    return (
+      <div className="alert alert-info max-w-4xl mx-auto m-4">
+        <span>No help request found. It might have been deleted or doesn't exist.</span>
+      </div>
+    )
+  }
+
+  // Format the date
+  const formattedDate = currentHelpRequest.created_at 
+    ? format(parseISO(currentHelpRequest.created_at), 'MMM d, yyyy')
+    : 'Unknown date'
 
   return (
     <div className="relative max-w-4xl mx-auto m-4">
       <div className="flex">
-        {/* Main card - fixed width */}
         <div className="card card-side bg-base-100 shadow-xl w-[800px]">
           <div className="flex flex-col w-full">
             <div className="flex">
-              {/* Image on the left - increased width */}
               <figure className="w-2/5">
                 <img 
-                  src="https://i.pinimg.com/736x/a3/67/cf/a367cf426a47d9f74043af539305c1ed.jpg" 
-                  alt="Cat shelter with blankets" 
+                  src={currentHelpRequest.img_url || "https://placehold.co/400x300?text=No+Image"} 
+                  alt={currentHelpRequest.title || "Help request"} 
                   className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = "https://placehold.co/400x300?text=Image+Error"
+                  }}
                 />
               </figure>
               
-              {/* Content on the right - adjusted width */}
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
-                  <h2 className="card-title text-left">Help Request</h2>
+                  <h2 className="card-title text-left">{currentHelpRequest.title}</h2>
                   <button 
                     onClick={toggleActionBar}
                     className="btn btn-sm btn-square"
@@ -43,32 +91,35 @@ export default function HelpRequest() {
                 </div>
                 <div className="divider my-0.5"></div>
                 
-                {/* Text rows */}
                 <div className="flex items-center gap-2 text-sm">
                   <FaUser className="text-primary min-w-4" />
-                  <span>Requested by: Emma Thompson</span>
+                  <span>Requested by: {currentHelpRequest.username}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FaCalendarAlt className="text-primary min-w-4" />
-                  <span>Posted: May 17, 2025</span>
+                  <span>Posted: {formattedDate}</span>
                 </div>
                 
-                {/* Topic and request description */}
                 <div className="mt-1 space-y-1">
-                  <p className="text-sm"><strong>Topic:</strong> Collection blankets for cat shelter</p>
-                  <p className="text-sm"><strong>Request Description:</strong> Our local Paws & Whiskers Cat Shelter is facing a shortage of warm blankets as winter approaches. We're collecting gently used or new blankets of any size, preferably made of fleece or soft cotton. The shelter currently houses 37 cats, many of them seniors or recovering from illness, who desperately need warmth. If you have spare blankets you no longer need, they would make a tremendous difference. I can collect from your home or meet at a convenient location. The shelter also welcomes pet beds, towels, and sheets. Your donation will help these cats stay warm and comfortable until they find their forever homes.</p>
+                  {currentHelpRequest.category && (
+                    <p className="text-sm">
+                      <strong>Category:</strong> {currentHelpRequest.category}
+                    </p>
+                  )}
+                  <p className="text-sm">
+                    <strong>Request Description:</strong> {currentHelpRequest.description}
+                  </p>
                 </div>
                 
-                {/* Geotag */}
                 <div className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
                   <FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
-                  <span>Sahlav Street, 42</span>
+                  <span>{currentHelpRequest.address}</span>
                 </div>
               </div>
             </div>
 
-            {/* "I can help" button at the bottom */}
+            {/* "I can help" button*/}
             <div className="p-4 border-t border-gray-200">
               <button 
                 className="btn btn-secondary w-full flex items-center justify-center gap-2"
@@ -79,7 +130,7 @@ export default function HelpRequest() {
               </button>
             </div>
 
-            {/* Dropdown form - cleaned up and left-aligned */}
+            {/* Dropdown form*/}
             <div className={`overflow-hidden transition-all duration-300 ${
               showForm ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
@@ -90,7 +141,7 @@ export default function HelpRequest() {
                   </label>
                   <textarea 
                     className="textarea textarea-bordered w-full" 
-                    placeholder="Hi, I have some blankets I'd like to donate..."
+                    placeholder={`Hi, I'd like to help with ${currentHelpRequest.title}...`}
                     rows="3"
                   ></textarea>
                 </div>
@@ -110,7 +161,7 @@ export default function HelpRequest() {
           </div>
         </div>
 
-        {/* Action Sidebar - follow and upvote buttons */}
+        {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
           <button className="btn btn-circle btn-md btn-info" title="Follow">
             <FaBell />
@@ -118,6 +169,28 @@ export default function HelpRequest() {
           <button className="btn btn-circle btn-md btn-primary" title="Upvote">
             <FaThumbsUp />
           </button>
+        </div>
+      </div>
+      
+      {/* Comments Section */}
+      <div className="w-[800px] mt-4">
+        <button 
+          className="btn btn-outline w-full flex items-center justify-center gap-2"
+          onClick={toggleComments}
+        >
+          {showComments ? 'Hide Comments' : 'Show Comments'}
+          <FaComment />
+          {showComments ? <FaChevronUp /> : <FaChevronDown />}
+        </button>
+      </div>
+      
+      <div className={`w-[800px] overflow-hidden transition-all duration-300 ${
+        showComments ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <Comments reportId={reportId} reportType="help_request" />
+          </div>
         </div>
       </div>
     </div>

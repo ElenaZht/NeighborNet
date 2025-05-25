@@ -196,7 +196,7 @@ export default function IssueReportInputForm() {
                       value={formData.img_url}
                       onChange={handleChange}
                       className={`input input-bordered w-full ${imageError ? 'input-error' : ''}`}
-                      placeholder="https://example.com/image.jpg"
+                      placeholder="../../assets/issue_placeholder.jpg"
                       disabled={isSubmitting}
                     />
                     {formData.img_url && (

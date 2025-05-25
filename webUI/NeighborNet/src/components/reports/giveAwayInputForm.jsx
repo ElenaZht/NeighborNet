@@ -195,7 +195,6 @@ export default function GiveAwayInputForm() {
           
           <form onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Left Column - Image Upload */}
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">
@@ -208,7 +207,7 @@ export default function GiveAwayInputForm() {
                       value={formData.img_url}
                       onChange={handleChange}
                       className={`input input-bordered w-full ${imageError ? 'input-error' : ''}`}
-                      placeholder="https://example.com/image.jpg"
+                      placeholder="../../assets/give_away_placeholder.jpeg"
                       disabled={isSubmitting}
                     />
                     {formData.img_url && (
@@ -276,7 +275,6 @@ export default function GiveAwayInputForm() {
                 )}
               </div>
               
-              {/* Right Column - Form Fields */}
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">

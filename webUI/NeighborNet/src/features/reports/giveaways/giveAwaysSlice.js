@@ -1,8 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { addGiveAway } from './addGiveAwayThunk';
+import { getGiveAway } from './getGiveAwayThunk';
+
 
 const initialState = {
     allGiveAways: [],
+    currentGiveAway: null,
     loading: false,
     error: null
 }
@@ -27,6 +30,22 @@ const giveAwaysSlice = createSlice({
             .addCase(addGiveAway.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to create give-away listing';
+            })
+
+            // Get Single Give Away
+            .addCase(getGiveAway.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getGiveAway.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentGiveAway = action.payload;
+                state.error = null;
+            })
+            .addCase(getGiveAway.rejected, (state, action) => {
+                state.loading = false;
+                state.currentGiveAway = null;
+                state.error = action.payload || 'Failed to fetch give-away';
             })
     }
 })

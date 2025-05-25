@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { addIssueReport } from './addIssueReportThunk';
-
+import { getIssueReport } from './getIssueReportThunk';
 
 const initialState = {
     allIssueReports: [],
+    currentIssueReport: null,
     loading: false,
     error: null
 }
@@ -30,8 +31,22 @@ const issueReportsSlice = createSlice({
                 state.error = action.payload || 'Failed to create issue report';
             })
 
+            // Get Single Issue Report
+            .addCase(getIssueReport.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getIssueReport.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentIssueReport = action.payload;
+                state.error = null;
+            })
+            .addCase(getIssueReport.rejected, (state, action) => {
+                state.loading = false;
+                state.currentIssueReport = null;
+                state.error = action.payload || 'Failed to fetch issue report';
+            })
     }
-    
 })
 
-export default issueReportsSlice.reducer
+export default issueReportsSlice.reducer;

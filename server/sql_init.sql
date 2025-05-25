@@ -23,17 +23,6 @@ CREATE TABLE IF NOT EXISTS example_related_table (
   -- This foreign key constraint enables cascade deletion
   CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 
-  
-INSERT INTO users (username, email, photo_url, hashed_password, location, address)
-VALUES (
-  'dima',
-  'di@example.com',
-  'https://example.com/photo.jpg',
-  'YourPassword123',
-  ST_Point(32.021927, 34.739566),
-  'Rothschild Blvd 123, Tel Aviv, Israel'
-);
-
 
 
 SELECT username, ST_Distance(location, ST_Point(32.010069, 34.800074)::GEOGRAPHY) AS distance
@@ -97,4 +86,13 @@ CREATE TABLE help_requests (
     category VARCHAR(50) NOT NULL,
     urgency VARCHAR(10) DEFAULT 'normal',
     followers INTEGER DEFAULT 0
+);
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    report_id INTEGER NOT NULL,
+    report_type VARCHAR(50) NOT NULL,
+    datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    content TEXT NOT NULL,
+    img_url VARCHAR(255)
 );

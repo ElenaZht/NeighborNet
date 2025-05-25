@@ -235,7 +235,7 @@ export default function OfferHelpInputForm() {
                       value={formData.img_url}
                       onChange={handleChange}
                       className={`input input-bordered w-full ${imageError ? 'input-error' : ''}`}
-                      placeholder="https://example.com/image.jpg"
+                      placeholder="../../assets/offer_help_placeholder.jpg"
                       disabled={isSubmitting}
                     />
                     {formData.img_url && (

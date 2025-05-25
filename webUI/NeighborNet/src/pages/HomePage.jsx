@@ -13,13 +13,14 @@ export default function HomePage() {
   return (
     <div>
       HomePage
-      <HelpReportInputForm/>
-      {/* <HelpRequest/> */}
+      {/* <HelpReportInputForm/> */}
+      {/* <HelpRequest reportId="2"/> */}
       {/* <OfferHelpInputForm/> */}
-      {/* <OfferHelp/> */}
+      {/* <OfferHelp reportId='2'/> */}
       {/* <GiveAwayInputForm/> */}
-      {/* <GiveAway/> */}
-      {/* <IssueReport/> */}
+      {/* <GiveAway reportId='2'/> */}
+
+      {/* <IssueReport reportId='5'/> */}
       {/* <IssueReportInputForm/> */}
     </div>
   )

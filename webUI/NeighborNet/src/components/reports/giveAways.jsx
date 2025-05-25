@@ -1,9 +1,23 @@
-import React, { useState } from 'react'
-import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaComment, FaInfoCircle } from 'react-icons/fa'
+import { Comments } from '../reports/comments'
+import { getGiveAway } from '../../features/reports/giveaways/getGiveAwayThunk'
+import { format, parseISO } from 'date-fns'
 
-export default function GiveAway() {
+export default function GiveAway({ reportId }) {
+  const dispatch = useDispatch()
+  const { currentGiveAway, loading, error } = useSelector(state => state.giveAways)
+  
   const [showActions, setShowActions] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  
+  useEffect(() => {
+    if (reportId) {
+      dispatch(getGiveAway(reportId))
+    }
+  }, [dispatch, reportId])
   
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -13,23 +27,56 @@ export default function GiveAway() {
     setShowForm(!showForm);
   };
 
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-error max-w-4xl mx-auto m-4">
+        <span>{error}</span>
+      </div>
+    )
+  }
+
+  if (!currentGiveAway) {
+    return (
+      <div className="alert alert-info max-w-4xl mx-auto m-4">
+        <span>No giveaway found. It might have been deleted or doesn't exist.</span>
+      </div>
+    )
+  }
+
+  const formattedDate = currentGiveAway.created_at 
+    ? format(parseISO(currentGiveAway.created_at), 'MMM d, yyyy')
+    : 'Unknown date'
+
   return (
     <div className="relative max-w-4xl mx-auto m-4">
       <div className="flex">
-        {/* Main card - fixed width */}
         <div className="card card-side bg-base-100 shadow-xl w-[800px]">
           <div className="flex flex-col w-full">
             <div className="flex">
-              {/* Image on the left - increased width */}
               <figure className="w-2/5">
                 <img 
-                  src="https://www.polkadotlane.co.uk/wp-content/uploads/2021/05/Polish-Pottery-White-Flower-on-Blue-Teapot-900ml.jpg" 
-                  alt="Teapot image" 
+                  src={currentGiveAway.img_url || "https://placehold.co/400x300?text=No+Image"} 
+                  alt={currentGiveAway.title || "Giveaway item"} 
                   className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = "https://placehold.co/400x300?text=Image+Error"
+                  }}
                 />
               </figure>
               
-              {/* Content on the right - adjusted width */}
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
                   <h2 className="card-title text-left">Give Away</h2>
@@ -43,32 +90,36 @@ export default function GiveAway() {
                 </div>
                 <div className="divider my-0.5"></div>
                 
-                {/* Text rows */}
                 <div className="flex items-center gap-2 text-sm">
                   <FaUser className="text-primary min-w-4" />
-                  <span>Offered by: Sarah Johnson</span>
+                  <span>Offered by: {currentGiveAway.username}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FaCalendarAlt className="text-primary min-w-4" />
-                  <span>Posted: May 19, 2025</span>
+                  <span>Posted: {formattedDate}</span>
                 </div>
                 
-                {/* Topic and item description */}
                 <div className="mt-1 space-y-1">
-                  <p className="text-sm"><strong>Topic:</strong> Like a new teapot</p>
-                  <p className="text-sm"><strong>Item Description:</strong> Beautiful Polish pottery teapot with white flower pattern on blue background. 900ml capacity, perfect for serving tea for 4-6 people. Only used a handful of times and in excellent condition. No chips or cracks. I received it as a gift but I'm moving to a smaller place and downsizing my kitchen items. Available for pickup any evening this week.</p>
+                  <p className="text-sm"><strong>Topic:</strong> {currentGiveAway.title}</p>
+                  <p className="text-sm">
+                    <strong>Item Description:</strong> {currentGiveAway.description}
+                  </p>
                 </div>
                 
-                {/* Geotag */}
+                {!currentGiveAway.is_free && currentGiveAway.swap_options && (
+                  <div className="mt-1">
+                    <p className="text-sm"><strong>Will swap for:</strong> {currentGiveAway.swap_options}</p>
+                  </div>
+                )}
+                
                 <div className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
                   <FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
-                  <span>Sahlav Street, 34</span>
+                  <span>{currentGiveAway.address}</span>
                 </div>
               </div>
             </div>
 
-            {/* "I want this" button at the bottom */}
             <div className="p-4 border-t border-gray-200">
               <button 
                 className="btn btn-secondary w-full flex items-center justify-center gap-2"
@@ -79,7 +130,6 @@ export default function GiveAway() {
               </button>
             </div>
 
-            {/* Dropdown form - cleaned up and left-aligned */}
             <div className={`overflow-hidden transition-all duration-300 ${
               showForm ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
@@ -90,7 +140,7 @@ export default function GiveAway() {
                   </label>
                   <textarea 
                     className="textarea textarea-bordered w-full" 
-                    placeholder="Hi, I'm interested in your teapot..."
+                    placeholder={`Hi, I'm interested in your ${currentGiveAway.title}...`}
                     rows="3"
                   ></textarea>
                 </div>
@@ -110,11 +160,31 @@ export default function GiveAway() {
           </div>
         </div>
 
-        {/* Action Sidebar - follow button only */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
           <button className="btn btn-circle btn-md btn-info" title="Follow">
             <FaBell />
           </button>
+        </div>
+      </div>
+      
+      <div className="w-[800px] mt-4">
+        <button 
+          className="btn btn-outline w-full flex items-center justify-center gap-2"
+          onClick={toggleComments}
+        >
+          {showComments ? 'Hide Comments' : 'Show Comments'}
+          <FaComment />
+          {showComments ? <FaChevronUp /> : <FaChevronDown />}
+        </button>
+      </div>
+      
+      <div className={`w-[800px] overflow-hidden transition-all duration-300 ${
+        showComments ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <Comments reportId={reportId} reportType="give_away" />
+          </div>
         </div>
       </div>
     </div>

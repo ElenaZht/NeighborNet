@@ -11,5 +11,6 @@ export const db = knex({
     database: PGDATABASE,
     password: PGPASSWORD,
     ssl: { rejectUnauthorized: false },
+    timezone: 'UTC',
   },
 });

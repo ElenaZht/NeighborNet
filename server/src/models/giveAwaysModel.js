@@ -3,21 +3,8 @@ import { db } from "../config/db.js";
 
 export async function createReport(giveAwayData) {
   try {
-      // const {
-      //   userid,
-      //   username,
-      //   img_url,
-      //   title,
-      //   description,
-      //   location,
-      //   address,
-      //   city,
-      //   street,
-      //   neighborhood_id, 
-      //   is_free,
-      //   swap_options
-      // } = giveAwayData;
-          if (giveAwayData.location){
+
+    if (giveAwayData.location){
         giveAwayData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [giveAwayData.location.lat, giveAwayData.location.lng])
     }
 
@@ -31,24 +18,6 @@ export async function createReport(giveAwayData) {
     console.log(error)
     throw new Error(error?.message)
   }
-
-    
-    // Handle PostGIS point using raw expression
-    // const locationData = {
-    //   userid,
-    //   username,
-    //   img_url,
-    //   title,
-    //   description,
-    //   address,
-    //   city,
-    //   is_free: is_free !== undefined ? is_free : true,
-    //   swap_options: swap_options || null,
-      
-    // };
-
-    
-
 }
 
 export const getReportById = async (reportId) => {
@@ -104,16 +73,13 @@ export const updateReport = async (reportData) => {
       title,
       description,
       address,
-      latitude,
-      longitude,
+      location,
       city,
       neighborhood_id,
       is_free,
       swap_options
     } = reportData;
-    
-        console.log("Updating report with ID:", id);
-    console.log("Neighborhood ID received:", neighborhood_id);
+
     if (!id) {
       throw new Error('Report ID is required for update');
     }
@@ -126,13 +92,11 @@ export const updateReport = async (reportData) => {
     if (address !== undefined) updateData.address = address;
     if (city !== undefined) updateData.city = city;
     if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
-          console.log("Setting neighborhood_id in updateData:", neighborhood_id);
-      updateData.neighborhood_id = neighborhood_id;
     if (is_free !== undefined) updateData.is_free = is_free;
     if (swap_options !== undefined) updateData.swap_options = swap_options;
     
-    if (latitude !== undefined && longitude !== undefined) {
-      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+    if (reportData.locatin) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng]);
     }
     // console.log("updateData", updateData)
     

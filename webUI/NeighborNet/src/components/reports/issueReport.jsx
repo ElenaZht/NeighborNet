@@ -11,16 +11,18 @@ import {
   FaCheckCircle, 
   FaComment, 
   FaChevronDown, 
-  FaChevronUp  
+  FaChevronUp,
+  FaTimes
 } from 'react-icons/fa'
 import { Comments } from '../reports/comments'
 import { getIssueReport } from '../../features/reports/issueReports/getIssueReportThunk'
 import { format, parseISO } from 'date-fns'
 
+
 export default function IssueReport({ reportId }) {
   const dispatch = useDispatch()
   const { currentIssueReport, loading, error } = useSelector(state => state.issueReports)
-  
+  const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
@@ -36,6 +38,10 @@ export default function IssueReport({ reportId }) {
   
   const toggleComments = () => {
     setShowComments(!showComments);
+  };
+
+  const toggleMap = () => {
+    setShowMap(!showMap);
   };
 
   if (loading) {
@@ -109,11 +115,33 @@ export default function IssueReport({ reportId }) {
               <p className="text-sm"><strong>Issue Description:</strong> {currentIssueReport.description}</p>
             </div>
             
-            <div className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
+            <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
               <FaMapMarkerAlt className="text-error min-w-4" />
               <span className="font-semibold">Location:</span>
               <span>{currentIssueReport.address}</span>
             </div>
+            {showMap && (
+              <div className="relative mt-3 border rounded-lg overflow-hidden">
+                <button 
+                  className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMap(false);
+                  }}
+                >
+                  <FaTimes className="text-error" />
+                </button>
+                <div className="w-full h-48">
+                  <iframe 
+                    title="Location Map"
+                    className="w-full h-full"
+                    frameBorder="0"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(currentIssueReport.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-between mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">

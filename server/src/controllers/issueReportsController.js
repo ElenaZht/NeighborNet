@@ -4,10 +4,12 @@ import {
     getReportById,
     updateReport
 } from "../models/issueReportsModel.js"
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
+
 
 export const addIssueReport = async (req, res) => {
     try {
-        const { title, img_url, description, address, lat, lon } = req.body;
+        const { title, img_url, description, address, location, city, } = req.body;
         const {id: userid, username} = req.user
   
         // Validation checks
@@ -27,16 +29,21 @@ export const addIssueReport = async (req, res) => {
             title,
             img_url: img_url || null,
             description: description || null,
-            address: address || null
+            address: address || null,
+            city,
+            location
         };
-        if (lat && lon) {
-            // Create a PostGIS point from lat/lon
-            reportData.location = `POINT(${lon} ${lat})`;  // Note: PostGIS expects lon/lat order
+        if (location) {
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            console.log("neighborhood", neighborhood)
+            if (neighborhood){
+                reportData.neighborhood_id = neighborhood.id
+            } 
         }
         
-        // Call model function
         const report = await createReport(reportData);
-        console.info("Issue report created: ", report)
+
         return res.status(201).json({
             message: 'Issue report created successfully',
             report
@@ -107,28 +114,32 @@ export const editIssueReport = async (req, res) => {
             return res.status(403).json({ message: "User is not an owner" });
         }
 
-        const { title, img_url, description, address, lat, lon, upvotes, followers, verifies } = req.body;
+        const { title, img_url, description, address, location, city, upvotes, followers, verifies } = req.body;
         
-        const updateData = { id: reportId };
+        const updateData = { 
+            id: reportId,
+            title,
+            img_url,
+            description,
+            upvotes,
+            followers,
+            verifies,
+            city,
+            location
+        };
         
-        // Only add fields that are explicitly provided
-        if (title !== undefined) updateData.title = title;
-        if (description !== undefined) updateData.description = description;
-        if (img_url !== undefined) updateData.img_url = img_url;
-        if (address !== undefined) updateData.address = address;
-        if (upvotes !== undefined) updateData.upvotes = upvotes;
-        if (followers !== undefined) updateData.followers = followers;
-        if (verifies !== undefined) updateData.verifies = verifies;
-        
-        if (lat !== undefined && lon !== undefined) {
-            updateData.lat = lat;
-            updateData.lon = lon;
+        if (location) {
+            //detect another neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lon)
+            
+            if (neighborhood !== undefined){
+                updateData.neighborhood_id = neighborhood.id
+            }
         }
 
         // Update the report
         const updatedReport = await updateReport(updateData);
         
-        console.info("Issue report updated: ", updatedReport);
         return res.status(200).json({
             message: "Issue report updated successfully",
             updatedReport

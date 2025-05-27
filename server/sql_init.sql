@@ -42,7 +42,9 @@ CREATE TABLE issue_reports (
     address TEXT,               -- Added address field
     upvotes INTEGER DEFAULT 0,
     followers INTEGER DEFAULT 0,
-    verifies INTEGER DEFAULT 0
+    verifies INTEGER DEFAULT 0,
+    neighborhood_id INTEGER,
+    city VARCHAR(255)
 );
 
 CREATE TABLE give_aways (

@@ -54,7 +54,6 @@ export const addGiveAwayReport = async (req, res) => {
         }
 
 
-        console.log("controller giveAwayData ", giveAwayData)
         const giveAway = await createReport(giveAwayData);
         
         return res.status(201).json({
@@ -128,7 +127,7 @@ export const editGiveAwayReport = async (req, res) => {
         }
 
         // Extract update data
-        const { title, img_url, description, address, lat, lon, is_free, swap_options } = req.body;
+        const { title, img_url, description, address, location, city, is_free, swap_options } = req.body;
         
         // Check required fields
         if (title !== undefined && (!title || !title.trim())) {
@@ -147,16 +146,14 @@ export const editGiveAwayReport = async (req, res) => {
             description,
             address,
             is_free,
-            swap_options
+            swap_options,
+            location, 
+            city
         };
 
-        // Add latitude and longitude if both are provided
-        if (lat !== undefined && lon !== undefined) {
-            updateData.latitude = lat;
-            updateData.longitude = lon;
-
+        if (location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(lat, lon)
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lon)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id
@@ -166,7 +163,6 @@ export const editGiveAwayReport = async (req, res) => {
         // Update the report
         const updatedReport = await updateReport(updateData);
         
-        console.info("Report updated: ", updatedReport);
         return res.status(200).json({
             message: "Report updated successfully",
             updatedReport

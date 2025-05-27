@@ -21,9 +21,9 @@ export default function HomePage() {
       {/* <OfferHelpInputForm/> */}
       {/* <OfferHelp reportId='2'/> */}
       {/* <GiveAwayInputForm/> */}
-      <GiveAway reportId='13'/>
+      {/* <GiveAway reportId='13'/> */}
 
-      {/* <IssueReport reportId='5'/> */}
+      <IssueReport reportId='6'/>
        {/* <IssueReportInputForm/> */}
     </div>
   )

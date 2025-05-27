@@ -4,34 +4,19 @@ import { db } from '../config/db.js'
 export const createReport = async(reportData) => {
     try {
         // convert lat lon to a PostGIS point
-        if (reportData.lat && reportData.lon) {
-            const { lat, lon, ...restData } = reportData;
-            
-            // Add the location as a PostGIS point
-            const locationData = {
-                ...restData,
-                location: db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [lon, lat])
-            };
-            
-            const [insertedReport] = await db('issue_reports')
-                .insert(locationData)
-                .returning(['id', 'created_at', 'userid', 'username', 'img_url', 
-                          'title', 'description', 'address', 'upvotes', 'followers', 'verifies']);
-            
-            return insertedReport;
+        if (reportData.location) {
+            reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng])
 
-        } else {
-            // without location
-            const [insertedReport] = await db('issue_reports')
-                .insert(reportData)
-                .returning(['id', 'created_at', 'userid', 'username', 'img_url', 
-                          'title', 'description', 'address', 'upvotes', 'followers', 'verifies']);
-                      
-            return insertedReport;
         }
+        const [insertedReport] = await db('issue_reports')
+            .insert(reportData)
+            .returning('*');
+                      
+        return insertedReport;
+
     } catch (error) {
         console.error('Error creating issue report:', error);
-        throw error;
+        throw new Error(error?.message)
     }
 }
 
@@ -88,8 +73,9 @@ export const updateReport = async (reportData) => {
       description,
       img_url,
       address,
-      lat,
-      lon,
+      location,
+      city,
+      neighborhood_id,
       upvotes,
       followers,
       verifies
@@ -106,12 +92,14 @@ export const updateReport = async (reportData) => {
     if (description !== undefined) updateData.description = description;
     if (img_url !== undefined) updateData.img_url = img_url;
     if (address !== undefined) updateData.address = address;
+    if (city !== undefined) updateData.city = city;
+    if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
     if (upvotes !== undefined) updateData.upvotes = upvotes;
     if (followers !== undefined) updateData.followers = followers;
     if (verifies !== undefined) updateData.verifies = verifies;
     
-    if (lat !== undefined && lon !== undefined) {
-      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [lon, lat]);
+    if (reportData.location) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng]);
     }
     
     // Update the database record

@@ -3,6 +3,7 @@ import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addIssueReport } from '../../features/reports/issueReports/addIssueReportThunk';
 import { Link } from 'react-router-dom';
+import AddressInputForm from '../AddressInputForm'
 
 
 // Form storage key for localStorage
@@ -11,16 +12,14 @@ const FORM_STORAGE_KEY = 'issue_report_draft';
 export default function IssueReportInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
-
-  useEffect(() => {
-    console.log('Authentication status changed:', isAuthenticated);
-  }, [isAuthenticated]);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     address: '',
-    img_url: ''
+    img_url: '',
+    city: '',
+    location: {lat: '', lon: ''}
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -34,6 +33,7 @@ export default function IssueReportInputForm() {
     if (savedFormData) {
       try {
         setFormData(JSON.parse(savedFormData));
+
       } catch (e) {
         console.error("Error parsing saved form data", e);
       }
@@ -153,6 +153,13 @@ export default function IssueReportInputForm() {
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
   };
 
+    const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
+  }
+
   return (
     <div className="max-w-4xl mx-auto m-4">
       <div className="card bg-base-100 shadow-xl">
@@ -270,18 +277,9 @@ export default function IssueReportInputForm() {
                   <label className="label">
                     <span className="label-text font-medium">Address</span>
                   </label>
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="text-error mr-2" />
-                    <input 
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="input input-bordered w-full" 
-                      placeholder="Street name, landmark, or specific address"
-                      disabled={isSubmitting}
+                    <AddressInputForm 
+                      onMySelect={handleAddressInputFormChange}
                     />
-                  </div>
                 </div>
                 
                 <div className="form-control mt-4">

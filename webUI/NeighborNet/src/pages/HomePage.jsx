@@ -20,8 +20,8 @@ export default function HomePage() {
       {/* <HelpRequest reportId="2"/> */}
       {/* <OfferHelpInputForm/> */}
       {/* <OfferHelp reportId='2'/> */}
-      <GiveAwayInputForm/>
-      {/* <GiveAway reportId='2'/> */}
+      {/* <GiveAwayInputForm/> */}
+      <GiveAway reportId='13'/>
 
       {/* <IssueReport reportId='5'/> */}
        {/* <IssueReportInputForm/> */}

@@ -232,10 +232,6 @@ export default function AddressInputForm({ onMySelect }) {
                   Street: {street}
                   City: {city}
                 </p>
-                            {neighborhood && <p>
-                neighborhood: {neighborhood}
-                
-              </p>}
                 
                 {/* Map container */}
                 <div 

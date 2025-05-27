@@ -29,7 +29,10 @@ export const getCommentsByReportId = async (reportId, reportType) => {
         'c.datetime',
         'c.content'
       );
-      
+
+    // const ccc = await db.raw("select * from comments where report_type='give_away'")
+    // console.log("ccc", ccc.rows);
+
     return comments;
     
   } catch (error) {

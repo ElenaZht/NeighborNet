@@ -3,6 +3,7 @@ import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addGiveAway } from '../../features/reports/giveaways/addGiveAwayThunk';
 import { Link } from 'react-router-dom';
+import AddressInputForm from '../AddressInputForm'
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'give_away_draft';
@@ -18,7 +19,9 @@ export default function GiveAwayInputForm() {
     address: '',
     img_url: '',
     is_free: true,
-    swap_options: ''
+    swap_options: '',
+    city: '',
+    location: {lat: '', lon: ''}
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,7 +112,8 @@ export default function GiveAwayInputForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
+
+    console.log("submit form data ", formData)
     // Check authentication
     if (!isAuthenticated) {
       setShowAuthPrompt(true);
@@ -121,20 +125,11 @@ export default function GiveAwayInputForm() {
     }
 
     setIsSubmitting(true);
+    
 
     try {
-      // Prepare data for API
-      const giveAwayData = {
-        title: formData.title,
-        description: formData.description,
-        address: formData.address,
-        img_url: formData.img_url,
-        is_free: formData.is_free,
-        swap_options: !formData.is_free ? formData.swap_options : null
-      };
-      
-      // Dispatch thunk
-      const resultAction = await dispatch(addGiveAway(giveAwayData));
+
+      const resultAction = await dispatch(addGiveAway(formData));
       
       if (addGiveAway.fulfilled.match(resultAction)) {
         // Success - clear form and localStorage
@@ -163,6 +158,13 @@ export default function GiveAwayInputForm() {
       setIsSubmitting(false);
     }
   };
+
+  const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
+  }
 
   return (
     <div className="max-w-4xl mx-auto m-4">
@@ -308,17 +310,9 @@ export default function GiveAwayInputForm() {
                   <label className="label">
                     <span className="label-text font-medium">Pickup Address</span>
                   </label>
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="text-error mr-2" />
-                    <input 
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="input input-bordered w-full" 
-                      placeholder="Your address or a nearby landmark"
-                    />
-                  </div>
+                  <AddressInputForm 
+                    onMySelect={handleAddressInputFormChange}
+                  />
                 </div>
                 
                 <div className="form-control mt-4">

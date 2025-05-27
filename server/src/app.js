@@ -20,7 +20,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
     origin: 
-        process.env.DEV_FRONTEND_SERVER_URL2 
+        process.env.DEV_FRONTEND_SERVER_URL 
         || process.env.DEV_FRONTEND_SERVER_URL2, // Vite default port
     credentials: true
   }));

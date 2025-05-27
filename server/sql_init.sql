@@ -56,7 +56,9 @@ CREATE TABLE give_aways (
     location GEOGRAPHY(POINT),  
     address TEXT,
     is_free BOOLEAN DEFAULT TRUE,
-    swap_options TEXT
+    swap_options TEXT,
+    neighborhood_id INTEGER,
+    city VARCHAR(255)
 );
 
 CREATE TABLE offer_help (
@@ -96,3 +98,7 @@ CREATE TABLE comments (
     content TEXT NOT NULL,
     img_url VARCHAR(255)
 );
+
+SELECT id, nbr_name, nbr_name_en, city_name, city_name_en, city_gov_id 
+FROM neighborhoods 
+WHERE ST_Contains(geometry, ST_SetSRID(ST_Point(34.881587, 31.961376), 4326));

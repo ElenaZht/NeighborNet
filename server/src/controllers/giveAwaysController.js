@@ -4,11 +4,12 @@ import {
     removeReport,
     updateReport
 } from "../models/giveAwaysModel.js";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 
 export const addGiveAwayReport = async (req, res) => {
     try {
-        const { title, img_url, description, address, lat, lon, is_free, swap_options } = req.body;
+        const { title, img_url, description, address, location, city, is_free, swap_options } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal nessesary fields: userid, title, address
@@ -38,13 +39,22 @@ export const addGiveAwayReport = async (req, res) => {
             description: description || null,
             address: address || null,
             is_free: is_free !== undefined ? is_free : true,
-            swap_options: swap_options || null
+            swap_options: swap_options || null,
+            city,
+            location
         };
-        if (lat && lon){
-            giveAwayData.latitude = lat,
-            giveAwayData.longitude = lon
+        if (location){
+
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            console.log("neighborhood", neighborhood)
+            if (neighborhood){
+                giveAwayData.neighborhood_id = neighborhood.id
+            }
         }
-        
+
+
+        console.log("controller giveAwayData ", giveAwayData)
         const giveAway = await createReport(giveAwayData);
         
         return res.status(201).json({
@@ -144,8 +154,15 @@ export const editGiveAwayReport = async (req, res) => {
         if (lat !== undefined && lon !== undefined) {
             updateData.latitude = lat;
             updateData.longitude = lon;
-        }
 
+            //detect another neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(lat, lon)
+            
+            if (neighborhood !== undefined){
+                updateData.neighborhood_id = neighborhood.id
+            }
+        }
+       
         // Update the report
         const updatedReport = await updateReport(updateData);
         

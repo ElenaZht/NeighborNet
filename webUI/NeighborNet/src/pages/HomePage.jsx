@@ -7,21 +7,24 @@ import OfferHelp from '../components/reports/offerHelp.jsx'
 import OfferHelpInputForm from '../components/reports/offerHelpInputForm.jsx'
 import HelpRequest from '../components/reports/helpRequest.jsx'
 import HelpReportInputForm from '../components/reports/helpRequestInputForm.jsx'
+import AddressInputForm from '../components/AddressInputForm.jsx'
+
 
 export default function HomePage() {
 
   return (
     <div>
       HomePage
+      {/* <AddressInputForm/> */}
       {/* <HelpReportInputForm/> */}
       {/* <HelpRequest reportId="2"/> */}
       {/* <OfferHelpInputForm/> */}
       {/* <OfferHelp reportId='2'/> */}
-      {/* <GiveAwayInputForm/> */}
+      <GiveAwayInputForm/>
       {/* <GiveAway reportId='2'/> */}
 
       {/* <IssueReport reportId='5'/> */}
-      {/* <IssueReportInputForm/> */}
+       {/* <IssueReportInputForm/> */}
     </div>
   )
 }

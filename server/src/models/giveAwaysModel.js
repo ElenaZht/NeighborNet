@@ -2,40 +2,53 @@ import { db } from "../config/db.js";
 
 
 export async function createReport(giveAwayData) {
-    const {
-      userid,
-      username,
-      img_url,
-      title,
-      description,
-      latitude,
-      longitude,
-      address,
-      is_free,
-      swap_options
-    } = giveAwayData;
-    
-    // Handle PostGIS point using raw expression
-    const locationData = {
-      userid,
-      username,
-      img_url,
-      title,
-      description,
-      address,
-      is_free: is_free !== undefined ? is_free : true,
-      swap_options: swap_options || null,
-      
-    };
-    if (latitude && longitude){
-        locationData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [latitude, longitude])
+  try {
+      // const {
+      //   userid,
+      //   username,
+      //   img_url,
+      //   title,
+      //   description,
+      //   location,
+      //   address,
+      //   city,
+      //   street,
+      //   neighborhood_id, 
+      //   is_free,
+      //   swap_options
+      // } = giveAwayData;
+          if (giveAwayData.location){
+        giveAwayData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [giveAwayData.location.lat, giveAwayData.location.lng])
     }
-    
-    const [insertedGiveAway] = await db('give_aways')
-      .insert(locationData)
+
+        const [insertedGiveAway] = await db('give_aways')
+      .insert(giveAwayData)
       .returning('*');
       
     return insertedGiveAway;
+    
+  } catch (error) {
+    console.log(error)
+    throw new Error(error?.message)
+  }
+
+    
+    // Handle PostGIS point using raw expression
+    // const locationData = {
+    //   userid,
+    //   username,
+    //   img_url,
+    //   title,
+    //   description,
+    //   address,
+    //   city,
+    //   is_free: is_free !== undefined ? is_free : true,
+    //   swap_options: swap_options || null,
+      
+    // };
+
+    
+
 }
 
 export const getReportById = async (reportId) => {
@@ -93,10 +106,14 @@ export const updateReport = async (reportData) => {
       address,
       latitude,
       longitude,
+      city,
+      neighborhood_id,
       is_free,
       swap_options
     } = reportData;
     
+        console.log("Updating report with ID:", id);
+    console.log("Neighborhood ID received:", neighborhood_id);
     if (!id) {
       throw new Error('Report ID is required for update');
     }
@@ -107,19 +124,28 @@ export const updateReport = async (reportData) => {
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (address !== undefined) updateData.address = address;
+    if (city !== undefined) updateData.city = city;
+    if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
+          console.log("Setting neighborhood_id in updateData:", neighborhood_id);
+      updateData.neighborhood_id = neighborhood_id;
     if (is_free !== undefined) updateData.is_free = is_free;
     if (swap_options !== undefined) updateData.swap_options = swap_options;
     
     if (latitude !== undefined && longitude !== undefined) {
       updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
     }
+    // console.log("updateData", updateData)
     
+        const existingReport = await db('give_aways').where({ id }).first();
+    if (!existingReport) {
+      throw new Error(`Report with ID ${id} not found`);
+    }
     // Update the database record
     const [updatedReport] = await db('give_aways')
       .where({ id })
       .update(updateData)
       .returning('*');
-      
+    console.log("Updated neighborhood_id:", updatedReport.neighborhood_id);
     return updatedReport;
 
   } catch (error) {

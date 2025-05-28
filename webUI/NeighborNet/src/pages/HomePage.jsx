@@ -16,8 +16,8 @@ export default function HomePage() {
     <div>
       HomePage
       {/* <AddressInputForm/> */}
-      {/* <HelpReportInputForm/> */}
-      <HelpRequest reportId="4"/>
+      <HelpReportInputForm/>
+      {/* <HelpRequest reportId="4"/> */}
       {/* <OfferHelpInputForm/> */}
       {/* <OfferHelp reportId='4'/> */}
       {/* <GiveAwayInputForm/> */}

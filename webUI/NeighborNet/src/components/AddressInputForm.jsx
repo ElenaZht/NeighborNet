@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
+
 
 export default function AddressInputForm({ onMySelect }) {
   const [address, setAddress] = useState('');
@@ -17,19 +19,16 @@ export default function AddressInputForm({ onMySelect }) {
 
   // Initialize Google Places API
   useEffect(() => {
-    // Load Google Maps JavaScript API script dynamically
-    const googleScript = document.createElement('script');
-    const apiKey = 'AIzaSyDZbVH4NZTDe_1trTVbRSEwa_51eHWbx8k'; // Replace with your actual API key
-    googleScript.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    googleScript.async = true;
-    googleScript.defer = true;
-    googleScript.onload = initAutocomplete;
-    document.head.appendChild(googleScript);
-
-    return () => {
-      document.head.removeChild(googleScript);
-    };
+    loadGoogleMapsScript()
+      .then(() => {
+        initAutocomplete();
+      })
+      .catch(error => {
+        console.error('Error loading Google Maps API:', error);
+        setWarning('Failed to load maps. Please try again later.');
+      });
   }, []);
+
 
     useEffect(() => {
     if (coordinates && mapContainerRef.current) {
@@ -131,7 +130,6 @@ export default function AddressInputForm({ onMySelect }) {
       },
       (place, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
-          console.log('Selected place details:', place);
           if (place.geometry && place.geometry.location) {
             setCoordinates({
               lat: place.geometry.location.lat(),
@@ -174,7 +172,7 @@ export default function AddressInputForm({ onMySelect }) {
       <div className="card-body">
         <h2 className="card-title">Enter Address</h2>
         
-        <form className="form-control w-full">
+        <div className="form-control w-full">
           <div className="relative" ref={inputRef}>
             <label className="label">
               <span className="label-text">Address</span>
@@ -210,7 +208,7 @@ export default function AddressInputForm({ onMySelect }) {
               </ul>
             )}
           </div>
-        </form>
+        </div>
                 {address && (
           <div className="mt-4 p-4 bg-base-200 rounded-lg">
             <p className="font-medium">Selected Address:</p>

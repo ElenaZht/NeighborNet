@@ -16,7 +16,7 @@ export default function HelpReportInputForm() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    location: '',
+    address: '',
     img_url: '',
     category: '',
     urgency: 'normal',
@@ -172,7 +172,7 @@ export default function HelpReportInputForm() {
             setFormData({
             title: '',
             description: '',
-            location: '',
+            address: '',
             img_url: '',
             category: '',
             urgency: 'normal',

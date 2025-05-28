@@ -1,4 +1,5 @@
 import { getCommentsByReportId, addComment } from "../models/commentsModel.js";
+import { validReportTypes } from "../helpers/validReportTypes.js";
 
 
 export const getReportComments = async (req, res) => {
@@ -13,8 +14,6 @@ export const getReportComments = async (req, res) => {
       return res.status(400).json({ message: "Report type is required" });
     }
     
-    // Valid report types based on your database
-    const validReportTypes = ['offer_help', 'help_request', 'give_away', 'issue_report'];
     if (!validReportTypes.includes(reportType)) {
       return res.status(400).json({ message: "Invalid report type" });
     }
@@ -61,8 +60,6 @@ export const createComment = async (req, res) => {
       return res.status(400).json({ message: "Comment content is required" });
     }
     
-    // Valid report types based on your database
-    const validReportTypes = ['offer_help', 'help_request', 'give_away', 'issue_report'];
     if (!validReportTypes.includes(reportType)) {
       return res.status(400).json({ message: "Invalid report type" });
     }

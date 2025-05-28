@@ -17,6 +17,7 @@ import { Comments } from '../reports/comments'
 import { getOfferHelp } from '../../features/reports/offerhelp/getOfferHelpThunk'
 import { format, parseISO } from 'date-fns'
 
+
 export default function OfferHelp({ reportId }) {
   const dispatch = useDispatch()
   const { currentOfferHelp, loading, error } = useSelector(state => state.offerHelp)

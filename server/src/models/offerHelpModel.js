@@ -4,9 +4,10 @@ import { db } from "../config/db.js";
 export async function createReport(offerHelpData) {
 try {
   if (offerHelpData.location){
-    offerHelpData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [offerHelpData.location.lat, offerHelpData.location.lng])
+    offerHelpData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+      [offerHelpData.location.lat, offerHelpData.location.lng])
   }
-  // Insert data into offer_help table
+
   const [insertedOfferHelp] = await db('offer_help')
     .insert(offerHelpData)
     .returning('*');
@@ -104,7 +105,6 @@ export const updateReport = async (reportData) => {
       throw new Error(`Report with ID ${id} not found`);
     }
     
-    // Update the database record
     const [updatedReport] = await db('offer_help')
       .where({ id })
       .update(updateData)

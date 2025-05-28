@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
+import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addIssueReport } from '../../features/reports/issueReports/addIssueReportThunk';
 import { Link } from 'react-router-dom';
@@ -116,7 +116,9 @@ export default function IssueReportInputForm() {
         title: '',
         description: '',
         address: '',
-        img_url: ''
+        img_url: '',
+        city: '',
+        location: {lat: '', lng: ''}
       });
       
       // Clear saved form data after successful submission

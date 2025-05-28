@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
+import {  FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addGiveAway } from '../../features/reports/giveaways/addGiveAwayThunk';
 import { Link } from 'react-router-dom';
@@ -57,7 +57,9 @@ export default function GiveAwayInputForm() {
         address: formData.address,
         img_url: formData.img_url,
         is_free: formData.is_free,
-        swap_options: formData.swap_options
+        swap_options: formData.swap_options,
+        city: '',
+        location: {lat: '', lng: ''}
       }));
     }
   }, [formData]);
@@ -261,7 +263,7 @@ export default function GiveAwayInputForm() {
                   </label>
                 </div>
                 
-                {/* Swap Options (only show if not free) */}
+                {/* Swap Options (if not free) */}
                 {!formData.is_free && (
                   <div className="form-control w-full">
                     <label className="label">

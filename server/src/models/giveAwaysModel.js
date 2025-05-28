@@ -5,12 +5,13 @@ export async function createReport(giveAwayData) {
   try {
 
     if (giveAwayData.location){
-        giveAwayData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [giveAwayData.location.lat, giveAwayData.location.lng])
+        giveAwayData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+          [giveAwayData.location.lat, giveAwayData.location.lng])
     }
 
-      const [insertedGiveAway] = await db('give_aways')
-        .insert(giveAwayData)
-        .returning('*');
+    const [insertedGiveAway] = await db('give_aways')
+      .insert(giveAwayData)
+      .returning('*');
       
     return insertedGiveAway;
     

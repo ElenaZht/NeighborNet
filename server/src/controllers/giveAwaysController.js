@@ -9,7 +9,16 @@ import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 export const addGiveAwayReport = async (req, res) => {
     try {
-        const { title, img_url, description, address, location, city, is_free, swap_options } = req.body;
+        const { 
+            title, 
+            img_url, 
+            description, 
+            address, 
+            location, 
+            city, 
+            is_free, 
+            swap_options 
+        } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal nessesary fields: userid, title, address
@@ -44,7 +53,6 @@ export const addGiveAwayReport = async (req, res) => {
             location
         };
         if (location){
-
             //detect neighborhood if possible
             const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
             if (neighborhood){
@@ -126,9 +134,18 @@ export const editGiveAwayReport = async (req, res) => {
         }
 
         // Extract update data
-        const { title, img_url, description, address, location, city, is_free, swap_options } = req.body;
+        const { 
+            title, 
+            img_url, 
+            description, 
+            address, 
+            location, 
+            city, 
+            is_free, 
+            swap_options 
+        } = req.body;
         
-        // Check required fields
+        // Check minimal required fields
         if (title !== undefined && (!title || !title.trim())) {
             return res.status(400).json({ message: "Title cannot be empty" });
         }
@@ -151,7 +168,7 @@ export const editGiveAwayReport = async (req, res) => {
         };
 
         if (location) {
-            //detect another neighborhood if possible
+            //detect new neighborhood if possible
             const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
             
             if (neighborhood !== undefined){

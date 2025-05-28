@@ -9,7 +9,15 @@ import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 export const addOfferHelp = async (req, res) => {
     try {
-        const { topic, img_url, description, address, location, city, barter_options } = req.body;
+        const { 
+            topic, 
+            img_url, 
+            description, 
+            address, 
+            location, 
+            city, 
+            barter_options 
+        } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal necessary fields: userid, topic, address
@@ -30,7 +38,6 @@ export const addOfferHelp = async (req, res) => {
             });
         }
 
-        // Prepare data for model
         const offerHelpData = { 
             userid, 
             username, 
@@ -124,17 +131,16 @@ export const editOfferHelpReport = async (req, res) => {
         if (report.userid !== req.user.id) {
             return res.status(403).json({ message: "User is not an owner" });
         }
-
-        const { topic, img_url, description, address, location, city, barter_options } = req.body;
         
         const updateData = { 
             id: reportId,
-            topic,
-            img_url,
-            address,
-            barter_options,
-            city,
-            location
+            topic: req.body.topic,
+            img_url: req.body.img_url,
+            address: req.body.address,
+            barter_options: req.body.barter_options,
+            city: req.body.city,
+            location: req.body.location,
+            description: req.body.description
         };
         
         if (location) {

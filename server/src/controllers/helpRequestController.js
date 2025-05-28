@@ -9,7 +9,16 @@ import {
 
 export const addHelpRequest = async (req, res) => {
     try {
-        const { title, img_url, description, address, location, city, category, urgency } = req.body;
+        const { 
+            title, 
+            img_url, 
+            description, 
+            address, 
+            location, 
+            city, 
+            category, 
+            urgency 
+        } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal necessary fields: userid, title, urgency, address
@@ -131,21 +140,17 @@ export const editHelpRequestReport = async (req, res) => {
         if (report.userid !== req.user.id) {
             return res.status(403).json({ message: "User is not an owner" });
         }
-
-        // Extract fields from request body
-        const { title, img_url, description, address, location, city, category, urgency } = req.body;
         
-        // Create update data object with only the ID initially
         const updateData = { 
             id: reportId,
-            title,
-            description,
-            img_url,
-            address,
-            category,
-            urgency,
-            location, 
-            city
+            title: req.body.title,
+            description: req.body.description,
+            img_url: req.body.img_url,
+            address: req.body.address,
+            category: req.body.category,
+            urgency: req.body.urgency,
+            location: req.body.location, 
+            city: req.body.city
         };
         
         if (location) {

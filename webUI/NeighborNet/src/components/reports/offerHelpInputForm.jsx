@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes, FaUtensils, FaLeaf, FaFootballBall, FaTools, FaBook, FaCar, FaBaby, FaLaptop, FaPaintBrush, FaMusic, FaDog, FaTshirt } from 'react-icons/fa'
+import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addOfferHelp } from '../../features/reports/offerhelp/addOfferHeplThunk';
 import AddressInputForm from '../AddressInputForm'
-
+import { barterChoices } from '../../utils/barterChoises';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'offer_help_draft';
@@ -30,20 +30,6 @@ export default function OfferHelpInputForm() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showBarterDropdown, setShowBarterDropdown] = useState(false);
 
-  const barterChoices = [
-    { id: 'food', label: 'Food', icon: <FaUtensils className="text-warning" /> },
-    { id: 'plants', label: 'Plants & Flowers', icon: <FaLeaf className="text-success" /> },
-    { id: 'sports', label: 'Sport Equipment', icon: <FaFootballBall className="text-info" /> },
-    { id: 'tools', label: 'Tools', icon: <FaTools className="text-error" /> },
-    { id: 'books', label: 'Books', icon: <FaBook className="text-primary" /> },
-    { id: 'transportation', label: 'Transportation', icon: <FaCar className="text-neutral" /> },
-    { id: 'childcare', label: 'Childcare', icon: <FaBaby className="text-pink-400" /> },
-    { id: 'tech', label: 'Tech Support', icon: <FaLaptop className="text-slate-600" /> },
-    { id: 'art', label: 'Art Supplies', icon: <FaPaintBrush className="text-purple-500" /> },
-    { id: 'music', label: 'Music Lessons', icon: <FaMusic className="text-blue-400" /> },
-    { id: 'petcare', label: 'Pet Sitting', icon: <FaDog className="text-amber-700" /> },
-    { id: 'clothing', label: 'Clothing', icon: <FaTshirt className="text-teal-500" /> }
-  ];
 
   // Load saved form data on component mount
   useEffect(() => {
@@ -64,7 +50,11 @@ export default function OfferHelpInputForm() {
   // Save form changes to localStorage
   useEffect(() => {
     // Only save if user has started filling out the form
-    if (formData.topic || formData.description || formData.location || formData.img_url || formData.barterOptions.length > 0) {
+    if (formData.topic || 
+      formData.description || 
+      formData.location || 
+      formData.img_url || 
+      formData.barterOptions.length > 0) {
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
     }
   }, [formData]);
@@ -150,7 +140,6 @@ export default function OfferHelpInputForm() {
     setIsSubmitting(true);
   
     try {
-      // Prepare data for API - map location to address for server side
       const offerHelpData = {
         topic: formData.topic,
         description: formData.description,
@@ -161,7 +150,6 @@ export default function OfferHelpInputForm() {
         location: formData.location
       };
       
-      // Dispatch the thunk
       const resultAction = await dispatch(addOfferHelp(offerHelpData));
       
       if (addOfferHelp.fulfilled.match(resultAction)) {
@@ -175,9 +163,11 @@ export default function OfferHelpInputForm() {
         setFormData({
           topic: '',
           description: '',
-          location: '',
           img_url: '',
-          barterOptions: []
+          barterOptions: [],
+          city: '',
+          address: '',
+          location: {lat: '', lng: ''}
         });
         
         // Hide success message after 5 seconds

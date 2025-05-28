@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { formatDistanceToNow, format, parseISO } from 'date-fns';
 import { getComments } from '../../features/reports/comments/getCommentsThunk';
 import { addComment } from '../../features/reports/comments/addCommentThunk';
 import { setCurrentReport } from '../../features/reports/comments/commentsSlice';
@@ -47,7 +46,6 @@ export const Comments = ({ reportId, reportType }) => {
 
   return (
     <div className="w-full mt-6">
-              {/* Add comment form - only show if user is logged in */}
       {currentUser ? (
         <form onSubmit={handleSubmitComment} className="space-y-2">
           <textarea

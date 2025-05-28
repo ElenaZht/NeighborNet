@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { FaMapMarkerAlt, FaInfoCircle, FaTools, FaCar, FaBaby, FaDog, FaLaptop, FaDumbbell, FaLeaf, FaUtensils, FaShoppingBag, FaGraduationCap, FaMedkit, FaBroom, FaHome, FaImage, FaTimes } from 'react-icons/fa'
+import { 
+  FaInfoCircle, 
+  FaTools, 
+  FaCar, 
+  FaBaby, 
+  FaDog, 
+  FaLaptop, 
+  FaDumbbell, 
+  FaLeaf, 
+  FaUtensils, 
+  FaShoppingBag, 
+  FaGraduationCap, 
+  FaMedkit, FaBroom, 
+  FaHome, 
+  FaImage, 
+  FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addHelpRequest } from '../../features/reports/helpRequests/addHelpRequestThunk.js'

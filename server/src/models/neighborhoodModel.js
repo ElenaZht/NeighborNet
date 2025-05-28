@@ -6,7 +6,6 @@ export const getNeighborhoodByCoordinates = async(lat, lng) => {
         if (!lat || !lng){
         throw new Error("Coordinates are missing")
         }
-        console.log("model check ok")
         const query = `
         SELECT id, nbr_name, nbr_name_en, city_name, city_name_en, city_gov_id
         FROM neighborhoods
@@ -27,7 +26,7 @@ export const getNeighborhoodByCoordinates = async(lat, lng) => {
         return result[0] || null;
 
         } catch (error) {
-            console.log("catch rows", error)
+            console.log("get neighborhood error: ", error)
         }
   
     } catch (error) {

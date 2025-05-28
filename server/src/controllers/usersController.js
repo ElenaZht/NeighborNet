@@ -14,7 +14,15 @@ import {
 export const signUpUser = async (req, res) => {
     try {
         // Request validation
-        const { username, email, password, photo_url, longitude, latitude, address } = req.body;
+        const { 
+            username, 
+            email, 
+            password, 
+            photo_url, 
+            longitude, 
+            latitude, 
+            address 
+        } = req.body;
         
         if (!username) return res.status(400).json({ message: 'Username is required' });
         if (!email) return res.status(400).json({ message: 'Email is required' });

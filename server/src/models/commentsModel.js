@@ -30,9 +30,6 @@ export const getCommentsByReportId = async (reportId, reportType) => {
         'c.content'
       );
 
-    // const ccc = await db.raw("select * from comments where report_type='give_away'")
-    // console.log("ccc", ccc.rows);
-
     return comments;
     
   } catch (error) {
@@ -50,7 +47,6 @@ export const addComment = async (commentData) => {
       content,
     } = commentData;
     
-    // Validate required fields
     if (!user_id) throw new Error('User ID is required');
     if (!report_id) throw new Error('Report ID is required');
     if (!report_type) throw new Error('Report type is required');

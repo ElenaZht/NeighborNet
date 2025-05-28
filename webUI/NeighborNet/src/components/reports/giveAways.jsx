@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaComment, FaInfoCircle } from 'react-icons/fa'
+import { 
+  FaTimes, 
+  FaMapMarkerAlt, 
+  FaCalendarAlt, 
+  FaUser, 
+  FaEllipsisV, 
+  FaBell, 
+  FaChevronDown, 
+  FaChevronUp, 
+  FaComment
+ } from 'react-icons/fa'
 import { Comments } from '../reports/comments'
 import { getGiveAway } from '../../features/reports/giveaways/getGiveAwayThunk'
 import { format, parseISO } from 'date-fns'
+
 
 export default function GiveAway({ reportId }) {
   const dispatch = useDispatch()

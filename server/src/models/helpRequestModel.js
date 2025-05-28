@@ -8,7 +8,8 @@ export async function createReport(helpRequestData) {
     }
     
     if (helpRequestData.location) {
-      helpRequestData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [helpRequestData.location.lat, helpRequestData.location.lng]);
+      helpRequestData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+        [helpRequestData.location.lat, helpRequestData.location.lng]);
     }
     
     const [insertedRequest] = await db('help_requests')

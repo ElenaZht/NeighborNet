@@ -9,7 +9,14 @@ import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 export const addIssueReport = async (req, res) => {
     try {
-        const { title, img_url, description, address, location, city, } = req.body;
+        const { 
+            title, 
+            img_url, 
+            description, 
+            address, 
+            location, 
+            city, 
+        } = req.body;
         const {id: userid, username} = req.user
   
         // Validation checks
@@ -17,12 +24,10 @@ export const addIssueReport = async (req, res) => {
         if (!username) return res.status(400).json({ message: 'Username is required' });
         if (!title) return res.status(400).json({ message: 'Title is required' });
         
-        // Optional field validation (if needed)
         if (description && description.length > 100) {
             return res.status(400).json({ message: 'Description must be 100 characters or less' });
         }
         
-        // Prepare data for model
         const reportData = { 
             userid, 
             username, 
@@ -113,19 +118,17 @@ export const editIssueReport = async (req, res) => {
         if (report.userid !== req.user.id) {
             return res.status(403).json({ message: "User is not an owner" });
         }
-
-        const { title, img_url, description, address, location, city, upvotes, followers, verifies } = req.body;
         
         const updateData = { 
             id: reportId,
-            title,
-            img_url,
-            description,
-            upvotes,
-            followers,
-            verifies,
-            city,
-            location
+            title: req.body.title,
+            img_url: req.body.img_url,
+            description: req.body.description,
+            upvotes: req.body.upvotes,
+            followers: req.body.followers,
+            verifies: req.body.verifies,
+            city: req.body.city,
+            location: req.body.city
         };
         
         if (location) {

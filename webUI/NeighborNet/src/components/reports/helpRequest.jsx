@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaThumbsUp, FaComment } from 'react-icons/fa'
+import { 
+  FaTimes, 
+  FaMapMarkerAlt, 
+  FaCalendarAlt, 
+  FaUser, 
+  FaEllipsisV, 
+  FaBell, 
+  FaChevronDown, 
+  FaChevronUp, 
+  FaThumbsUp, 
+  FaComment 
+} from 'react-icons/fa'
 import { Comments } from '../reports/comments'
 import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
 import { format, parseISO } from 'date-fns'

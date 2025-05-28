@@ -6,7 +6,8 @@ const initialState = {
     allIssueReports: [],
     currentIssueReport: null,
     loading: false,
-    error: null
+    error: null,
+    status: ''
 }
 
 const issueReportsSlice = createSlice({

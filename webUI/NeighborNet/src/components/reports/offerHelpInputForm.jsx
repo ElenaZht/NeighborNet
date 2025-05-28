@@ -14,7 +14,7 @@ export default function OfferHelpInputForm() {
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
 
   const [formData, setFormData] = useState({
-    topic: '',
+    title: '',
     description: '',
     img_url: '',
     barterOptions: [],
@@ -50,7 +50,7 @@ export default function OfferHelpInputForm() {
   // Save form changes to localStorage
   useEffect(() => {
     // Only save if user has started filling out the form
-    if (formData.topic || 
+    if (formData.title || 
       formData.description || 
       formData.location || 
       formData.img_url || 
@@ -114,8 +114,8 @@ export default function OfferHelpInputForm() {
       return false;
     }
     
-    if (!formData.topic.trim()) {
-      setError("Topic is required");
+    if (!formData.title.trim()) {
+      setError("title is required");
       return false;
     }
     if (!formData.description.trim()) {
@@ -141,7 +141,7 @@ export default function OfferHelpInputForm() {
   
     try {
       const offerHelpData = {
-        topic: formData.topic,
+        title: formData.title,
         description: formData.description,
         address: formData.address,
         img_url: formData.img_url,
@@ -161,7 +161,7 @@ export default function OfferHelpInputForm() {
         
         // Reset form
         setFormData({
-          topic: '',
+          title: '',
           description: '',
           img_url: '',
           barterOptions: [],
@@ -343,12 +343,12 @@ export default function OfferHelpInputForm() {
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">
-                    <span className="label-text font-medium">Topic</span>
+                    <span className="label-text font-medium">Title:</span>
                   </label>
                   <input 
                     type="text"
-                    name="topic"
-                    value={formData.topic}
+                    name="title"
+                    value={formData.title}
                     onChange={handleChange}
                     className="input input-bordered w-full" 
                     placeholder="E.g., Fridge Repair, Gardening, Tutoring"
@@ -384,8 +384,13 @@ export default function OfferHelpInputForm() {
                     className={`btn btn-primary w-full ${isSubmitting ? 'loading' : ''}`}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Posting...' : 'Post Help Offer'}
-                  </button>
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="loading loading-spinner loading-sm"></span>
+                        <span>Submitting...</span>
+                      </span>
+                    ) : 'Post Offer Help Report'}                  
+                    </button>
                 </div>
               </div>
             </div>

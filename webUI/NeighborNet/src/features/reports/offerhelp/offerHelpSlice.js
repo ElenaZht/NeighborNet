@@ -6,7 +6,8 @@ const initialState = {
     allOfferHelp: [],
     currentOfferHelp: null,
     loading: false,
-    error: null
+    error: null,
+    status: ''
 }
 
 const offerHelpSlice = createSlice({

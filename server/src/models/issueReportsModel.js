@@ -115,3 +115,27 @@ export const updateReport = async (reportData) => {
     throw error;
   }
 }
+
+export const updateStatus = async (reportId, newStatus) => {
+  try {
+    // check if report exists
+    const report = await getReportById(reportId);
+    if (!report) {
+      const error = new Error(`Report with id ${reportId} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
+    }
+
+    // Update the status
+    const [updatedReport] = await db('issue_reports')
+      .where({ id: reportId })
+      .update({ status: newStatus })
+      .returning('*');
+      
+    return updatedReport;
+    
+  } catch (error) {
+    console.error('Error updating report status:', error);
+    throw error;
+  }
+}

@@ -2,7 +2,8 @@ import {
     createReport, 
     getReportById, 
     removeReport,
-    updateReport
+    updateReport,
+    updateStatus
  } from "../models/helpRequestModel.js";
  import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -207,4 +208,36 @@ export const getHelpRequestReport = async (req, res) => {
         console.info("Faile to get report: ", error)
     }
 
+}
+
+export const updateReportStatus = async (req, res) => {
+    try {
+        const reportId = req.params.reportId
+        if (!reportId){
+            res.status(400).json({message: "Report id is missing"})
+            return
+        }
+
+        const {newStatus} = req.body
+        if (!newStatus){
+            res.status(400).json({message: "Report new status is missing"})
+            return   
+        }
+        const updatedreport = await updateStatus(reportId, newStatus)
+        console.log("updatedreport", updatedreport)
+        if (!updatedreport.status || updatedreport.status !== newStatus){
+            res.status(500).json({message: "Failed to update report status"})
+            return
+        }
+        res.status(200).json({message: "Status updated successfully", report: updatedreport})
+        
+    } catch (error) {
+        console.error("Error updating status:", error)
+        
+        if (error.type === 'NOT_FOUND') {
+            res.status(404).json({message: error.message})
+        } else {
+            res.status(500).json({message: "Server error occurred while updating status"})
+        }
+    }
 }

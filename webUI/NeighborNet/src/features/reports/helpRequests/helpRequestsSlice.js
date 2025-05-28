@@ -7,7 +7,8 @@ const initialState = {
     allHelpRequests: [],
     currentHelpRequest: null,
     loading: false,
-    error: null
+    error: null,
+    status: ''
 }
 
 const helpRequestsSlice = createSlice({

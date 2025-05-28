@@ -72,7 +72,7 @@ export const updateReport = async (reportData) => {
     const {
       id, // Report ID
       img_url,
-      topic,
+      title,
       description,
       address,
       location,
@@ -89,7 +89,7 @@ export const updateReport = async (reportData) => {
     
     // Only add fields that are explicitly provided
     if (img_url !== undefined) updateData.img_url = img_url;
-    if (topic !== undefined) updateData.topic = topic;
+    if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (address !== undefined) updateData.address = address;
     if (barter_options !== undefined) {
@@ -114,6 +114,30 @@ export const updateReport = async (reportData) => {
     
   } catch (error) {
     console.error('Error updating offer help report:', error);
+    throw error;
+  }
+}
+
+export const updateStatus = async (reportId, newStatus) => {
+  try {
+    // check if report exists
+    const report = await getReportById(reportId);
+    if (!report) {
+      const error = new Error(`Report with id ${reportId} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
+    }
+
+    // Update the status
+    const [updatedReport] = await db('offer_help')
+      .where({ id: reportId })
+      .update({ status: newStatus })
+      .returning('*');
+      
+    return updatedReport;
+    
+  } catch (error) {
+    console.error('Error updating report status:', error);
     throw error;
   }
 }

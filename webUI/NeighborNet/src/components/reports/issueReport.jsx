@@ -17,7 +17,8 @@ import {
 import { Comments } from '../reports/comments'
 import { getIssueReport } from '../../features/reports/issueReports/getIssueReportThunk'
 import { format, parseISO } from 'date-fns'
-
+import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
+import placeholderImage from "../../assets/issue_placeholder.jpg"
 
 export default function IssueReport({ reportId }) {
   const dispatch = useDispatch()
@@ -78,12 +79,12 @@ export default function IssueReport({ reportId }) {
         <div className="card card-side bg-base-100 shadow-xl w-[800px]">
           <figure className="w-2/5">
             <img 
-              src={currentIssueReport.img_url || "https://placehold.co/400x300?text=No+Image"} 
+              src={currentIssueReport.img_url || placeholderImage} 
               alt={currentIssueReport.title || "Issue report"} 
               className="h-full w-full object-cover"
               onError={(e) => {
                 e.target.onerror = null
-                e.target.src = "https://placehold.co/400x300?text=Image+Error"
+                e.target.src = placeholderImage
               }}
             />
           </figure>
@@ -91,6 +92,9 @@ export default function IssueReport({ reportId }) {
           <div className="card-body w-3/5 p-4 text-left">
             <div className="flex justify-between items-start">
               <h2 className="card-title text-left">Issue Report</h2>
+              <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                {currentIssueReport.status || 'No status'}
+              </div>
               <button 
                 onClick={toggleActionBar}
                 className="btn btn-sm btn-square"
@@ -111,7 +115,7 @@ export default function IssueReport({ reportId }) {
             </div>
             
             <div className="mt-1 space-y-1">
-              <p className="text-sm"><strong>Topic:</strong> {currentIssueReport.title}</p>
+              <p className="text-sm"><strong>Title:</strong> {currentIssueReport.title}</p>
               <p className="text-sm"><strong>Issue Description:</strong> {currentIssueReport.description}</p>
             </div>
             

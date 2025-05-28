@@ -15,6 +15,9 @@ import {
 import { Comments } from '../reports/comments'
 import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
 import { format, parseISO } from 'date-fns'
+import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
+import placeholderImage from '../../assets/help_request_placeholder.jpeg';
+
 
 export default function HelpRequest({reportId}) {
   const dispatch = useDispatch()
@@ -83,19 +86,22 @@ export default function HelpRequest({reportId}) {
             <div className="flex">
               <figure className="w-2/5">
                 <img 
-                  src={currentHelpRequest.img_url || "https://placehold.co/400x300?text=No+Image"} 
+                  src={currentHelpRequest.img_url || placeholderImage} 
                   alt={currentHelpRequest.title || "Help request"} 
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null
-                    e.target.src = "https://placehold.co/400x300?text=Image+Error"
+                    e.target.src = placeholderImage
                   }}
                 />
               </figure>
               
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
-                  <h2 className="card-title text-left">{currentHelpRequest.title}</h2>
+                  <h2 className="card-title text-left">Help Request</h2>
+                  <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                    {currentHelpRequest.status || 'No status'}
+                  </div>
                   <button 
                     onClick={toggleActionBar}
                     className="btn btn-sm btn-square"
@@ -121,6 +127,9 @@ export default function HelpRequest({reportId}) {
                       <strong>Category:</strong> {currentHelpRequest.category}
                     </p>
                   )}
+                  <p className="text-sm">
+                    <strong>Title:{currentHelpRequest.title}</strong>
+                  </p>
                   <p className="text-sm">
                     <strong>Request Description:</strong> {currentHelpRequest.description}
                   </p>

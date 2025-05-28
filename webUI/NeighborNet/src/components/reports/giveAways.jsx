@@ -14,7 +14,8 @@ import {
 import { Comments } from '../reports/comments'
 import { getGiveAway } from '../../features/reports/giveaways/getGiveAwayThunk'
 import { format, parseISO } from 'date-fns'
-
+import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
+import placeholderImage from "../../assets/give_away_placeholder.jpeg"
 
 export default function GiveAway({ reportId }) {
   const dispatch = useDispatch()
@@ -82,12 +83,12 @@ export default function GiveAway({ reportId }) {
             <div className="flex">
               <figure className="w-2/5">
                 <img 
-                  src={currentGiveAway.img_url || "https://placehold.co/400x300?text=No+Image"} 
+                  src={currentGiveAway.img_url || placeholderImage} 
                   alt={currentGiveAway.title || "Giveaway item"} 
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null
-                    e.target.src = "https://placehold.co/400x300?text=Image+Error"
+                    e.target.src = placeholderImage
                   }}
                 />
               </figure>
@@ -95,6 +96,9 @@ export default function GiveAway({ reportId }) {
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
                   <h2 className="card-title text-left">Give Away</h2>
+                  <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                    {currentGiveAway.status || 'No status'}
+                  </div>
                   <button 
                     onClick={toggleActionBar}
                     className="btn btn-sm btn-square"
@@ -115,7 +119,7 @@ export default function GiveAway({ reportId }) {
                 </div>
                 
                 <div className="mt-1 space-y-1">
-                  <p className="text-sm"><strong>Topic:</strong> {currentGiveAway.title}</p>
+                  <p className="text-sm"><strong>Title:</strong> {currentGiveAway.title}</p>
                   <p className="text-sm">
                     <strong>Item Description:</strong> {currentGiveAway.description}
                   </p>

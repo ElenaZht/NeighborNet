@@ -69,7 +69,7 @@ CREATE TABLE offer_help (
     userid INTEGER NOT NULL,
     username VARCHAR(255) NOT NULL,
     img_url VARCHAR(2048),
-    topic VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
     description VARCHAR(500),
     location GEOGRAPHY(POINT),  
     address TEXT,

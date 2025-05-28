@@ -7,7 +7,8 @@ const initialState = {
     allGiveAways: [],
     currentGiveAway: null,
     loading: false,
-    error: null
+    error: null,
+    status: ''
 }
 
 const giveAwaysSlice = createSlice({

@@ -295,7 +295,7 @@ export default function IssueReportInputForm() {
                         <span className="loading loading-spinner loading-sm"></span>
                         <span>Submitting...</span>
                       </span>
-                    ) : 'Submit Report'}
+                    ) : 'Post Issue Report'}
                   </button>
                 </div>
               </div>

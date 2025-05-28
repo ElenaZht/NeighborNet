@@ -433,8 +433,13 @@ export default function HelpReportInputForm() {
                     className={`btn btn-primary w-full ${isSubmitting ? 'loading' : ''}`}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Posting...' : 'Post Help Request'}
-                  </button>
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="loading loading-spinner loading-sm"></span>
+                        <span>Submitting...</span>
+                      </span>
+                    ) : 'Post Help Request Report'}                 
+                    </button>
                 </div>
               </div>
             </div>

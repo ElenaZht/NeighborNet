@@ -323,10 +323,15 @@ export default function GiveAwayInputForm() {
                   <button 
                     type="submit" 
                     className={`btn btn-primary w-full ${isSubmitting || reduxLoading ? 'loading' : ''}`}
-                    disabled={isSubmitting || reduxLoading}
+                    disabled={isSubmitting}
                   >
-                    {isSubmitting || reduxLoading ? 'Posting...' : 'Post Giveaway'}
-                  </button>
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="loading loading-spinner loading-sm"></span>
+                        <span>Submitting...</span>
+                      </span>
+                    ) : 'Post GiveAway Report'}                  
+                    </button>
                 </div>
               </div>
             </div>

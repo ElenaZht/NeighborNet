@@ -2,7 +2,8 @@ import {
     createReport, 
     getReportById, 
     removeReport,
-    updateReport
+    updateReport,
+    updateStatus
 } from "../models/offerHelpModel.js";
 import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -10,7 +11,7 @@ import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 export const addOfferHelp = async (req, res) => {
     try {
         const { 
-            topic, 
+            title, 
             img_url, 
             description, 
             address, 
@@ -20,15 +21,15 @@ export const addOfferHelp = async (req, res) => {
         } = req.body;
         const {id: userid, username} = req.user;
 
-        // Check minimal necessary fields: userid, topic, address
+        // Check minimal necessary fields: userid, title, address
         if (!userid || !username) {
             return res.status(401).json({
                 message: 'Authentication required'
             });
         }
-        if (!topic || !topic.trim()) {
+        if (!title || !title.trim()) {
             return res.status(400).json({
-                message: 'topic is required'
+                message: 'title is required'
             });
         }
         
@@ -41,7 +42,7 @@ export const addOfferHelp = async (req, res) => {
         const offerHelpData = { 
             userid, 
             username, 
-            topic,
+            title,
             img_url: img_url || null,
             description: description || null,
             address: address,
@@ -134,7 +135,7 @@ export const editOfferHelpReport = async (req, res) => {
         
         const updateData = { 
             id: reportId,
-            topic: req.body.topic,
+            title: req.body.title,
             img_url: req.body.img_url,
             address: req.body.address,
             barter_options: req.body.barter_options,
@@ -195,5 +196,37 @@ export const getOfferHelpRequest = async (req, res) => {
     } catch (error) {
         res.status(500).json({message: `Failed to fetch report: ${error.toString()}`})
         console.info("Faile to get report: ", error)
+    }
+}
+
+export const updateReportStatus = async (req, res) => {
+    try {
+        const reportId = req.params.reportId
+        if (!reportId){
+            res.status(400).json({message: "Report id is missing"})
+            return
+        }
+
+        const {newStatus} = req.body
+        if (!newStatus){
+            res.status(400).json({message: "Report new status is missing"})
+            return   
+        }
+        const updatedreport = await updateStatus(reportId, newStatus)
+        console.log("updatedreport", updatedreport)
+        if (!updatedreport.status || updatedreport.status !== newStatus){
+            res.status(500).json({message: "Failed to update report status"})
+            return
+        }
+        res.status(200).json({message: "Status updated successfully", report: updatedreport})
+        
+    } catch (error) {
+        console.error("Error updating status:", error)
+        
+        if (error.type === 'NOT_FOUND') {
+            res.status(404).json({message: error.message})
+        } else {
+            res.status(500).json({message: "Server error occurred while updating status"})
+        }
     }
 }

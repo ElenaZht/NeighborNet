@@ -3,6 +3,7 @@ import { FaMapMarkerAlt, FaInfoCircle, FaImage, FaTimes, FaUtensils, FaLeaf, FaF
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addOfferHelp } from '../../features/reports/offerhelp/addOfferHeplThunk';
+import AddressInputForm from '../AddressInputForm'
 
 
 // Form storage key for localStorage
@@ -15,9 +16,11 @@ export default function OfferHelpInputForm() {
   const [formData, setFormData] = useState({
     topic: '',
     description: '',
-    location: '',
     img_url: '',
-    barterOptions: []
+    barterOptions: [],
+    city: '',
+    address: '',
+    location: {lat: '', lon: ''}
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,7 +132,7 @@ export default function OfferHelpInputForm() {
       setError("Description is required");
       return false;
     }
-    if (!formData.location.trim()) {
+    if (!formData.location) {
       setError("Location is required");
       return false;
     }
@@ -151,9 +154,11 @@ export default function OfferHelpInputForm() {
       const offerHelpData = {
         topic: formData.topic,
         description: formData.description,
-        address: formData.location,
+        address: formData.address,
         img_url: formData.img_url,
-        barter_options: formData.barterOptions.length > 0 ? formData.barterOptions : null
+        barter_options: formData.barterOptions.length > 0 ? formData.barterOptions : null,
+        city: formData.city,
+        location: formData.location
       };
       
       // Dispatch the thunk
@@ -191,6 +196,13 @@ export default function OfferHelpInputForm() {
     }
   };
 
+  const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
+  }
+
   return (
     <div className="max-w-4xl mx-auto m-4">
       <div className="card bg-base-100 shadow-xl">
@@ -222,7 +234,6 @@ export default function OfferHelpInputForm() {
           
           <form onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Left Column - Image URL and Barter Options */}
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">
@@ -339,7 +350,6 @@ export default function OfferHelpInputForm() {
                 </div>
               </div>
               
-              {/* Right Column - Form Fields */}
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">
@@ -371,19 +381,11 @@ export default function OfferHelpInputForm() {
                 
                 <div className="form-control w-full">
                   <label className="label">
-                    <span className="label-text font-medium">Your Location</span>
+                    <span className="label-text font-medium">Pickup Address</span>
                   </label>
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="text-error mr-2" />
-                    <input 
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="input input-bordered w-full" 
-                      placeholder="Your address or nearest neighborhood"
-                    />
-                  </div>
+                  <AddressInputForm 
+                    onMySelect={handleAddressInputFormChange}
+                  /> 
                 </div>
                 
                 <div className="form-control mt-4">

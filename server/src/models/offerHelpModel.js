@@ -1,40 +1,24 @@
 import { db } from "../config/db.js";
 
+
 export async function createReport(offerHelpData) {
-  const {
-    userid,
-    username,
-    img_url,
-    topic,
-    description,
-    latitude,
-    longitude,
-    address,
-    barter_options
-  } = offerHelpData;
-  
-  // Prepare base data object
-  const locationData = {
-    userid,
-    username,
-    img_url,
-    topic,
-    description,
-    address,
-    barter_options: barter_options ? JSON.stringify(barter_options) : null
-  };
-  
-  // Add location if both latitude and longitude are provided
-  if (latitude && longitude) {
-    locationData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+try {
+  if (offerHelpData.location){
+    offerHelpData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [offerHelpData.location.lat, offerHelpData.location.lng])
   }
-  
   // Insert data into offer_help table
   const [insertedOfferHelp] = await db('offer_help')
-    .insert(locationData)
+    .insert(offerHelpData)
     .returning('*');
     
   return insertedOfferHelp;
+
+  } catch (error) {
+    console.log(error)
+    throw new Error(error?.message)
+  }
+  
+
 }
 
 export const getReportById = async (reportId) => {
@@ -90,8 +74,9 @@ export const updateReport = async (reportData) => {
       topic,
       description,
       address,
-      latitude,
-      longitude,
+      location,
+      city,
+      neighborhood_id,
       barter_options
     } = reportData;
     
@@ -109,9 +94,14 @@ export const updateReport = async (reportData) => {
     if (barter_options !== undefined) {
       updateData.barter_options = barter_options ? JSON.stringify(barter_options) : null;
     }
+    if (city !== undefined) updateData.city = city;
+    if (updateData.location) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [updateData.location.lat, updateData.location.lng]);
+    }
     
-    if (latitude !== undefined && longitude !== undefined) {
-      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+    const existingReport = await db('offer_help').where({ id }).first();
+    if (!existingReport) {
+      throw new Error(`Report with ID ${id} not found`);
     }
     
     // Update the database record
@@ -121,6 +111,7 @@ export const updateReport = async (reportData) => {
       .returning('*');
       
     return updatedReport;
+    
   } catch (error) {
     console.error('Error updating offer help report:', error);
     throw error;

@@ -8,25 +8,25 @@ import {
   FaCheck, 
   FaBell, 
   FaThumbsUp, 
-  FaCheckCircle, 
   FaComment, 
   FaChevronDown, 
-  FaChevronUp  
+  FaChevronUp,
+  FaTimes 
 } from 'react-icons/fa'
 import { Comments } from '../reports/comments'
-import { getIssueReport } from '../../features/reports/issueReports/getIssueReportThunk'
+import { getOfferHelp } from '../../features/reports/offerhelp/getOfferHelpThunk'
 import { format, parseISO } from 'date-fns'
 
-export default function IssueReport({ reportId }) {
+export default function OfferHelp({ reportId }) {
   const dispatch = useDispatch()
-  const { currentIssueReport, loading, error } = useSelector(state => state.issueReports)
-  
+  const { currentOfferHelp, loading, error } = useSelector(state => state.offerHelp)
+  const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     if (reportId) {
-      dispatch(getIssueReport(reportId))
+      dispatch(getOfferHelp(reportId))
     }
   }, [dispatch, reportId])
 
@@ -36,6 +36,10 @@ export default function IssueReport({ reportId }) {
   
   const toggleComments = () => {
     setShowComments(!showComments);
+  };
+    
+  const toggleMap = () => {
+    setShowMap(!showMap);
   };
 
   if (loading) {
@@ -54,16 +58,16 @@ export default function IssueReport({ reportId }) {
     )
   }
 
-  if (!currentIssueReport) {
+  if (!currentOfferHelp) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
-        <span>No issue report found. It might have been deleted or doesn't exist.</span>
+        <span>No offer help report found. It might have been deleted or doesn't exist.</span>
       </div>
     )
   }
 
-  const formattedDate = currentIssueReport.created_at 
-    ? format(parseISO(currentIssueReport.created_at), 'MMM d, yyyy')
+  const formattedDate = currentOfferHelp.created_at 
+    ? format(parseISO(currentOfferHelp.created_at), 'MMM d, yyyy')
     : 'Unknown date'
 
   return (
@@ -72,8 +76,8 @@ export default function IssueReport({ reportId }) {
         <div className="card card-side bg-base-100 shadow-xl w-[800px]">
           <figure className="w-2/5">
             <img 
-              src={currentIssueReport.img_url || "https://placehold.co/400x300?text=No+Image"} 
-              alt={currentIssueReport.title || "Issue report"} 
+              src={currentOfferHelp.img_url || "https://placehold.co/400x300?text=No+Image"} 
+              alt={currentOfferHelp.title || "Issue report"} 
               className="h-full w-full object-cover"
               onError={(e) => {
                 e.target.onerror = null
@@ -84,7 +88,7 @@ export default function IssueReport({ reportId }) {
           
           <div className="card-body w-3/5 p-4 text-left">
             <div className="flex justify-between items-start">
-              <h2 className="card-title text-left">Issue Report</h2>
+              <h2 className="card-title text-left">Offer Help Report</h2>
               <button 
                 onClick={toggleActionBar}
                 className="btn btn-sm btn-square"
@@ -97,7 +101,7 @@ export default function IssueReport({ reportId }) {
             
             <div className="flex items-center gap-2 text-sm">
               <FaUser className="text-primary min-w-4" />
-              <span>Submitted by: {currentIssueReport.username}</span>
+              <span>Submitted by: {currentOfferHelp.username}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <FaCalendarAlt className="text-primary min-w-4" />
@@ -105,28 +109,41 @@ export default function IssueReport({ reportId }) {
             </div>
             
             <div className="mt-1 space-y-1">
-              <p className="text-sm"><strong>Topic:</strong> {currentIssueReport.title}</p>
-              <p className="text-sm"><strong>Issue Description:</strong> {currentIssueReport.description}</p>
+              <p className="text-sm"><strong>Topic:</strong> {currentOfferHelp.title}</p>
+              <p className="text-sm"><strong>Description:</strong> {currentOfferHelp.description}</p>
             </div>
             
-            <div className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
+            <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
               <FaMapMarkerAlt className="text-error min-w-4" />
               <span className="font-semibold">Location:</span>
-              <span>{currentIssueReport.address}</span>
+              <span>{currentOfferHelp.address}</span>
             </div>
-
+                {showMap && (
+                <div className="relative mt-3 border rounded-lg overflow-hidden">
+                  <button 
+                    className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMap(false);
+                  }}
+                >
+                  <FaTimes className="text-error" />
+                </button>
+                <div className="w-full h-48">
+                  <iframe 
+                    title="Location Map"
+                    className="w-full h-full"
+                    frameBorder="0"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(currentOfferHelp.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
-                <FaCheckCircle className="text-success" />
-                <span>{currentIssueReport.verifies || 0} verified</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <FaBell className="text-info" />
-                <span>{currentIssueReport.followers || 0} follows</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FaThumbsUp className="text-primary" />
-                <span>{currentIssueReport.upvotes || 0} upvotes</span>
+                <span>{currentOfferHelp.followers || 0} follows</span>
               </div>
             </div>
           </div>
@@ -160,7 +177,7 @@ export default function IssueReport({ reportId }) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={reportId} reportType="issue_report" />
+            <Comments reportId={reportId} reportType="offer_help" />
           </div>
         </div>
       </div>

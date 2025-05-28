@@ -7,7 +7,7 @@ import { setCurrentReport } from '../../features/reports/comments/commentsSlice'
 import placeholderAvatar from '../../assets/Profile_avatar_placeholder_large.png';
 
 
-export const Comments = ({ reportId, reportType = 'give_away' }) => {
+export const Comments = ({ reportId, reportType }) => {
   const [newComment, setNewComment] = useState('');
   const dispatch = useDispatch();
   

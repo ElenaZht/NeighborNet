@@ -114,7 +114,6 @@ export default function GiveAwayInputForm() {
     e.preventDefault();
     setError(null);
 
-    console.log("submit form data ", formData)
     // Check authentication
     if (!isAuthenticated) {
       setShowAuthPrompt(true);

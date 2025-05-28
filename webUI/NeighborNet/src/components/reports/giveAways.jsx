@@ -9,7 +9,6 @@ export default function GiveAway({ reportId }) {
   const dispatch = useDispatch()
   const { currentGiveAway, loading, error } = useSelector(state => state.giveAways)
   const [showMap, setShowMap] = useState(false);
-
   const [showActions, setShowActions] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -122,10 +121,10 @@ export default function GiveAway({ reportId }) {
                   <span className="font-semibold">Location:</span>
                   <span>{currentGiveAway.address}</span>
                 </div>
-                            {showMap && (
-              <div className="relative mt-3 border rounded-lg overflow-hidden">
-                <button 
-                  className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
+                {showMap && (
+                <div className="relative mt-3 border rounded-lg overflow-hidden">
+                  <button 
+                    className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowMap(false);

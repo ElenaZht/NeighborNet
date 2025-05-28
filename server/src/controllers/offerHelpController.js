@@ -4,10 +4,12 @@ import {
     removeReport,
     updateReport
 } from "../models/offerHelpModel.js";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
+
 
 export const addOfferHelp = async (req, res) => {
     try {
-        const { topic, img_url, description, address, lat, lon, barter_options } = req.body;
+        const { topic, img_url, description, address, location, city, barter_options } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal necessary fields: userid, topic, address
@@ -36,13 +38,18 @@ export const addOfferHelp = async (req, res) => {
             img_url: img_url || null,
             description: description || null,
             address: address,
-            barter_options: barter_options || null
+            barter_options: barter_options || null,
+            city,
+            location
         };
         
         // Add latitude and longitude if provided
-        if (lat && lon) {
-            offerHelpData.latitude = lat;
-            offerHelpData.longitude = lon;
+        if (location) {
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            if (neighborhood){
+                offerHelpData.neighborhood_id = neighborhood.id
+            }
         }
         
         // Call model function
@@ -118,20 +125,25 @@ export const editOfferHelpReport = async (req, res) => {
             return res.status(403).json({ message: "User is not an owner" });
         }
 
-        const { topic, img_url, description, address, lat, lon, barter_options } = req.body;
+        const { topic, img_url, description, address, location, city, barter_options } = req.body;
         
-        const updateData = { id: reportId };
+        const updateData = { 
+            id: reportId,
+            topic,
+            img_url,
+            address,
+            barter_options,
+            city,
+            location
+        };
         
-        // Only add fields that are explicitly provided
-        if (topic !== undefined) updateData.topic = topic;
-        if (description !== undefined) updateData.description = description;
-        if (img_url !== undefined) updateData.img_url = img_url;
-        if (address !== undefined) updateData.address = address;
-        if (barter_options !== undefined) updateData.barter_options = barter_options;
-        
-        if (lat !== undefined && lon !== undefined) {
-            updateData.latitude = lat;
-            updateData.longitude = lon;
+        if (location) {
+            //detect another neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lon)
+            
+            if (neighborhood !== undefined){
+                updateData.neighborhood_id = neighborhood.id
+            }    
         }
 
         // Update the report

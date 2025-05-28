@@ -19,11 +19,11 @@ export default function HomePage() {
       {/* <HelpReportInputForm/> */}
       {/* <HelpRequest reportId="2"/> */}
       {/* <OfferHelpInputForm/> */}
-      {/* <OfferHelp reportId='2'/> */}
+      <OfferHelp reportId='4'/>
       {/* <GiveAwayInputForm/> */}
       {/* <GiveAway reportId='13'/> */}
 
-      <IssueReport reportId='6'/>
+      {/* <IssueReport reportId='6'/> */}
        {/* <IssueReportInputForm/> */}
     </div>
   )

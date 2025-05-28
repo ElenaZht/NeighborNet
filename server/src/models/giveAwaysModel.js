@@ -8,9 +8,9 @@ export async function createReport(giveAwayData) {
         giveAwayData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [giveAwayData.location.lat, giveAwayData.location.lng])
     }
 
-        const [insertedGiveAway] = await db('give_aways')
-      .insert(giveAwayData)
-      .returning('*');
+      const [insertedGiveAway] = await db('give_aways')
+        .insert(giveAwayData)
+        .returning('*');
       
     return insertedGiveAway;
     
@@ -94,13 +94,11 @@ export const updateReport = async (reportData) => {
     if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
     if (is_free !== undefined) updateData.is_free = is_free;
     if (swap_options !== undefined) updateData.swap_options = swap_options;
-    
     if (reportData.locatin) {
       updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng]);
     }
-    // console.log("updateData", updateData)
     
-        const existingReport = await db('give_aways').where({ id }).first();
+    const existingReport = await db('give_aways').where({ id }).first();
     if (!existingReport) {
       throw new Error(`Report with ID ${id} not found`);
     }
@@ -109,7 +107,7 @@ export const updateReport = async (reportData) => {
       .where({ id })
       .update(updateData)
       .returning('*');
-    console.log("Updated neighborhood_id:", updatedReport.neighborhood_id);
+      
     return updatedReport;
 
   } catch (error) {

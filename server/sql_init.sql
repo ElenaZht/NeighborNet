@@ -74,7 +74,9 @@ CREATE TABLE offer_help (
     location GEOGRAPHY(POINT),  
     address TEXT,
     barter_options TEXT,
-    followers INTEGER DEFAULT 0
+    followers INTEGER DEFAULT 0,
+    neighborhood_id INTEGER,
+    city VARCHAR(255)
 );
 
 CREATE TABLE help_requests (

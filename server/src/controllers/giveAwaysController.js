@@ -47,7 +47,6 @@ export const addGiveAwayReport = async (req, res) => {
 
             //detect neighborhood if possible
             const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
-            console.log("neighborhood", neighborhood)
             if (neighborhood){
                 giveAwayData.neighborhood_id = neighborhood.id
             }

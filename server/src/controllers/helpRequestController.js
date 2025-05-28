@@ -4,10 +4,12 @@ import {
     removeReport,
     updateReport
  } from "../models/helpRequestModel.js";
+ import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
+
 
 export const addHelpRequest = async (req, res) => {
     try {
-        const { title, img_url, description, address, lat, lon, category, urgency } = req.body;
+        const { title, img_url, description, address, location, city, category, urgency } = req.body;
         const {id: userid, username} = req.user;
 
         // Check minimal necessary fields: userid, title, urgency, address
@@ -46,16 +48,19 @@ export const addHelpRequest = async (req, res) => {
             description: description || null,
             address: address,
             category: category,
-            urgency: urgency || 'normal'
+            urgency: urgency || 'normal',
+            city,
+            location
         };
         
-        // Add latitude and longitude if provided
-        if (lat && lon) {
-            helpRequestData.latitude = lat;
-            helpRequestData.longitude = lon;
+        if (location) {
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            if (neighborhood){
+                helpRequestData.neighborhood_id = neighborhood.id
+            }
         }
         
-        // Call model function
         const helpRequest = await createReport(helpRequestData);
         
         return res.status(201).json({
@@ -128,22 +133,28 @@ export const editHelpRequestReport = async (req, res) => {
         }
 
         // Extract fields from request body
-        const { title, img_url, description, address, lat, lon, category, urgency } = req.body;
+        const { title, img_url, description, address, location, city, category, urgency } = req.body;
         
         // Create update data object with only the ID initially
-        const updateData = { id: reportId };
+        const updateData = { 
+            id: reportId,
+            title,
+            description,
+            img_url,
+            address,
+            category,
+            urgency,
+            location, 
+            city
+        };
         
-        // Only add fields that are explicitly provided
-        if (title !== undefined) updateData.title = title;
-        if (description !== undefined) updateData.description = description;
-        if (img_url !== undefined) updateData.img_url = img_url;
-        if (address !== undefined) updateData.address = address;
-        if (category !== undefined) updateData.category = category;
-        if (urgency !== undefined) updateData.urgency = urgency;
-        
-        if (lat !== undefined && lon !== undefined) {
-            updateData.latitude = lat;
-            updateData.longitude = lon;
+        if (location) {
+            //detect another neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            
+            if (neighborhood !== undefined){
+                updateData.neighborhood_id = neighborhood.id
+            }
         }
 
         // Update the report

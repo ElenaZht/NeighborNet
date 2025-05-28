@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaThumbsUp, FaComment } from 'react-icons/fa'
+import { FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaUser, FaEllipsisV, FaBell, FaChevronDown, FaChevronUp, FaThumbsUp, FaComment } from 'react-icons/fa'
 import { Comments } from '../reports/comments'
 import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
 import { format, parseISO } from 'date-fns'
@@ -8,7 +8,7 @@ import { format, parseISO } from 'date-fns'
 export default function HelpRequest({reportId}) {
   const dispatch = useDispatch()
   const { currentHelpRequest, loading, error } = useSelector(state => state.helpRequests)
-  
+  const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [showComments, setShowComments] = useState(false)
@@ -30,6 +30,10 @@ export default function HelpRequest({reportId}) {
   const toggleComments = () => {
     setShowComments(!showComments)
   }
+
+  const toggleMap = () => {
+    setShowMap(!showMap);
+  };
 
   if (loading) {
     return (
@@ -111,11 +115,33 @@ export default function HelpRequest({reportId}) {
                   </p>
                 </div>
                 
-                <div className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
+                <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
                   <FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
                   <span>{currentHelpRequest.address}</span>
                 </div>
+                  {showMap && (
+                  <div className="relative mt-3 border rounded-lg overflow-hidden">
+                    <button 
+                      className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMap(false);
+                    }}
+                    >
+                    <FaTimes className="text-error" />
+                        </button>
+                        <div className="w-full h-48">
+                          <iframe 
+                            title="Location Map"
+                            className="w-full h-full"
+                            frameBorder="0"
+                            src={`https://maps.google.com/maps?q=${encodeURIComponent(currentHelpRequest.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      </div>
+                  )}
               </div>
             </div>
 

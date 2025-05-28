@@ -1,42 +1,27 @@
 import { db } from "../config/db.js";
 
+
 export async function createReport(helpRequestData) {
-  const {
-    userid,
-    username,
-    title,
-    description,
-    img_url,
-    latitude,
-    longitude,
-    address,
-    category,
-    urgency
-  } = helpRequestData;
-  
-  // Prepare base data object
-  const locationData = {
-    userid,
-    username,
-    title,
-    description: description || null,
-    img_url: img_url || null,
-    address,
-    category,
-    urgency: urgency || 'normal'
-  };
-  
-  // Add location if both latitude and longitude are provided
-  if (latitude && longitude) {
-    locationData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
-  }
-  
-  // Insert data into help_requests table
-  const [insertedRequest] = await db('help_requests')
-    .insert(locationData)
-    .returning('*');
+  try {
+    if (!helpRequestData.urgency){
+      helpRequestData.urgency = 'normal'
+    }
     
-  return insertedRequest;
+    if (helpRequestData.location) {
+      helpRequestData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [helpRequestData.location.lat, helpRequestData.location.lng]);
+    }
+    
+    const [insertedRequest] = await db('help_requests')
+      .insert(helpRequestData)
+      .returning('*');
+      
+    return insertedRequest;
+
+  } catch (error) {
+    console.log(error)
+    throw new Error(error?.message)
+  }
+
 }
 
 export const getReportById = async (reportId) => {
@@ -92,13 +77,13 @@ export const updateReport = async (reportData) => {
       description,
       img_url,
       address,
-      latitude,
-      longitude,
+      location,
+      city,
+      neighborhood_id,
       category,
       urgency
     } = reportData;
     
-    // Check if ID is provided
     if (!id) {
       throw new Error('Report ID is required for update');
     }
@@ -111,11 +96,16 @@ export const updateReport = async (reportData) => {
     if (address !== undefined) updateData.address = address;
     if (category !== undefined) updateData.category = category;
     if (urgency !== undefined) updateData.urgency = urgency;
-    
-    if (latitude !== undefined && longitude !== undefined) {
-      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [longitude, latitude]);
+        if (city !== undefined) updateData.city = city;
+    if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
+    if (updateData.location) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [updateData.location.lat, updateData.location.lng]);
     }
     
+    const existingReport = await db('help_requests').where({ id }).first();
+    if (!existingReport) {
+      throw new Error(`Report with ID ${id} not found`);
+    }
     // Update the database record
     const [updatedReport] = await db('help_requests')
       .where({ id })

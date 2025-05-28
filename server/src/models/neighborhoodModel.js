@@ -1,11 +1,9 @@
 import { db } from "../config/db.js";
 
 
-export const getNeighborhoodByCoordinates = async(lat, lon) => {
+export const getNeighborhoodByCoordinates = async(lat, lng) => {
     try {
-        console.log("model lon, lat", lon, lat)
-        if (!lat || !lon){
-            console.log("model check", "lat", lat, "lon", lon)
+        if (!lat || !lng){
         throw new Error("Coordinates are missing")
         }
         console.log("model check ok")
@@ -19,11 +17,11 @@ export const getNeighborhoodByCoordinates = async(lat, lon) => {
         LIMIT 1;
         `;
 
-        // Note: longitude comes first in ST_Point(lon, lat)
+        // Note: longitude comes first in ST_Point(lng, lat)
         try {
                 const result = await db('neighborhoods')
         .select('id', 'nbr_name', 'nbr_name_en', 'city_name', 'city_name_en', 'city_gov_id')
-        .whereRaw('ST_Contains(geometry, ST_SetSRID(ST_Point(?, ?), 4326))', [lon, lat])
+        .whereRaw('ST_Contains(geometry, ST_SetSRID(ST_Point(?, ?), 4326))', [lng, lat])
         .limit(1);
 
         return result[0] || null;

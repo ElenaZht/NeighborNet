@@ -91,7 +91,9 @@ CREATE TABLE help_requests (
     address TEXT,
     category VARCHAR(50) NOT NULL,
     urgency VARCHAR(10) DEFAULT 'normal',
-    followers INTEGER DEFAULT 0
+    followers INTEGER DEFAULT 0,
+    neighborhood_id INTEGER,
+    city VARCHAR(255)
 );
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,

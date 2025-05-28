@@ -17,9 +17,9 @@ export default function HomePage() {
       HomePage
       {/* <AddressInputForm/> */}
       {/* <HelpReportInputForm/> */}
-      {/* <HelpRequest reportId="2"/> */}
+      <HelpRequest reportId="4"/>
       {/* <OfferHelpInputForm/> */}
-      <OfferHelp reportId='4'/>
+      {/* <OfferHelp reportId='4'/> */}
       {/* <GiveAwayInputForm/> */}
       {/* <GiveAway reportId='13'/> */}
 

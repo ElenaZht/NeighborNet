@@ -139,7 +139,7 @@ export const editOfferHelpReport = async (req, res) => {
         
         if (location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lon)
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id

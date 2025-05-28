@@ -19,7 +19,7 @@ export default function IssueReportInputForm() {
     address: '',
     img_url: '',
     city: '',
-    location: {lat: '', lon: ''}
+    location: {lat: '', lng: ''}
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);

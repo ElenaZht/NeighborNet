@@ -20,7 +20,7 @@ export default function OfferHelpInputForm() {
     barterOptions: [],
     city: '',
     address: '',
-    location: {lat: '', lon: ''}
+    location: {lat: '', lng: ''}
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);

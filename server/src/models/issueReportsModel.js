@@ -3,7 +3,7 @@ import { db } from '../config/db.js'
 
 export const createReport = async(reportData) => {
     try {
-        // convert lat lon to a PostGIS point
+        // convert lat lng to a PostGIS point
         if (reportData.location) {
             reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng])
 

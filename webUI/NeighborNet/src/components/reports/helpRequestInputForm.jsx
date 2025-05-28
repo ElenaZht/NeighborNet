@@ -3,6 +3,7 @@ import { FaMapMarkerAlt, FaInfoCircle, FaTools, FaCar, FaBaby, FaDog, FaLaptop, 
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addHelpRequest } from '../../features/reports/helpRequests/addHelpRequestThunk.js'
+import AddressInputForm from '../AddressInputForm'
 
 
 // Form storage key for localStorage
@@ -18,8 +19,11 @@ export default function HelpReportInputForm() {
     location: '',
     img_url: '',
     category: '',
-    urgency: 'normal'
+    urgency: 'normal',
+    city: '',
+    location: {lat: '', lng: ''}
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -27,7 +31,7 @@ export default function HelpReportInputForm() {
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
-  const categories = [
+  const categories = [//todo move somewhere
     { id: 'repairs', label: 'Home Repairs', icon: <FaTools className="text-warning" /> },
     { id: 'transportation', label: 'Transportation', icon: <FaCar className="text-blue-500" /> },
     { id: 'childcare', label: 'Childcare', icon: <FaBaby className="text-pink-400" /> },
@@ -133,7 +137,7 @@ export default function HelpReportInputForm() {
         return false;
       }
 
-    if (!formData.location.trim()) {
+    if (!formData.location) {
       setError("Location is required");
       return false;
     }
@@ -155,17 +159,8 @@ export default function HelpReportInputForm() {
     setIsSubmitting(true);
 
     try {
-        // Prepare data for API
-        const helpRequestData = {
-            title: formData.title,
-            description: formData.description,
-            address: formData.location,
-            img_url: formData.img_url,
-            category: formData.category,
-            urgency: formData.urgency
-        };
         
-        const resultAction = await dispatch(addHelpRequest(helpRequestData));
+        const resultAction = await dispatch(addHelpRequest(formData));
         
         if (addHelpRequest.fulfilled.match(resultAction)) {
             setSuccess(true);
@@ -180,7 +175,9 @@ export default function HelpReportInputForm() {
             location: '',
             img_url: '',
             category: '',
-            urgency: 'normal'
+            urgency: 'normal',
+            city: '',
+            location: {lat: '', lng: ''}
             });
             
             // Hide success message after 5 seconds
@@ -203,6 +200,13 @@ export default function HelpReportInputForm() {
   const getSelectedCategory = () => {
     return categories.find(cat => cat.id === formData.category);
   };
+
+    const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
+  }
 
   return (
     <div className="max-w-4xl mx-auto m-4">
@@ -403,17 +407,9 @@ export default function HelpReportInputForm() {
                   <label className="label">
                     <span className="label-text font-medium">Your Location</span>
                   </label>
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="text-error mr-2" />
-                    <input 
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="input input-bordered w-full" 
-                      placeholder="Your address or nearest neighborhood"
-                    />
-                  </div>
+                  <AddressInputForm 
+                    onMySelect={handleAddressInputFormChange}
+                  />
                 </div>
                 
                 <div className="form-control mt-4">

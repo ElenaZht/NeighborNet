@@ -22,7 +22,7 @@ export default function GiveAwayInputForm() {
     is_free: true,
     swap_options: '',
     city: '',
-    location: {lat: '', lon: ''}
+    location: {lat: '', lng: ''}
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -143,7 +143,9 @@ export default function GiveAwayInputForm() {
           address: '',
           img_url: '',
           is_free: true,
-          swap_options: ''
+          swap_options: '',
+          city,
+          location: {lat: '', lng: ''}
         });
         
         // Hide success message after 5 seconds

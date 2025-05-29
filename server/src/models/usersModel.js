@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 
 export const addUser = async (userData) => {
     try {
-        const { username, email, photo_url, password, longitude, latitude, address } = userData;
+        const { username, email, photo_url, password, location, city, address, neighborhood_id } = userData;
 
         // check if email already exists
         const existingUser = await db('users').where({ email }).first();
@@ -12,23 +12,30 @@ export const addUser = async (userData) => {
             throw new Error('Email already exists');
         }
         
-        const hashed_password = await bcrypt.hash(password, process.env.SALT);
-        // crepare data object for insertion
-        const newUser = {
-            username,
-            email,
+        const saltRounds = parseInt(process.env.SALT)
+        const hashed_password = await bcrypt.hash(password, saltRounds);
+        userData.hashed_password = hashed_password
+        
+        const saveUserData = {
+            username, 
+            email, 
             photo_url,
             hashed_password,
-            address
-        };
+            location, 
+            city, 
+            address,
+            neighborhood_id
+        }
         
-        if (longitude && latitude) {
-            newUser.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', [longitude, latitude]);
+        if (location) {
+            saveUserData.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', [location.lat, location.lng]);
         }
         
         const [insertedUser] = await db('users')
-            .insert(newUser)
-            .returning(['id', 'username', 'email', 'photo_url', 'address']);
+            .insert(saveUserData)
+            .returning(['id', 'username', 'email', 'photo_url', 'address', 
+                'city', 'location', 'neighborhood_id'
+            ]);
             
         return insertedUser;
 
@@ -111,10 +118,12 @@ export const updateUserInDB = async (user_id, userData) => {
         if (userData.photo_url) userInfo['photo_url'] = userData.photo_url;
         if (userData.address) userInfo['address'] = userData.address;
         if (userData.hashed_password) userInfo['hashed_password'] = userData.hashed_password;
-        if (userData.longitude && userData.latitude) {
+        if (userData.location) {
             userInfo.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', 
-                [userData.longitude, userData.latitude]);
+                [userInfo.location.lat, userData.location.lng]);
         }
+        if (userData.city) userInfo['city'] = userData.city
+        if (userData.neighborhood_id) userInfo['neighborhood_id'] = userData.neighborhood_id
         
         const [updatedUser] = await db('users')
             .where({ id: user_id })

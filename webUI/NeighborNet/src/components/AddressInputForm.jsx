@@ -228,14 +228,6 @@ const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
             <p>{address}</p>
             {coordinates && (
               <>
-                <p className="mt-2 text-sm">
-                  Coordinates: lat:{coordinates.lat.toFixed(6)}, lng:{coordinates.lng.toFixed(6)}
-                </p>
-                <p>
-                  Street: {street}
-                  City: {city}
-                </p>
-                
                 {/* Map container */}
                 <div 
                   ref={mapContainerRef} 

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { deleteAccount } from '../features/user/thunks/deleteAccountThunk'
 import { editUser } from '../features/user/thunks/editUserThunk'
+import AddressInputForm from '../components/AddressInputForm'
 
 
 export default function AccountPage() {
@@ -15,6 +16,7 @@ export default function AccountPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentUser, error } = useSelector(state => state.user);
+  const addressInputRef = useRef(null);
   
   const handleDeleteRequest = () => {
     setShowConfirmation(true);
@@ -28,6 +30,8 @@ export default function AccountPage() {
         address: currentUser.address || '',
         photo_url: currentUser.photo_url || '',
         password: '',
+        location: {lat: '', lng: ''},
+        city: ''
       });
     }
   }, [currentUser]);
@@ -53,6 +57,8 @@ export default function AccountPage() {
         address: currentUser.address || '',
         photo_url: currentUser.photo_url || '',
         password: '',
+        location: {lat: '', lng: ''},
+        city: ''
       });
     }
     setEditMode(false);
@@ -70,6 +76,10 @@ export default function AccountPage() {
     try {
       await dispatch(editUser({ userId: currentUser.id, userData: dataToSubmit })).unwrap();
       setEditMode(false);
+       // Clear the address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
+      }
 
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -101,6 +111,13 @@ export default function AccountPage() {
   
   const handleCancel = () => {
     setShowConfirmation(false);
+  }
+
+  const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
   }
     
   return (
@@ -206,16 +223,10 @@ export default function AccountPage() {
                   </div>
                   
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Address</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      name="address" 
-                      value={formData.address} 
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full" 
-                    />
+                  <AddressInputForm 
+                    onAddressSelect={handleAddressInputFormChange}
+                    ref={addressInputRef}
+                  />
                   </div>
                   <div className="form-control">
                     <label className="label">

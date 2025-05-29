@@ -30,6 +30,8 @@ function NavBar() {
   return (
     <div className="navbar bg-base-100 px-4 shadow-md">
       {currentUser && <p>{currentUser?.username}</p>}
+      <p>neigh_id: {currentUser?.neighborhood_id}</p>
+      <p>city: {currentUser?.city}</p>
       <div className="flex-1">
         <Link to='/' className="btn btn-ghost normal-case text-xl">NeighborNet</Link>
       </div>

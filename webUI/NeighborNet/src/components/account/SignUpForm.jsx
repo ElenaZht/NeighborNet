@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signUpUser } from '../../features/user/thunks/signUpThunk';
 import { useNavigate, Link } from 'react-router-dom';
+import AddressInputForm from '../AddressInputForm';
+
 
 export default function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -10,14 +12,14 @@ export default function SignUpForm() {
     password: '',
     confirmPassword: '',
     address: '',
-    lat: '',
-    lng: '',
+    location: {lat: '', lng: ''},
+    city: ''
   });
   
   const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+  const addressInputRef = useRef(null);
   const { loading, error, isAuthenticated } = useSelector(state => state.user);
 
   useEffect(() => {
@@ -89,8 +91,31 @@ export default function SignUpForm() {
     if (validateForm()) {
       const { confirmPassword, ...userData } = formData;
       dispatch(signUpUser(userData));
+
+      // clear the form
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        address: '',
+        lat: '',
+        lng: '',
+      })
+
+      // Clear the address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
+      }
     }
   };
+
+  const handleAddressInputFormChange = (addressResult) => {
+    formData.address = addressResult.address
+    formData.city = addressResult.city
+    formData.location = addressResult.location
+    setFormData(formData)
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
@@ -167,50 +192,10 @@ export default function SignUpForm() {
         </div>
         
         <div className="form-control w-full mb-6">
-          <label className="label">
-            <span className="label-text">Address</span>
-          </label>
-          <input 
-            type="text" 
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            className="input input-bordered w-full"
-            placeholder="Enter your address (optional)"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text">Latitude</span>
-            </label>
-            <input 
-              type="number" 
-              name="lat"
-              step="any"
-              value={formData.lat}
-              onChange={handleChange}
-              className="input input-bordered w-full"
-              placeholder="e.g. 40.7128"
-            />
-            {errors.lat && <span className="text-error text-xs mt-1">{errors.lat}</span>}
-          </div>
-          
-          <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text">Longitude</span>
-            </label>
-            <input 
-              type="number" 
-              name="lng"
-              step="any"
-              value={formData.lng}
-              onChange={handleChange}
-              className="input input-bordered w-full"
-              placeholder="e.g. -74.0060"
-            />
-            {errors.lng && <span className="text-error text-xs mt-1">{errors.lng}</span>}
-          </div>
+        <AddressInputForm 
+          onAddressSelect={handleAddressInputFormChange}
+          ref={addressInputRef}
+        />
         </div>
         <button 
           type="submit" 

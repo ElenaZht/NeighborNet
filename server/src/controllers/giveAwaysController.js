@@ -1,9 +1,9 @@
 import { 
-    createReport, 
+    createGiveAwayReport, 
     getReportById, 
-    removeReport,
-    updateReport,
-    updateStatus
+    removeGiveAwayReportDB,
+    updateGiveAwayReportDB,
+    updateGiveAwayStatusDB
 } from "../models/giveAwaysModel.js";
 import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -62,7 +62,7 @@ export const addGiveAwayReport = async (req, res) => {
         }
 
 
-        const giveAway = await createReport(giveAwayData);
+        const giveAway = await createGiveAwayReport(giveAwayData);
         
         return res.status(201).json({
             message: 'Give-away created successfully',
@@ -100,7 +100,7 @@ export const removeGiveAwayReport = async (req, res) => {
         }
 
 
-        const deletedReport = await removeReport(reportId)
+        const deletedReport = await removeGiveAwayReportDB(reportId)
         if (deletedReport){
             // returns deleted report
             console.info("Report deleted, ", deletedReport)
@@ -178,7 +178,7 @@ export const editGiveAwayReport = async (req, res) => {
         }
        
         // Update the report
-        const updatedReport = await updateReport(updateData);
+        const updatedReport = await updateGiveAwayReportDB(updateData);
         
         return res.status(200).json({
             message: "Report updated successfully",
@@ -235,7 +235,7 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateStatus(reportId, newStatus)
+        const updatedreport = await updateGiveAwayStatusDB(reportId, newStatus)
         console.log("updatedreport", updatedreport)
         if (!updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})

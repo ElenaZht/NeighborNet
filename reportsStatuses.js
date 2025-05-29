@@ -18,12 +18,8 @@ export const ReportStatus = Object.freeze({
     ARCHIVED: 'ARCHIVED'      // Historical record
 })
 
-export const reportStatusNames = [
-    'DRAFT', 'PENDING', 'ACTIVE', 'IN_PROGRESS', 'FULFILLED', 'RESOLVED'
-]
-
 export const validateStatus = (status) => {
-    return reportStatusNames.includes(status)
+    return Object.values(ReportStatus).includes(status)
 }
 export const getStatusColorClass = (status) => {
   switch(status) {

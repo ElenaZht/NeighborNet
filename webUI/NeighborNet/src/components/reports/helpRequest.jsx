@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { 
-  FaTimes, 
-  FaMapMarkerAlt, 
-  FaCalendarAlt, 
-  FaUser, 
-  FaEllipsisV, 
-  FaBell, 
-  FaChevronDown, 
-  FaChevronUp, 
-  FaThumbsUp, 
-  FaComment 
-} from 'react-icons/fa'
+import * as FaIcons from 'react-icons/fa';
 import { Comments } from '../reports/comments'
 import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
 import { format, parseISO } from 'date-fns'
@@ -107,17 +96,17 @@ export default function HelpRequest({reportId}) {
                     className="btn btn-sm btn-square"
                     aria-label={showActions ? "Close actions" : "Open actions"}
                   >
-                    <FaEllipsisV />
+                    <FaIcons.FaEllipsisV />
                   </button>
                 </div>
                 <div className="divider my-0.5"></div>
                 
                 <div className="flex items-center gap-2 text-sm">
-                  <FaUser className="text-primary min-w-4" />
+                  <FaIcons.FaUser className="text-primary min-w-4" />
                   <span>Requested by: {currentHelpRequest.username}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <FaCalendarAlt className="text-primary min-w-4" />
+                  <FaIcons.FaCalendarAlt className="text-primary min-w-4" />
                   <span>Posted: {formattedDate}</span>
                 </div>
                 
@@ -136,7 +125,7 @@ export default function HelpRequest({reportId}) {
                 </div>
                 
                 <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
-                  <FaMapMarkerAlt className="text-error min-w-4" />
+                  <FaIcons.FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
                   <span>{currentHelpRequest.address}</span>
                 </div>
@@ -149,7 +138,7 @@ export default function HelpRequest({reportId}) {
                       setShowMap(false);
                     }}
                     >
-                    <FaTimes className="text-error" />
+                    <FaIcons.FaTimes className="text-error" />
                         </button>
                         <div className="w-full h-48">
                           <iframe 
@@ -172,7 +161,7 @@ export default function HelpRequest({reportId}) {
                 onClick={toggleForm}
               >
                 I can help
-                {showForm ? <FaChevronUp /> : <FaChevronDown />}
+                {showForm ? <FaIcons.FaChevronUp /> : <FaIcons.FaChevronDown />}
               </button>
             </div>
 
@@ -210,10 +199,10 @@ export default function HelpRequest({reportId}) {
         {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
           <button className="btn btn-circle btn-md btn-info" title="Follow">
-            <FaBell />
+            <FaIcons.FaBell />
           </button>
           <button className="btn btn-circle btn-md btn-primary" title="Upvote">
-            <FaThumbsUp />
+            <FaIcons.FaThumbsUp />
           </button>
         </div>
       </div>
@@ -225,8 +214,8 @@ export default function HelpRequest({reportId}) {
           onClick={toggleComments}
         >
           {showComments ? 'Hide Comments' : 'Show Comments'}
-          <FaComment />
-          {showComments ? <FaChevronUp /> : <FaChevronDown />}
+          <FaIcons.FaComment />
+          {showComments ? <FaIcons.FaChevronUp /> : <FaIcons.FaChevronDown />}
         </button>
       </div>
       

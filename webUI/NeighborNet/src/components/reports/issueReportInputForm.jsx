@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addIssueReport } from '../../features/reports/issueReports/addIssueReportThunk';
@@ -26,6 +26,7 @@ export default function IssueReportInputForm() {
   const [success, setSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const addressInputRef = useRef(null);
 
   // Load saved form data on component mount
   useEffect(() => {
@@ -74,26 +75,21 @@ export default function IssueReportInputForm() {
     // First check if user is authenticated
     if (!isAuthenticated) {
       setShowAuthPrompt(true);
-      console.log("validation failed 1")
       return false;
     }
 
     if (!formData.title.trim()) {
-      console.log("validation failed 2")
       setError("Title is required");
       return false;
     }
     if (!formData.description.trim()) {
-      console.log("validation failed 3")
       setError("Description is required");
       return false;
     }
     if (!formData.address.trim()) {
       setError("Address is required");
-      console.log("validation failed 4")
       return false;
     }
-    console.log("validation good")
     return true;
   };
 
@@ -123,6 +119,11 @@ export default function IssueReportInputForm() {
       
       // Clear saved form data after successful submission
       localStorage.removeItem(FORM_STORAGE_KEY);
+
+      // Clear address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
+      }
 
       // Hide success message after 5 seconds
       setTimeout(() => {
@@ -276,11 +277,9 @@ export default function IssueReportInputForm() {
                 </div>
                 
                 <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text font-medium">Address</span>
-                  </label>
                     <AddressInputForm 
-                      onMySelect={handleAddressInputFormChange}
+                      onAddressSelect={handleAddressInputFormChange}
+                      ref={addressInputRef}
                     />
                 </div>
                 

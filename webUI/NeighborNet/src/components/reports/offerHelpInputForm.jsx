@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -12,7 +12,7 @@ const FORM_STORAGE_KEY = 'offer_help_draft';
 export default function OfferHelpInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
-
+  const addressInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -169,6 +169,10 @@ export default function OfferHelpInputForm() {
           address: '',
           location: {lat: '', lng: ''}
         });
+        //Clear the address input
+        if (addressInputRef.current) {
+          addressInputRef.current.clearAddress();
+        }
         
         // Hide success message after 5 seconds
         setTimeout(() => {
@@ -370,11 +374,9 @@ export default function OfferHelpInputForm() {
                 </div>
                 
                 <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text font-medium">Pickup Address</span>
-                  </label>
                   <AddressInputForm 
-                    onMySelect={handleAddressInputFormChange}
+                    onAddressSelect={handleAddressInputFormChange}
+                    ref={addressInputRef}
                   /> 
                 </div>
                 

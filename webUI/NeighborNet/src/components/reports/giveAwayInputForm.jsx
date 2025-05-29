@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {  FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { addGiveAway } from '../../features/reports/giveaways/addGiveAwayThunk';
@@ -13,7 +13,7 @@ export default function GiveAwayInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
   const { loading: reduxLoading, error: reduxError } = useSelector(state => state.giveAways);
-
+  const addressInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -146,10 +146,14 @@ export default function GiveAwayInputForm() {
           img_url: '',
           is_free: true,
           swap_options: '',
-          city,
+          city: '',
           location: {lat: '', lng: ''}
         });
         
+        // Clear the address input
+        if (addressInputRef.current) {
+          addressInputRef.current.clearAddress();
+        }
         // Hide success message after 5 seconds
         setTimeout(() => setSuccess(false), 5000);
       } else {
@@ -311,11 +315,9 @@ export default function GiveAwayInputForm() {
                 </div>
                 
                 <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text font-medium">Pickup Address</span>
-                  </label>
                   <AddressInputForm 
-                    onMySelect={handleAddressInputFormChange}
+                    onAddressSelect={handleAddressInputFormChange}
+                    ref={addressInputRef}
                   />
                 </div>
                 

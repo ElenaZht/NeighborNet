@@ -1,25 +1,18 @@
 import { db } from "../config/db.js";
+import { getReport, createReport, removeReport, updateStatus, updateReport } from "./modelsUtils.js";
 
 
-export async function createReport(helpRequestData) {
+export async function createHelpRequestReport(helpRequestData) {
   try {
     if (!helpRequestData.urgency){
       helpRequestData.urgency = 'normal'
     }
     
-    if (helpRequestData.location) {
-      helpRequestData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
-        [helpRequestData.location.lat, helpRequestData.location.lng]);
-    }
-    
-    const [insertedRequest] = await db('help_requests')
-      .insert(helpRequestData)
-      .returning('*');
-      
+    const insertedRequest = await createReport(helpRequestData, 'help_requests')
+     
     return insertedRequest;
 
   } catch (error) {
-    console.log(error)
     throw new Error(error?.message)
   }
 
@@ -27,42 +20,18 @@ export async function createReport(helpRequestData) {
 
 export const getReportById = async (reportId) => {
     try {
-        if (!reportId){
-            throw Error('No report id provided')
-        }
-
-        const report = await db('help_requests')
-            .where({ id: reportId })
-            .first()
-
-        if (!report){
-            return null
-        }
-
-        return report
+      const report = await getReport(reportId, 'help_requests')
+      return report
         
     } catch (error) {
         throw Error('Failed to fetch report: ', error)
     }
 }
 
-export const removeReport = async (reportId) => {
+export const removeHelpRequestReportDB = async (reportId) => {
     try {
-        const report = await db('help_requests')
-            .where({ id: reportId })
-            .first()
-        if (!report){
-            const error = new Error(`Report with id ${reportId} not found`);
-            error.type = 'NOT_FOUND';
-            throw error;
-        }
-
-        const deleted = await db('help_requests')
-            .where({ id: reportId })
-            .delete()
-            .returning('*');
-            
-        return deleted[0];// returns deleted report
+      const deleted = await removeReport(reportId, 'help_requests')
+      return deleted[0];// returns deleted report
         
     } catch (error) {
         console.error('Error removing report:', error);
@@ -70,49 +39,9 @@ export const removeReport = async (reportId) => {
     }
 }
 
-export const updateReport = async (reportData) => {
+export const updateHelpRequestDB = async (reportData) => {
   try {
-    const {
-      id, // Report ID 
-      title,
-      description,
-      img_url,
-      address,
-      location,
-      city,
-      neighborhood_id,
-      category,
-      urgency
-    } = reportData;
-    
-    if (!id) {
-      throw new Error('Report ID is required for update');
-    }
-    
-    const updateData = {};
-    
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (img_url !== undefined) updateData.img_url = img_url;
-    if (address !== undefined) updateData.address = address;
-    if (category !== undefined) updateData.category = category;
-    if (urgency !== undefined) updateData.urgency = urgency;
-        if (city !== undefined) updateData.city = city;
-    if (neighborhood_id !== undefined) updateData.neighborhood_id = neighborhood_id;
-    if (updateData.location) {
-      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [updateData.location.lat, updateData.location.lng]);
-    }
-    
-    const existingReport = await db('help_requests').where({ id }).first();
-    if (!existingReport) {
-      throw new Error(`Report with ID ${id} not found`);
-    }
-    // Update the database record
-    const [updatedReport] = await db('help_requests')
-      .where({ id })
-      .update(updateData)
-      .returning('*');
-      
+    const updatedReport = await updateReport(reportData, 'help_requests')
     return updatedReport;
 
   } catch (error) {
@@ -121,22 +50,9 @@ export const updateReport = async (reportData) => {
   }
 }
 
-export const updateStatus = async (reportId, newStatus) => {
+export const updateHelpRequestStatusDB = async (reportId, newStatus) => {
   try {
-    // check if report exists
-    const report = await getReportById(reportId);
-    if (!report) {
-      const error = new Error(`Report with id ${reportId} not found`);
-      error.type = 'NOT_FOUND';
-      throw error;
-    }
-
-    // Update the status
-    const [updatedReport] = await db('help_requests')
-      .where({ id: reportId })
-      .update({ status: newStatus })
-      .returning('*');
-      
+    const updatedReport = await updateStatus(reportId, newStatus, 'help_requests') 
     return updatedReport;
     
   } catch (error) {

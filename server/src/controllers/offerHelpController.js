@@ -1,9 +1,9 @@
 import { 
-    createReport, 
+    createOfferHelpReport, 
     getReportById, 
-    removeReport,
-    updateReport,
-    updateStatus
+    removeOfferHelpDBReport,
+    updateOfferHelpReportDB,
+    updateOfferHelpStatusDB
 } from "../models/offerHelpModel.js";
 import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -61,7 +61,7 @@ export const addOfferHelp = async (req, res) => {
         }
         
         // Call model function
-        const offerHelp = await createReport(offerHelpData);
+        const offerHelp = await createOfferHelpReport(offerHelpData);
         
         return res.status(201).json({
             message: 'Help offer created successfully',
@@ -99,7 +99,7 @@ export const removeOfferHelpReport = async (req, res) => {
         }
 
 
-        const deletedReport = await removeReport(reportId)
+        const deletedReport = await removeOfferHelpDBReport(reportId)
         if (deletedReport){
             // returns deleted report
             console.info("Report deleted, ", deletedReport)
@@ -154,7 +154,7 @@ export const editOfferHelpReport = async (req, res) => {
         }
 
         // Update the report
-        const updatedReport = await updateReport(updateData);
+        const updatedReport = await updateOfferHelpReportDB(updateData);
         
         console.info("Help offer updated: ", updatedReport);
         return res.status(200).json({
@@ -212,7 +212,7 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateStatus(reportId, newStatus)
+        const updatedreport = await updateOfferHelpStatusDB(reportId, newStatus)
         console.log("updatedreport", updatedreport)
         if (!updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})

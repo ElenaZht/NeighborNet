@@ -38,13 +38,14 @@ CREATE TABLE issue_reports (
     img_url VARCHAR(2048),
     title VARCHAR(255) NOT NULL,
     description VARCHAR(500),
-    location GEOGRAPHY(POINT),  -- Added location coordinates
-    address TEXT,               -- Added address field
+    location GEOGRAPHY(POINT),
+    address TEXT,
     upvotes INTEGER DEFAULT 0,
     followers INTEGER DEFAULT 0,
     verifies INTEGER DEFAULT 0,
     neighborhood_id INTEGER,
-    city VARCHAR(255)
+    city VARCHAR(255),
+    status VARCHAR(20)
 );
 
 CREATE TABLE give_aways (
@@ -60,7 +61,8 @@ CREATE TABLE give_aways (
     is_free BOOLEAN DEFAULT TRUE,
     swap_options TEXT,
     neighborhood_id INTEGER,
-    city VARCHAR(255)
+    city VARCHAR(255),
+    status VARCHAR(20)
 );
 
 CREATE TABLE offer_help (
@@ -76,7 +78,8 @@ CREATE TABLE offer_help (
     barter_options TEXT,
     followers INTEGER DEFAULT 0,
     neighborhood_id INTEGER,
-    city VARCHAR(255)
+    city VARCHAR(255),
+    status VARCHAR(20)
 );
 
 CREATE TABLE help_requests (
@@ -93,7 +96,8 @@ CREATE TABLE help_requests (
     urgency VARCHAR(10) DEFAULT 'normal',
     followers INTEGER DEFAULT 0,
     neighborhood_id INTEGER,
-    city VARCHAR(255)
+    city VARCHAR(255),
+    status VARCHAR(20)
 );
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,

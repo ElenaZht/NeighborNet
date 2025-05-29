@@ -1,9 +1,9 @@
 import { 
-    createReport, 
+    createHelpRequestReport, 
     getReportById, 
-    removeReport,
-    updateReport,
-    updateStatus
+    removeHelpRequestReportDB,
+    updateHelpRequestDB,
+    updateHelpRequestStatusDB
  } from "../models/helpRequestModel.js";
  import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -71,7 +71,7 @@ export const addHelpRequest = async (req, res) => {
             }
         }
         
-        const helpRequest = await createReport(helpRequestData);
+        const helpRequest = await createHelpRequestReport(helpRequestData);
         
         return res.status(201).json({
             message: 'Help request created successfully',
@@ -109,7 +109,7 @@ export const removeHelpReport = async (req, res) => {
         }
 
 
-        const deletedReport = await removeReport(reportId)
+        const deletedReport = await removeHelpRequestReportDB(reportId)
         if (deletedReport){
             // returns deleted report
             console.info("Report deleted, ", deletedReport)
@@ -164,7 +164,7 @@ export const editHelpRequestReport = async (req, res) => {
         }
 
         // Update the report
-        const updatedReport = await updateReport(updateData);
+        const updatedReport = await updateHelpRequestDB(updateData);
         
         console.info("Help request updated: ", updatedReport);
         return res.status(200).json({
@@ -223,7 +223,7 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateStatus(reportId, newStatus)
+        const updatedreport = await updateHelpRequestStatusDB(reportId, newStatus)
         console.log("updatedreport", updatedreport)
         if (!updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})

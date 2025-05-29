@@ -1,25 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { 
-  FaInfoCircle, 
-  FaTools, 
-  FaCar, 
-  FaBaby, 
-  FaDog, 
-  FaLaptop, 
-  FaDumbbell, 
-  FaLeaf, 
-  FaUtensils, 
-  FaShoppingBag, 
-  FaGraduationCap, 
-  FaMedkit, FaBroom, 
-  FaHome, 
-  FaImage, 
-  FaTimes } from 'react-icons/fa'
+import React, { useState, useEffect, useRef } from 'react'
+import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addHelpRequest } from '../../features/reports/helpRequests/addHelpRequestThunk.js'
 import AddressInputForm from '../AddressInputForm'
-
+import { categories } from '../../utils/requestCategories.jsx';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'help_request_draft';
@@ -27,7 +12,7 @@ const FORM_STORAGE_KEY = 'help_request_draft';
 export default function HelpReportInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
-  
+  const addressInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,22 +30,6 @@ export default function HelpReportInputForm() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-
-  const categories = [//todo move somewhere
-    { id: 'repairs', label: 'Home Repairs', icon: <FaTools className="text-warning" /> },
-    { id: 'transportation', label: 'Transportation', icon: <FaCar className="text-blue-500" /> },
-    { id: 'childcare', label: 'Childcare', icon: <FaBaby className="text-pink-400" /> },
-    { id: 'petcare', label: 'Pet Care', icon: <FaDog className="text-amber-700" /> },
-    { id: 'technology', label: 'Tech Help', icon: <FaLaptop className="text-slate-600" /> },
-    { id: 'moving', label: 'Moving/Heavy Lifting', icon: <FaDumbbell className="text-red-600" /> },
-    { id: 'gardening', label: 'Gardening/Yard Work', icon: <FaLeaf className="text-green-500" /> },
-    { id: 'cooking', label: 'Cooking/Meals', icon: <FaUtensils className="text-yellow-600" /> },
-    { id: 'errands', label: 'Errands', icon: <FaShoppingBag className="text-indigo-500" /> },
-    { id: 'tutoring', label: 'Academic/Tutoring', icon: <FaGraduationCap className="text-purple-500" /> },
-    { id: 'health', label: 'Health Assistance', icon: <FaMedkit className="text-red-500" /> },
-    { id: 'cleaning', label: 'Cleaning', icon: <FaBroom className="text-teal-500" /> },
-    { id: 'other', label: 'Other', icon: <FaHome className="text-gray-500" /> }
-  ];
 
   // Load saved form data on component mount
   useEffect(() => {
@@ -194,6 +163,11 @@ export default function HelpReportInputForm() {
             city: '',
             location: {lat: '', lng: ''}
             });
+
+            // Clear address input
+            if (addressInputRef.current) {
+              addressInputRef.current.clearAddress();
+            }
             
             // Hide success message after 5 seconds
             setTimeout(() => {
@@ -419,11 +393,9 @@ export default function HelpReportInputForm() {
                 </div>
                 
                 <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text font-medium">Your Location</span>
-                  </label>
                   <AddressInputForm 
-                    onMySelect={handleAddressInputFormChange}
+                    onAddressSelect={handleAddressInputFormChange}
+                    ref={addressInputRef}
                   />
                 </div>
                 

@@ -5,7 +5,6 @@ export const addIssueReport = createAsyncThunk(
     'issueReports/add',
     async (reportData, { rejectWithValue }) => {
         try {
-            console.log("addIssueReport")
             const response = await post(`${import.meta.env.VITE_DEV_BASE_URL}/issue-reports`, 
                 reportData,
                 { credentials: 'include' } // Include cookies for authentication

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
 
 
-export default function AddressInputForm({ onMySelect }) {
+const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
   const [address, setAddress] = useState('');
   const [predictions, setPredictions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -16,6 +16,13 @@ export default function AddressInputForm({ onMySelect }) {
   const [warning, setWarning] = useState('')
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+
+  // Permissioned actions for parent(addressInputRef.current.clearAddress())
+  useImperativeHandle(ref, () => ({
+    clearAddress: () => {
+      setAddress('');
+    }
+  }));
 
   // Initialize Google Places API
   useEffect(() => {
@@ -120,7 +127,7 @@ export default function AddressInputForm({ onMySelect }) {
     // Create a new session token for the next request
     sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
     
-    // Optional: Get detailed place information
+    // Get detailed place information
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
     placesService.getDetails(
       {
@@ -140,13 +147,13 @@ export default function AddressInputForm({ onMySelect }) {
             const city = (place.address_components?.find(c => c.types.includes('locality'))?.long_name)
             setCity(city)
             setStreet(street)
-            onMySelect({address: suggestion.description, location: {
+            onAddressSelect({address: suggestion.description, location: {
               lat: place.geometry.location.lat(),
               lng: place.geometry.location.lng()
             }, city: city});
             
 
-          }        }
+          }}
       }
     );
     
@@ -168,14 +175,12 @@ export default function AddressInputForm({ onMySelect }) {
 
 
   return (
-    <div className="card w-full max-w-md bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">Enter Address</h2>
-        
+    <div className="card w-full max-w-md bg-base-100">
+      <div className="card-body">        
         <div className="form-control w-full">
           <div className="relative" ref={inputRef}>
             <label className="label">
-              <span className="label-text">Address</span>
+              <span className="label-text font-medium">Pickup Address</span>
             </label>
             
             <input
@@ -245,4 +250,6 @@ export default function AddressInputForm({ onMySelect }) {
       </div>
     </div>
   );
-}
+})
+
+export default AddressInputForm;

@@ -1,9 +1,9 @@
 import { 
-    createReport, 
-    removeReport, 
+    createIssueReport, 
+    removeIssueReportDB, 
     getReportById,
-    updateReport,
-    updateStatus
+    updateIssueReportDB,
+    updateIssueReportStatusDB
 } from "../models/issueReportsModel.js"
 import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
@@ -48,7 +48,7 @@ export const addIssueReport = async (req, res) => {
             } 
         }
         
-        const report = await createReport(reportData);
+        const report = await createIssueReport(reportData);
 
         return res.status(201).json({
             message: 'Issue report created successfully',
@@ -86,7 +86,7 @@ export const removeIssueReport = async (req, res) => {
         }
 
 
-        const deletedReport = await removeReport(reportId)
+        const deletedReport = await removeIssueReportDB(reportId)
         if (deletedReport){
             // returns deleted report
             console.info("Report deleted, ", deletedReport)
@@ -142,7 +142,7 @@ export const editIssueReport = async (req, res) => {
         }
 
         // Update the report
-        const updatedReport = await updateReport(updateData);
+        const updatedReport = await updateIssueReportDB(updateData);
         
         return res.status(200).json({
             message: "Issue report updated successfully",
@@ -199,7 +199,7 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateStatus(reportId, newStatus)
+        const updatedreport = await updateIssueReportStatusDB(reportId, newStatus)
         console.log("updatedreport", updatedreport)
         if (!updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})

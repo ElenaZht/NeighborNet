@@ -12,6 +12,10 @@ const initialState = {
     accessToken: localStorage.getItem('token') || null,
     loading: false,
     error: null,
+    address: '',
+    location: {lat: '', lng: ''},
+    city: '',
+    neighborhood_id: null
 };
 
 const usersSlice = createSlice({
@@ -36,6 +40,10 @@ const usersSlice = createSlice({
                 state.isAuthenticated = true;
                 state.error = null;
                 localStorage.setItem('user', JSON.stringify(user));
+                state.address = user.address
+                state.location = user.location,
+                state.city = user.city,
+                state.neighborhood_id = user.neighborhood_id
             }
             
             if (accessToken) {
@@ -53,11 +61,17 @@ const usersSlice = createSlice({
             })
             .addCase(signUpUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentUser = action.payload.user;
+                state.error = null;
                 state.isAuthenticated = true;
+                state.currentUser = action.payload.user;
                 state.accessToken = action.payload.accessToken;
                 localStorage.setItem('token', action.payload.accessToken);
-                state.error = null;
+                localStorage.setItem('user', JSON.stringify(action.payload.user));
+                state.address = action.payload.user.address;
+                state.location = action.payload.user.location
+                state.city = action.payload.user.city
+                state.neighborhood_id = action.payload.user.neighborhood_id
+                
             })
             .addCase(signUpUser.rejected, (state, action) => {
                 state.loading = false;
@@ -149,17 +163,29 @@ const usersSlice = createSlice({
                 state.error = null;
             })
             .addCase(editUser.fulfilled, (state, action) => {
-                // Merge the edited user data with current user data
-                if (action.payload && action.payload.editedUser) {
-                    state.currentUser = {
-                        ...state.currentUser,
-                        ...action.payload.editedUser
-                    };
-                    
-                    localStorage.setItem('user', JSON.stringify(state.currentUser));
-                }
                 state.loading = false;
                 state.error = null;
+                
+                if (action.payload) {
+                    const userData = action.payload.editedUser || action.payload.user || {};
+                    
+                    // Update currentUser with merged data
+                    if (Object.keys(userData).length > 0) {
+                        state.currentUser = {
+                            ...state.currentUser,
+                            ...userData
+                        };
+                        
+                        // Update individual location fields
+                        state.address = userData.address || state.address;
+                        state.location = userData.location || state.location;
+                        state.city = userData.city || state.city;
+                        state.neighborhood_id = userData.neighborhood_id || state.neighborhood_id;
+                        
+                        // Update localStorage
+                        localStorage.setItem('user', JSON.stringify(state.currentUser));
+                    }
+                }
             })
             .addCase(editUser.rejected, (state, action) => {
                 state.loading = false;

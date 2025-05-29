@@ -9,6 +9,7 @@ import {
     generateAccessToken, 
     generateRefreshToken, 
 } from '../helpers/jwt_utils.js';
+import { getNeighborhoodByCoordinates } from '../models/neighborhoodModel.js';
 
 
 export const signUpUser = async (req, res) => {
@@ -19,21 +20,30 @@ export const signUpUser = async (req, res) => {
             email, 
             password, 
             photo_url, 
-            longitude, 
-            latitude, 
+            location,
+            city, 
             address 
         } = req.body;
         
         if (!username) return res.status(400).json({ message: 'Username is required' });
         if (!email) return res.status(400).json({ message: 'Email is required' });
         if (!password) return res.status(400).json({ message: 'Password is required' });
+        if (!address) return res.status(400).json({ message: 'Address is required' });
         
         // Email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ message: 'Invalid email format' });
         }
-        const userData = { username, email, password, photo_url, longitude, latitude, address };
+        const userData = { username, email, password, photo_url, location, city, address };
+
+        if (location){
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            if (neighborhood){
+                userData.neighborhood_id = neighborhood.id
+            }
+        }
         const user = await addUser(userData)
 
         if (user && user.id){
@@ -48,13 +58,7 @@ export const signUpUser = async (req, res) => {
             });
             return res.status(201).json({
                 message: 'User created successfully',
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    photo_url: user.photo_url,
-                    address: user.address
-                },
+                user: user,
                 accessToken
             });
             
@@ -227,6 +231,14 @@ export const editUser = async (req, res) => {
         if (!userData){
             res.status(400).json({message: "User data is missing"})
             return
+        }
+
+        if (userData.location){
+            //detect neighborhood if possible
+            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            if (neighborhood){
+                userData.neighborhood_id = neighborhood.id
+            }
         }
         const editedUser = await updateUserInDB(user_id, userData)
         if (editUser){

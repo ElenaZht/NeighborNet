@@ -18,11 +18,10 @@ export const getNeighborhoodByCoordinates = async(lat, lng) => {
 
         // Note: longitude comes first in ST_Point(lng, lat)
         try {
-                const result = await db('neighborhoods')
-        .select('id', 'nbr_name', 'nbr_name_en', 'city_name', 'city_name_en', 'city_gov_id')
-        .whereRaw('ST_Contains(geometry, ST_SetSRID(ST_Point(?, ?), 4326))', [lng, lat])
-        .limit(1);
-
+            const result = await db('neighborhoods')
+            .select('id', 'nbr_name', 'nbr_name_en', 'city_name', 'city_name_en', 'city_gov_id')
+            .whereRaw('ST_Contains(geometry, ST_SetSRID(ST_Point(?, ?), 4326))', [lng, lat])
+            .limit(1);
         return result[0] || null;
 
         } catch (error) {

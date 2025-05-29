@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { signUpUser } from '../features/user/thunks/signUpThunk';
+import { signUpUser } from '../../features/user/thunks/signUpThunk';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function SignUpForm() {
@@ -11,7 +11,7 @@ export default function SignUpForm() {
     confirmPassword: '',
     address: '',
     lat: '',
-    lon: '',
+    lng: '',
   });
   
   const [errors, setErrors] = useState({});
@@ -70,14 +70,14 @@ export default function SignUpForm() {
       newErrors.lat = 'Latitude must be between -90 and 90';
     }
     
-    if (formData.lon && (isNaN(formData.lon) || formData.lon < -180 || formData.lon > 180)) {
-      newErrors.lon = 'Longitude must be between -180 and 180';
+    if (formData.lng && (isNaN(formData.lng) || formData.lng < -180 || formData.lng > 180)) {
+      newErrors.lng = 'Longitude must be between -180 and 180';
     }
     
     // If one coordinate is provided, both should be provided
-    if ((formData.lat && !formData.lon) || (!formData.lat && formData.lon)) {
+    if ((formData.lat && !formData.lng) || (!formData.lat && formData.lng)) {
       if (!newErrors.lat) newErrors.lat = 'Both latitude and longitude must be provided';
-      if (!newErrors.lon) newErrors.lon = 'Both latitude and longitude must be provided';
+      if (!newErrors.lng) newErrors.lng = 'Both latitude and longitude must be provided';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -202,14 +202,14 @@ export default function SignUpForm() {
             </label>
             <input 
               type="number" 
-              name="lon"
+              name="lng"
               step="any"
-              value={formData.lon}
+              value={formData.lng}
               onChange={handleChange}
               className="input input-bordered w-full"
               placeholder="e.g. -74.0060"
             />
-            {errors.lon && <span className="text-error text-xs mt-1">{errors.lon}</span>}
+            {errors.lng && <span className="text-error text-xs mt-1">{errors.lng}</span>}
           </div>
         </div>
         <button 

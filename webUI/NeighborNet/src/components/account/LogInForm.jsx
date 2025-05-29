@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../features/user/thunks/LogInThunk';
+import { loginUser } from '../../features/user/thunks/LogInThunk';
 
 function LogInForm() {
   const [formData, setFormData] = useState({

@@ -1,10 +1,10 @@
 import './App.css'
 import {Routes, Route} from 'react-router-dom'
 import NavBar from './components/NavBar.jsx'
-import SignUpForm from './components/SignUpForm'
+import SignUpForm from './components/account/SignUpForm.jsx'
 import HomePage from './pages/HomePage.jsx'
 import AccountPage from './pages/AccountPage.jsx'
-import LogInForm from './components/LogInForm.jsx'
+import LogInForm from './components/account/LogInForm.jsx'
 
 
 function App() {

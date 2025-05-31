@@ -5,6 +5,7 @@ export const getAllReports = async (req, res) => {
     try {
         const {neighborhood_id, limit=10, offset=0, city} = req.query
         const {filters, loc} = req.body
+        console.log("controller filters", filters)
         if (!city) {
             res.status(400).json({message: "City is required"})
             return

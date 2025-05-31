@@ -1,5 +1,5 @@
 import { db } from "../config/db.js";
-import { areaFilters, categoryFilters, orderOptions } from "../../../filters.js";
+import { categoryFilters } from "../../../filters.js";
 
 
 export const getAllReportsFromDB = async (city, neighborhoodId, location, limit, offset, filters) => {
@@ -18,7 +18,7 @@ export const getAllReportsFromDB = async (city, neighborhoodId, location, limit,
             throw new Error("Invalid area filter");
     }
 
-    if (!filters.categoryFilters || filters.categoryFilters.length === 0) {
+    if (!filters.categoryFilter || filters.categoryFilter.length === 0) {
         throw new Error("At least one category filter must be selected");
     }
 
@@ -29,7 +29,7 @@ export const getAllReportsFromDB = async (city, neighborhoodId, location, limit,
     try {
         let allReportsQuery = null;
 
-        for (const category of filters.categoryFilters) {
+        for (const category of filters.categoryFilter) {
             if (!categoryFilters.includes(category)) {
                 throw new Error(`Invalid category filter: ${category}`);
             }

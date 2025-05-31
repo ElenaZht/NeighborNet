@@ -31,8 +31,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/', express.static(path.join(__dirname,'../../webUI/NeighborNet/dist')));
 app.use('/users', usersRouter)
-//todo * route for any unmatched routes
-
 app.use('/issue-reports', issueReportsRouter)
 app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)

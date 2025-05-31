@@ -1,25 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from '../reports/comments'
-import { getGiveAway } from '../../features/reports/giveaways/getGiveAwayThunk'
 import { format, parseISO } from 'date-fns'
-import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
+import { getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/give_away_placeholder.jpeg"
 
-export default function GiveAway({ reportId }) {
-  const dispatch = useDispatch()
-  const { currentGiveAway, loading, error } = useSelector(state => state.giveAways)
+export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  
-  useEffect(() => {
-    if (reportId) {
-      dispatch(getGiveAway(reportId))
-    }
-  }, [dispatch, reportId])
+
   
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -37,23 +28,23 @@ export default function GiveAway({ reportId }) {
     setShowMap(!showMap);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <span className="loading loading-spinner loading-lg"></span>
+  //     </div>
+  //   )
+  // }
 
-  if (error) {
-    return (
-      <div className="alert alert-error max-w-4xl mx-auto m-4">
-        <span>{error}</span>
-      </div>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
+  //       <span>{error}</span>
+  //     </div>
+  //   )
+  // }
 
-  if (!currentGiveAway) {
+  if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
         <span>No giveaway found. It might have been deleted or doesn't exist.</span>
@@ -61,8 +52,8 @@ export default function GiveAway({ reportId }) {
     )
   }
 
-  const formattedDate = currentGiveAway.created_at 
-    ? format(parseISO(currentGiveAway.created_at), 'MMM d, yyyy')
+  const formattedDate = report.created_at 
+    ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date'
 
   return (
@@ -73,8 +64,8 @@ export default function GiveAway({ reportId }) {
             <div className="flex">
               <figure className="w-2/5">
                 <img 
-                  src={currentGiveAway.img_url || placeholderImage} 
-                  alt={currentGiveAway.title || "Giveaway item"} 
+                  src={report.img_url || placeholderImage} 
+                  alt={report.title || "Giveaway item"} 
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null
@@ -87,7 +78,7 @@ export default function GiveAway({ reportId }) {
                 <div className="flex justify-between items-start">
                   <h2 className="card-title text-left">Give Away</h2>
                   <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                    {currentGiveAway.status || 'No status'}
+                    {report.status || 'No status'}
                   </div>
                   <button 
                     onClick={toggleActionBar}
@@ -101,7 +92,7 @@ export default function GiveAway({ reportId }) {
                 
                 <div className="flex items-center gap-2 text-sm">
                   <FaIcons.FaUser className="text-primary min-w-4" />
-                  <span>Offered by: {currentGiveAway.username}</span>
+                  <span>Offered by: {report.username}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FaIcons.FaCalendarAlt className="text-primary min-w-4" />
@@ -109,22 +100,22 @@ export default function GiveAway({ reportId }) {
                 </div>
                 
                 <div className="mt-1 space-y-1">
-                  <p className="text-sm"><strong>Title:</strong> {currentGiveAway.title}</p>
+                  <p className="text-sm"><strong>Title:</strong> {report.title}</p>
                   <p className="text-sm">
-                    <strong>Item Description:</strong> {currentGiveAway.description}
+                    <strong>Item Description:</strong> {report.description}
                   </p>
                 </div>
                 
-                {!currentGiveAway.is_free && currentGiveAway.swap_options && (
+                {!report.is_free && report.swap_options && (
                   <div className="mt-1">
-                    <p className="text-sm"><strong>Will swap for:</strong> {currentGiveAway.swap_options}</p>
+                    <p className="text-sm"><strong>Will swap for:</strong> {report.swap_options}</p>
                   </div>
                 )}
                 
                 <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
                   <FaIcons.FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
-                  <span>{currentGiveAway.address}</span>
+                  <span>{report.address}</span>
                 </div>
                 {showMap && (
                 <div className="relative mt-3 border rounded-lg overflow-hidden">
@@ -142,7 +133,7 @@ export default function GiveAway({ reportId }) {
                     title="Location Map"
                     className="w-full h-full"
                     frameBorder="0"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(currentGiveAway.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                     allowFullScreen
                   ></iframe>
                 </div>
@@ -171,7 +162,7 @@ export default function GiveAway({ reportId }) {
                   </label>
                   <textarea 
                     className="textarea textarea-bordered w-full" 
-                    placeholder={`Hi, I'm interested in your ${currentGiveAway.title}...`}
+                    placeholder={`Hi, I'm interested in your ${report.title}...`}
                     rows="3"
                   ></textarea>
                 </div>
@@ -214,7 +205,7 @@ export default function GiveAway({ reportId }) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={reportId} reportType="give_away" />
+            <Comments reportId={report.id} reportType="give_away" />
           </div>
         </div>
       </div>

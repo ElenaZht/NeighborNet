@@ -8,19 +8,12 @@ import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuse
 import placeholderImage from '../../assets/help_request_placeholder.jpeg';
 
 
-export default function HelpRequest({reportId}) {
+export default function HelpRequest({report}) {
   const dispatch = useDispatch()
-  const { currentHelpRequest, loading, error } = useSelector(state => state.helpRequests)
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [showComments, setShowComments] = useState(false)
-  
-  useEffect(() => {
-    if (reportId) {
-      dispatch(getHelpRequest(reportId))
-    }
-  }, [dispatch, reportId])
   
   const toggleActionBar = () => {
     setShowActions(!showActions)
@@ -38,23 +31,23 @@ export default function HelpRequest({reportId}) {
     setShowMap(!showMap);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <span className="loading loading-spinner loading-lg"></span>
+  //     </div>
+  //   )
+  // }
 
-  if (error) {
-    return (
-      <div className="alert alert-error max-w-4xl mx-auto m-4">
-        <span>{error}</span>
-      </div>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
+  //       <span>{error}</span>
+  //     </div>
+  //   )
+  // }
 
-  if (!currentHelpRequest) {
+  if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
         <span>No help request found. It might have been deleted or doesn't exist.</span>
@@ -63,8 +56,8 @@ export default function HelpRequest({reportId}) {
   }
 
   // Format the date
-  const formattedDate = currentHelpRequest.created_at 
-    ? format(parseISO(currentHelpRequest.created_at), 'MMM d, yyyy')
+  const formattedDate = report.created_at 
+    ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date'
 
   return (
@@ -75,8 +68,8 @@ export default function HelpRequest({reportId}) {
             <div className="flex">
               <figure className="w-2/5">
                 <img 
-                  src={currentHelpRequest.img_url || placeholderImage} 
-                  alt={currentHelpRequest.title || "Help request"} 
+                  src={report.img_url || placeholderImage} 
+                  alt={report.title || "Help request"} 
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null
@@ -89,7 +82,7 @@ export default function HelpRequest({reportId}) {
                 <div className="flex justify-between items-start">
                   <h2 className="card-title text-left">Help Request</h2>
                   <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                    {currentHelpRequest.status || 'No status'}
+                    {report.status || 'No status'}
                   </div>
                   <button 
                     onClick={toggleActionBar}
@@ -103,7 +96,7 @@ export default function HelpRequest({reportId}) {
                 
                 <div className="flex items-center gap-2 text-sm">
                   <FaIcons.FaUser className="text-primary min-w-4" />
-                  <span>Requested by: {currentHelpRequest.username}</span>
+                  <span>Requested by: {report.username}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FaIcons.FaCalendarAlt className="text-primary min-w-4" />
@@ -111,23 +104,23 @@ export default function HelpRequest({reportId}) {
                 </div>
                 
                 <div className="mt-1 space-y-1">
-                  {currentHelpRequest.category && (
+                  {report.category && (
                     <p className="text-sm">
-                      <strong>Category:</strong> {currentHelpRequest.category}
+                      <strong>Category:</strong> {report.category}
                     </p>
                   )}
                   <p className="text-sm">
-                    <strong>Title:{currentHelpRequest.title}</strong>
+                    <strong>Title:{report.title}</strong>
                   </p>
                   <p className="text-sm">
-                    <strong>Request Description:</strong> {currentHelpRequest.description}
+                    <strong>Request Description:</strong> {report.description}
                   </p>
                 </div>
                 
                 <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
                   <FaIcons.FaMapMarkerAlt className="text-error min-w-4" />
                   <span className="font-semibold">Location:</span>
-                  <span>{currentHelpRequest.address}</span>
+                  <span>{report.address}</span>
                 </div>
                   {showMap && (
                   <div className="relative mt-3 border rounded-lg overflow-hidden">
@@ -145,7 +138,7 @@ export default function HelpRequest({reportId}) {
                             title="Location Map"
                             className="w-full h-full"
                             frameBorder="0"
-                            src={`https://maps.google.com/maps?q=${encodeURIComponent(currentHelpRequest.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                            src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                             allowFullScreen
                           ></iframe>
                         </div>
@@ -176,7 +169,7 @@ export default function HelpRequest({reportId}) {
                   </label>
                   <textarea 
                     className="textarea textarea-bordered w-full" 
-                    placeholder={`Hi, I'd like to help with ${currentHelpRequest.title}...`}
+                    placeholder={`Hi, I'd like to help with ${report.title}...`}
                     rows="3"
                   ></textarea>
                 </div>
@@ -224,7 +217,7 @@ export default function HelpRequest({reportId}) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={reportId} reportType="help_request" />
+            <Comments reportId={report.id} reportType="help_request" />
           </div>
         </div>
       </div>

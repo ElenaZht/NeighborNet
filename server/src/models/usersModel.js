@@ -33,8 +33,14 @@ export const addUser = async (userData) => {
         
         const [insertedUser] = await db('users')
             .insert(saveUserData)
-            .returning(['id', 'username', 'email', 'photo_url', 'address', 
-                'city', 'location', 'neighborhood_id'
+            .returning(['id',
+                 'username',
+                  'email', 
+                  'photo_url',
+                  'address', 
+                  'city',
+                  db.raw('ST_AsGeoJSON(location)::json as location'),
+                  'neighborhood_id'
             ]);
             
         return insertedUser;
@@ -76,7 +82,20 @@ export const deleteUser = async (user_id) => {
 export const authenticateUser = async (email, password) => {
     try {
         // Find the user with the given email
-        const user = await db('users').where({ email }).first();
+                const user = await db('users')
+            .select([
+                'id',
+                'username', 
+                'email', 
+                'photo_url',
+                'address',
+                'hashed_password', 
+                'city',
+                db.raw('ST_AsGeoJSON(location)::json as location'),
+                'neighborhood_id'
+            ])
+            .where({ email })
+            .first();
         
         if (!user) {
             return null;
@@ -128,7 +147,7 @@ export const updateUserInDB = async (user_id, userData) => {
         const [updatedUser] = await db('users')
             .where({ id: user_id })
             .update(userInfo)
-            .returning(['id', 'username', 'email', 'photo_url', 'address', 'location']);
+            .returning(['id', 'username', 'email', 'photo_url', 'address', db.raw('ST_AsGeoJSON(location)::json as location')]);
         
         return updatedUser;
         

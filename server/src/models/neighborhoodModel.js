@@ -33,3 +33,25 @@ export const getNeighborhoodByCoordinates = async(lat, lng) => {
     }
 
 }
+
+export const getNeoghborhoodById = async (neighborhoodId) => {
+    if (!neighborhoodId) return null
+
+    try {
+        const result = await db('neighborhoods')
+            .select('id', 'nbr_name', 'nbr_name_en', 'city_name', 'city_name_en', 'city_gov_id', 'geometry')
+            .where('id', neighborhoodId)
+            .first();
+        
+        // If no neighborhood found with this ID, return null
+        if (!result) {
+            console.log(`No neighborhood found with ID: ${neighborhoodId}`);
+            return null;
+        }
+        
+        return result;
+    } catch (error) {
+        console.log("Get neighborhood by ID error:", error);
+        throw error;
+    }
+}

@@ -110,6 +110,10 @@ const usersSlice = createSlice({
                 localStorage.setItem('token', action.payload.accessToken);
                 localStorage.setItem('user', JSON.stringify(action.payload.user));
                 state.error = null;
+                state.address = action.payload.user.address;
+                state.location = action.payload.user.location
+                state.city = action.payload.user.city
+                state.neighborhood_id = action.payload.user.neighborhood_id
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;

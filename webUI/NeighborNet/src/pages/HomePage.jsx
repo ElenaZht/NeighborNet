@@ -1,30 +1,17 @@
 import React from 'react'
-import IssueReportInputForm from '../components/reports/issueReportInputForm'
-import IssueReport from '../components/reports/issueReport'
-import GiveAway from '../components/reports/giveAways'
-import GiveAwayInputForm from '../components/reports/giveAwayInputForm.jsx'
-import OfferHelp from '../components/reports/offerHelp.jsx'
-import OfferHelpInputForm from '../components/reports/offerHelpInputForm.jsx'
-import HelpRequest from '../components/reports/helpRequest.jsx'
-import HelpReportInputForm from '../components/reports/helpRequestInputForm.jsx'
-import AddressInputForm from '../components/AddressInputForm.jsx'
-
+import Feed from '../components/Feed.jsx'
+import FeedFilter from '../components/FeedFilter.jsx'
 
 export default function HomePage() {
 
   return (
-    <div>
-      HomePage
-      {/* <AddressInputForm/> */}
-      {/* <HelpReportInputForm/> */}
-      {/* <HelpRequest reportId="4"/> */}
-      {/* <OfferHelpInputForm/> */}
-      {/* <OfferHelp reportId='4'/> */}
-      {/* <GiveAwayInputForm/> */}
-      {/* <GiveAway reportId='13'/> */}
-
-      {/* <IssueReport reportId='6'/> */}
-       {/* <IssueReportInputForm/> */}
+    <div className="flex min-h-screen p-4 gap-4">
+      <div className="sticky top-4 w-80 h-fit max-h-[calc(100vh-2rem)] overflow-y-auto bg-base-100 rounded-lg p-4">
+        <FeedFilter/>
+      </div>
+      <div className="flex-1">
+        <Feed/>
+      </div>
     </div>
   )
 }

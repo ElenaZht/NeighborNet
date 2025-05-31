@@ -151,7 +151,11 @@ export const loginUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 photo_url: user.photo_url,
-                address: user.address
+                address: user.address,
+                city: user.city,
+                location: user.location,
+                neighborhood_id: user.neighborhood_id
+
             },
             accessToken
         });

@@ -7,18 +7,12 @@ import { format, parseISO } from 'date-fns'
 import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/offer_help_placeholder.jpg"
 
-export default function OfferHelp({ reportId }) {
+export default function OfferHelp({ report }) {
   const dispatch = useDispatch()
-  const { currentOfferHelp, loading, error } = useSelector(state => state.offerHelp)
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showComments, setShowComments] = useState(false);
-
-  useEffect(() => {
-    if (reportId) {
-      dispatch(getOfferHelp(reportId))
-    }
-  }, [dispatch, reportId])
+  const [showForm, setShowForm] = useState(false);
 
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -31,24 +25,28 @@ export default function OfferHelp({ reportId }) {
   const toggleMap = () => {
     setShowMap(!showMap);
   };
+  
+  const toggleForm = () => {
+    setShowForm(!showForm);
+  };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <span className="loading loading-spinner loading-lg"></span>
+  //     </div>
+  //   )
+  // }
 
-  if (error) {
-    return (
-      <div className="alert alert-error max-w-4xl mx-auto m-4">
-        <span>{error}</span>
-      </div>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
+  //       <span>{error}</span>
+  //     </div>
+  //   )
+  // }
 
-  if (!currentOfferHelp) {
+  if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
         <span>No offer help report found. It might have been deleted or doesn't exist.</span>
@@ -56,8 +54,8 @@ export default function OfferHelp({ reportId }) {
     )
   }
 
-  const formattedDate = currentOfferHelp.created_at 
-    ? format(parseISO(currentOfferHelp.created_at), 'MMM d, yyyy')
+  const formattedDate = report.created_at 
+    ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date'
 
   return (
@@ -66,8 +64,8 @@ export default function OfferHelp({ reportId }) {
         <div className="card card-side bg-base-100 shadow-xl w-[800px]">
           <figure className="w-2/5">
             <img 
-              src={currentOfferHelp.img_url || placeholderImage} 
-              alt={currentOfferHelp.title || "Issue report"} 
+              src={report.img_url || placeholderImage} 
+              alt={report.title || "Issue report"} 
               className="h-full w-full object-cover"
               onError={(e) => {
                 e.target.onerror = null
@@ -80,7 +78,7 @@ export default function OfferHelp({ reportId }) {
             <div className="flex justify-between items-start">
               <h2 className="card-title text-left">Offer Help Report</h2>
               <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                {currentOfferHelp.status || 'No status'}
+                {report.status || 'No status'}
               </div>
               <button 
                 onClick={toggleActionBar}
@@ -94,7 +92,7 @@ export default function OfferHelp({ reportId }) {
             
             <div className="flex items-center gap-2 text-sm">
               <FaIcons.FaUser className="text-primary min-w-4" />
-              <span>Submitted by: {currentOfferHelp.username}</span>
+              <span>Submitted by: {report.username}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <FaIcons.FaCalendarAlt className="text-primary min-w-4" />
@@ -102,14 +100,14 @@ export default function OfferHelp({ reportId }) {
             </div>
             
             <div className="mt-1 space-y-1">
-              <p className="text-sm"><strong>Title:</strong> {currentOfferHelp.title}</p>
-              <p className="text-sm"><strong>Description:</strong> {currentOfferHelp.description}</p>
+              <p className="text-sm"><strong>Title:</strong> {report.title}</p>
+              <p className="text-sm"><strong>Description:</strong> {report.description}</p>
             </div>
             
             <div onClick={toggleMap} className="flex items-center gap-2 mt-2 text-sm bg-base-200 p-1.5 rounded-lg">
               <FaIcons.FaMapMarkerAlt className="text-error min-w-4" />
               <span className="font-semibold">Location:</span>
-              <span>{currentOfferHelp.address}</span>
+              <span>{report.address}</span>
             </div>
                 {showMap && (
                 <div className="relative mt-3 border rounded-lg overflow-hidden">
@@ -127,7 +125,7 @@ export default function OfferHelp({ reportId }) {
                     title="Location Map"
                     className="w-full h-full"
                     frameBorder="0"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(currentOfferHelp.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                     allowFullScreen
                   ></iframe>
                 </div>
@@ -136,10 +134,12 @@ export default function OfferHelp({ reportId }) {
             <div className="flex justify-between mt-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
                 <FaIcons.FaBell className="text-info" />
-                <span>{currentOfferHelp.followers || 0} follows</span>
+                <span>{report.followers || 0} follows</span>
               </div>
             </div>
+            
           </div>
+          
         </div>
 
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
@@ -154,6 +154,47 @@ export default function OfferHelp({ reportId }) {
           </button>
         </div>
       </div>
+
+      <div className="w-[800px] mt-4">
+        <button 
+          className="btn btn-secondary w-full flex items-center justify-center gap-2"
+          onClick={toggleForm}
+        >
+          I need your help
+          {showForm ? <FaIcons.FaChevronUp /> : <FaIcons.FaChevronDown />}
+        </button>
+      </div>
+
+      <div className={`w-[800px] overflow-hidden transition-all duration-300 ${
+        showForm ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="form-control mb-4">
+              <label className="label justify-start p-0 pb-2">
+                <span className="label-text font-medium">Message to helper</span>
+              </label>
+              <textarea 
+                className="textarea textarea-bordered w-full" 
+                placeholder={`Hi, I need your help with ${report.title}...`}
+                rows="3"
+              ></textarea>
+            </div>
+            <div className="form-control mb-4">
+              <label className="label justify-start p-0 pb-2">
+                <span className="label-text font-medium">Phone number</span>
+              </label>
+              <input 
+                type="tel" 
+                placeholder="Your contact number" 
+                className="input input-bordered w-full" 
+              />
+            </div>
+            <button className="btn btn-primary w-full">Submit Request</button>
+          </div>
+        </div>
+      </div>
+
       <div className="w-[800px] mt-4">
         <button 
           className="btn btn-outline w-full flex items-center justify-center gap-2"
@@ -170,7 +211,7 @@ export default function OfferHelp({ reportId }) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={reportId} reportType="offer_help" />
+            <Comments reportId={report.id} reportType="offer_help" />
           </div>
         </div>
       </div>

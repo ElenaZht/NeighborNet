@@ -12,7 +12,8 @@ import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 import offerHelpReportsRouter from './routes/offerHelpRouter.js'
 import helpRequestReporstRouter from './routes/helpRequestRouter.js'
 import commentsRouter from './routes/commentsRouter.js'
-
+import reportsRouter from './routes/reportsRouter.js'
+import neighborhoodRouter from './routes/neighborhoodRouter.js'
 
 const app = express()
 
@@ -37,6 +38,8 @@ app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)
 app.use('/help-requests', helpRequestReporstRouter)
 app.use('/comments', commentsRouter)
+app.use('/reports', reportsRouter)
+app.use('/neighborhood', neighborhoodRouter)
 
 app.listen(3001, (error) => {
     if (error){

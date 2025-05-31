@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { logoutUser } from '../features/user/thunks/logoutThunk';
@@ -9,8 +9,10 @@ function NavBar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser) || null
+  // const { currentNeighborhood, loading: neighborhoodLoading } = useSelector(state => state);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
 
 
   const handleConfirmLogout = async () => {
@@ -29,10 +31,7 @@ function NavBar() {
 
   return (
     <div className="navbar bg-base-100 px-4 shadow-md">
-      {currentUser && <p>{currentUser?.username}</p>}
-      <p>neigh_id: {currentUser?.neighborhood_id}</p>
-      <p>city: {currentUser?.city}</p>
-      <div className="flex-1">
+      <div className="flx-1e">
         <Link to='/' className="btn btn-ghost normal-case text-xl">NeighborNet</Link>
       </div>
 

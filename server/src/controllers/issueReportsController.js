@@ -25,8 +25,8 @@ export const addIssueReport = async (req, res) => {
         if (!username) return res.status(400).json({ message: 'Username is required' });
         if (!title) return res.status(400).json({ message: 'Title is required' });
         
-        if (description && description.length > 100) {
-            return res.status(400).json({ message: 'Description must be 100 characters or less' });
+        if (description && description.length > 500) {
+            return res.status(400).json({ message: 'Description must be 500 characters or less' });
         }
         
         const reportData = { 

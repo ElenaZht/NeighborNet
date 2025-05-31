@@ -199,7 +199,7 @@ export default function HelpReportInputForm() {
 
   return (
     <div className="max-w-4xl mx-auto m-4">
-      <div className="card bg-base-100 shadow-xl">
+      <div className="card bg-base-100">
         <div className="card-body">
           <h2 className="card-title text-left text-2xl mb-4">Request Help from Neighbors</h2>
           

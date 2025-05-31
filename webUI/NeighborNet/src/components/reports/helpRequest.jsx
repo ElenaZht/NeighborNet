@@ -14,6 +14,7 @@ export default function HelpRequest({report}) {
   const [showActions, setShowActions] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [showComments, setShowComments] = useState(false)
+  const [showBackToTop, setShowBackToTop] = useState(false)
   
   const toggleActionBar = () => {
     setShowActions(!showActions)
@@ -31,21 +32,23 @@ export default function HelpRequest({report}) {
     setShowMap(!showMap);
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64">
-  //       <span className="loading loading-spinner loading-lg"></span>
-  //     </div>
-  //   )
-  // }
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
-  // if (error) {
-  //   return (
-  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
-  //       <span>{error}</span>
-  //     </div>
-  //   )
-  // }
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show button when user scrolls down 400px
+      setShowBackToTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
 
   if (!report) {
     return (
@@ -80,7 +83,16 @@ export default function HelpRequest({report}) {
               
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
-                  <h2 className="card-title text-left">Help Request</h2>
+                  <h2 className={`card-title text-left ${
+                    report.urgency?.toLowerCase() === 'high' ? 'text-error' :
+                    report.urgency?.toLowerCase() === 'medium' ? 'text-warning' :
+                    ''
+                  }`}>
+                    Help Request
+                    {report.urgency?.toLowerCase() === 'high' && (
+                      <FaIcons.FaExclamationTriangle className="text-error ml-2" />
+                    )}
+                  </h2>
                   <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
                     {report.status || 'No status'}
                   </div>
@@ -92,7 +104,6 @@ export default function HelpRequest({report}) {
                     <FaIcons.FaEllipsisV />
                   </button>
                 </div>
-                <div className="divider my-0.5"></div>
                 
                 <div className="flex items-center gap-2 text-sm">
                   <FaIcons.FaUser className="text-primary min-w-4" />
@@ -108,6 +119,18 @@ export default function HelpRequest({report}) {
                     <p className="text-sm">
                       <strong>Category:</strong> {report.category}
                     </p>
+                  )}
+                  {report.urgency && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <strong>Urgency:</strong>
+                      <span className={`badge ${
+                        report.urgency.toLowerCase() === 'high' ? 'badge-error' :
+                        report.urgency.toLowerCase() === 'medium' ? 'badge-warning' :
+                        'badge-success'
+                      }`}>
+                        {report.urgency}
+                      </span>
+                    </div>
                   )}
                   <p className="text-sm">
                     <strong>Title:{report.title}</strong>
@@ -183,7 +206,10 @@ export default function HelpRequest({report}) {
                     className="input input-bordered w-full" 
                   />
                 </div>
-                <button className="btn btn-primary w-full mt-2">Submit Offer</button>
+                <button className="btn btn-primary w-full mt-2" onClick={() => {
+
+                  setShowForm(false);
+                }}>Submit Offer</button>
               </div>
             </div>
           </div>
@@ -221,6 +247,17 @@ export default function HelpRequest({report}) {
           </div>
         </div>
       </div>
+
+      {/* Back to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-6 right-6 btn btn-circle btn-primary shadow-lg transition-all duration-300 z-20 ${
+          showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+        title="Back to top"
+      >
+        <FaIcons.FaChevronUp className="text-lg" />
+      </button>
     </div>
   )
 }

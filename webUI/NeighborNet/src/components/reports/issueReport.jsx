@@ -25,21 +25,6 @@ export default function IssueReport({ report }) {
     setShowMap(!showMap);
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64">
-  //       <span className="loading loading-spinner loading-lg"></span>
-  //     </div>
-  //   )
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
-  //       <span>{error}</span>
-  //     </div>
-  //   )
-  // }
 
   if (!report) {
     return (

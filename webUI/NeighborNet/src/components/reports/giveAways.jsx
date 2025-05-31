@@ -28,21 +28,6 @@ export default function GiveAway({ report }) {
     setShowMap(!showMap);
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-64">
-  //       <span className="loading loading-spinner loading-lg"></span>
-  //     </div>
-  //   )
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="alert alert-error max-w-4xl mx-auto m-4">
-  //       <span>{error}</span>
-  //     </div>
-  //   )
-  // }
 
   if (!report) {
     return (
@@ -176,7 +161,11 @@ export default function GiveAway({ report }) {
                     className="input input-bordered w-full" 
                   />
                 </div>
-                <button className="btn btn-primary w-full mt-2">Submit Request</button>
+                <button className="btn btn-primary w-full mt-2" onClick={() => {
+                  // Handle form submission here
+                  // Then close the form
+                  setShowForm(false);
+                }}>Submit Request</button>
               </div>
             </div>
           </div>

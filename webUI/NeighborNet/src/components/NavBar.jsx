@@ -3,7 +3,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { logoutUser } from '../features/user/thunks/logoutThunk';
 import AccountPage from '../pages/AccountPage';
-import InputForms from './InputForms';
+import HelpRequestInputForm from './reports/helpRequestInputForm';
+import OfferHelpInputForm from './reports/offerHelpInputForm';
+import IssueReportInputForm from './reports/issueReportInputForm';
+import GiveAwayInputForm from './reports/giveAwayInputForm';
 
 function NavBar() {
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
@@ -56,6 +59,21 @@ function NavBar() {
   const handleFormSelect = (formType) => {
     setActiveForm(formType);
     setShowCreateDropdown(false);
+  };
+
+  const renderForm = () => {
+    switch(activeForm) {
+      case 'helpRequest':
+        return <HelpRequestInputForm />;
+      case 'offerHelp':
+        return <OfferHelpInputForm />;
+      case 'issueReport':
+        return <IssueReportInputForm />;
+      case 'giveAway':
+        return <GiveAwayInputForm />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -181,7 +199,7 @@ function NavBar() {
             >
               ×
             </button>
-            <InputForms initialActiveForm={activeForm} />
+            {renderForm()}
           </div>
         </div>
       )}
@@ -216,4 +234,5 @@ function NavBar() {
     </div>
   )
 }
+
 export default NavBar

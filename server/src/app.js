@@ -14,6 +14,7 @@ import helpRequestReporstRouter from './routes/helpRequestRouter.js'
 import commentsRouter from './routes/commentsRouter.js'
 import reportsRouter from './routes/reportsRouter.js'
 import neighborhoodRouter from './routes/neighborhoodRouter.js'
+import morgan from 'morgan';
 
 const app = express()
 
@@ -38,6 +39,7 @@ app.use('/help-requests', helpRequestReporstRouter)
 app.use('/comments', commentsRouter)
 app.use('/reports', reportsRouter)
 app.use('/neighborhood', neighborhoodRouter)
+app.use(morgan('dev')); // Logging middleware for development
 
 app.listen(3001, (error) => {
     if (error){

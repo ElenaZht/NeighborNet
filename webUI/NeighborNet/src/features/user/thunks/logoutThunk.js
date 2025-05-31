@@ -1,5 +1,4 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { post } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config.js";
 
 
@@ -8,15 +7,22 @@ export const logoutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         
         try {
-            const response = await post(`${BASE_URL}/users/logout`,
-                _,
-                {credentials: 'include' // Include cookies for the server to clear
+            const response = await post(`${BASE_URL}/users/logout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
             });
 
-            return response;
+            const data = await response.json(); 
+            if (!response.ok) {
+                return rejectWithValue(data.message || 'Logout failed');
+            }
+            return data;
             
         } catch (error) {
-            return rejectWithValue(error.message || 'Network error');
+            return rejectWithValue(error.message || 'Logout failed');
         }
     }
 );

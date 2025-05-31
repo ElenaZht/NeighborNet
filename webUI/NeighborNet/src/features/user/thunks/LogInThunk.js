@@ -1,5 +1,4 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { post } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config.js";
 
 
@@ -8,15 +7,23 @@ export const loginUser = createAsyncThunk(
     async (loginCredentials, { rejectWithValue }) => {
         
         try {
-            const response = await post(`${BASE_URL}/users/login`,
-                loginCredentials,
-                {credentials: 'include' // For cookies
+
+            const response = await fetch(`${BASE_URL}/users/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginCredentials),
+                credentials: 'include'
             });
-            
-            return response;
+            const data = await response.json(); 
+            if (!response.ok) {
+                return rejectWithValue(data.message || 'Login failed');
+            }
+            return data;
             
         } catch (error) {
-            return rejectWithValue(error.message || 'Network error');
+            return rejectWithValue(error.message || 'Login failed');
         }
     }
 );

@@ -20,7 +20,7 @@ export const getAllReports = async (req, res) => {
     } catch (error) {
         console.error("Error in getAllReports controller:", error);
         res.status(500).json({
-            message: "Failed to retrieve reports",
+            message: `Failed to retrieve reports: ${error.message}`,
             error: error.message
         });
     }

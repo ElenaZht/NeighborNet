@@ -8,7 +8,8 @@ import placeholderImage from '../../assets/help_request_placeholder.jpeg';
 import {removeHelpRequest} from '../../features/reports/helpRequests/removeHelpRequestThunk.js';
 import { clearFeed } from '../../features/reports/feed/feedSlice.js';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk.js';
-
+import { followReport } from '../../features/reports/feed/followThunk';
+import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 
 export default function HelpRequest({report}) {
   const dispatch = useDispatch()
@@ -18,6 +19,8 @@ export default function HelpRequest({report}) {
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
   
@@ -71,6 +74,46 @@ export default function HelpRequest({report}) {
 
   const handleCancelDelete = () => {
     setShowDeleteConfirmation(false);
+  };
+
+  const handleFollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to follow reports');
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      await dispatch(followReport({
+        reportType: 'help_request',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to follow:', error);
+      alert('Failed to follow report. Please try again.');
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to unfollow reports');
+      return;
+    }
+
+    setIsUnfollowLoading(true);
+    try {
+      await dispatch(unfollowReport({
+        reportType: 'help_request',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to unfollow:', error);
+      alert('Failed to unfollow report. Please try again.');
+    } finally {
+      setIsUnfollowLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -127,16 +170,25 @@ export default function HelpRequest({report}) {
                       <FaIcons.FaExclamationTriangle className="text-error ml-2" />
                     )}
                   </h2>
-                  <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                    {report.status || 'No status'}
+                  <div className="flex items-center gap-2">
+                    {/* Follow indicator - Eye icon */}
+                    {report.isFollowed && (
+                      <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">
+                        <FaIcons.FaEye className="text-sm" />
+                        <span>Following</span>
+                      </div>
+                    )}
+                    <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                      {report.status || 'No status'}
+                    </div>
+                    <button 
+                      onClick={toggleActionBar}
+                      className="btn btn-sm btn-square"
+                      aria-label={showActions ? "Close actions" : "Open actions"}
+                    >
+                      <FaIcons.FaEllipsisV />
+                    </button>
                   </div>
-                  <button 
-                    onClick={toggleActionBar}
-                    className="btn btn-sm btn-square"
-                    aria-label={showActions ? "Close actions" : "Open actions"}
-                  >
-                    <FaIcons.FaEllipsisV />
-                  </button>
                 </div>
                 
                 <div className="flex items-center gap-2 text-sm">
@@ -179,7 +231,16 @@ export default function HelpRequest({report}) {
                   <span className="font-semibold">Location:</span>
                   <span>{report.address}</span>
                 </div>
-                  {showMap && (
+
+                {/* Add followers count display */}
+                <div className="flex justify-between mt-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <FaIcons.FaBell className="text-info" />
+                    <span>{report.followers || 0} follows</span>
+                  </div>
+                </div>
+
+                {showMap && (
                   <div className="relative mt-3 border rounded-lg overflow-hidden">
                     <button 
                       className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
@@ -222,9 +283,37 @@ export default function HelpRequest({report}) {
 
         {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
-          <button className="btn btn-circle btn-md btn-info" title="Follow">
-            <FaIcons.FaBell />
-          </button>
+          
+          {/* Follow/Unfollow Buttons - Replace the simple follow button */}
+          {!report.isFollowed ? (
+            <button 
+              className="btn btn-circle btn-md btn-info"
+              title="Follow this report"
+              onClick={handleFollow}
+              disabled={isFollowLoading || !currentUser}
+            >
+              {isFollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBell />
+              )}
+            </button>
+          ) : (
+            <button 
+              className="btn btn-circle btn-md btn-warning"
+              title="Unfollow this report"
+              onClick={handleUnfollow}
+              disabled={isUnfollowLoading || !currentUser}
+            >
+              {isUnfollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBellSlash />
+              )}
+            </button>
+          )}
+
+          {/* Delete Button (only for authors) */}
           {report.isAuthor && (
             <button 
               className="btn btn-circle btn-md btn-error" 

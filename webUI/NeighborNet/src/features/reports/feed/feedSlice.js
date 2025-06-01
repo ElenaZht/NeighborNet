@@ -1,5 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getAllReports } from './getAllReportsThunk';
+import { followReport } from './followThunk';
+import { unfollowReport } from './unfollowThunk';
+
+
 const areaFilters  = ['COUNTRY', 'CITY', 'NBR']
 const categoryFilters = ['GIVEAWAY', 'OFFERHELP', 'HELPREQUEST', 'ISSUEREPORT']
 const orderOptions = ['DATE', 'DISTANCE']
@@ -63,7 +67,48 @@ const feedSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'Failed to fetch feed items';
             })
-    }
+            
+            // Follow Report
+            .addCase(followReport.pending, (state) => {
+                state.error = null;
+            })
+            .addCase(followReport.fulfilled, (state, action) => {
+                const { reportType, reportId } = action.payload;
+                // Update the isFollowed status and increment followers count
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === reportType
+                );
+                if (report) {
+                    report.isFollowed = true;
+                    report.followers = (report.followers || 0) + 1;
+                }
+                state.error = null;
+            })
+            .addCase(followReport.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to follow report';
+            })
+            
+            // Unfollow Report
+            .addCase(unfollowReport.pending, (state) => {
+                state.error = null;
+            })
+            .addCase(unfollowReport.fulfilled, (state, action) => {
+                const { reportType, reportId } = action.payload;
+                // Update the isFollowed status and decrement followers count
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === reportType
+                );
+                if (report) {
+                    report.isFollowed = false;
+                    report.followers = Math.max((report.followers || 1) - 1, 0);
+                }
+                state.error = null;
+            })
+            .addCase(unfollowReport.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to unfollow report';
+            })
+
+    },
 });
 
 export const {nextOffset, resetOffset, setStoreFilters, clearFeed} = feedSlice.actions;

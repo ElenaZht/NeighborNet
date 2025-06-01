@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { removeGiveAwayThunk } from '../../features/reports/giveaways/removeGiveAwayThunk.js';
 import { clearFeed } from '../../features/reports/feed/feedSlice';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk';
+import { followReport } from '../../features/reports/feed/followThunk';
+import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
@@ -15,6 +17,8 @@ export default function GiveAway({ report }) {
   const [showComments, setShowComments] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
   const dispatch = useDispatch();
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
@@ -64,6 +68,46 @@ export default function GiveAway({ report }) {
     setShowDeleteConfirmation(false);
   };
 
+  const handleFollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to follow reports');
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      await dispatch(followReport({
+        reportType: 'give_away',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to follow:', error);
+      alert('Failed to follow report. Please try again.');
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to unfollow reports');
+      return;
+    }
+
+    setIsUnfollowLoading(true);
+    try {
+      await dispatch(unfollowReport({
+        reportType: 'give_away',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to unfollow:', error);
+      alert('Failed to unfollow report. Please try again.');
+    } finally {
+      setIsUnfollowLoading(false);
+    }
+  };
+
   if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
@@ -96,17 +140,26 @@ export default function GiveAway({ report }) {
               
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
-                  <h2 className="card-title text-left">Give Away</h2>
-                  <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                    {report.status || 'No status'}
+                  <h2 className="card-title text-left">Giveaway</h2>
+                  <div className="flex items-center gap-2">
+                    {/* Follow indicator - Eye icon */}
+                    {report.isFollowed && (
+                      <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">
+                        <FaIcons.FaEye className="text-sm" />
+                        <span>Following</span>
+                      </div>
+                    )}
+                    <div className={`badge ${getStatusColorClass(report.status)} mt-1`}>
+                      {report.status || 'Available'}
+                    </div>
+                    <button 
+                      onClick={toggleActionBar}
+                      className="btn btn-sm btn-square"
+                      aria-label={showActions ? "Close actions" : "Open actions"}
+                    >
+                      <FaIcons.FaEllipsisV />
+                    </button>
                   </div>
-                  <button 
-                    onClick={toggleActionBar}
-                    className="btn btn-sm btn-square"
-                    aria-label={showActions ? "Close actions" : "Open actions"}
-                  >
-                    <FaIcons.FaEllipsisV />
-                  </button>
                 </div>
                 <div className="divider my-0.5"></div>
                 
@@ -137,28 +190,37 @@ export default function GiveAway({ report }) {
                   <span className="font-semibold">Location:</span>
                   <span>{report.address}</span>
                 </div>
-                {showMap && (
-                <div className="relative mt-3 border rounded-lg overflow-hidden">
-                  <button 
-                    className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMap(false);
-                  }}
-                >
-                  <FaIcons.FaTimes className="text-error" />
-                </button>
-                <div className="w-full h-48">
-                  <iframe 
-                    title="Location Map"
-                    className="w-full h-full"
-                    frameBorder="0"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                    allowFullScreen
-                  ></iframe>
+
+                {/* Add followers count display */}
+                <div className="flex justify-between mt-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <FaIcons.FaBell className="text-info" />
+                    <span>{report.followers || 0} follows</span>
+                  </div>
                 </div>
-              </div>
-            )}
+
+                {showMap && (
+                  <div className="relative mt-3 border rounded-lg overflow-hidden">
+                    <button 
+                      className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMap(false);
+                      }}
+                    >
+                      <FaIcons.FaTimes className="text-error" />
+                    </button>
+                    <div className="w-full h-48">
+                      <iframe 
+                        title="Location Map"
+                        className="w-full h-full"
+                        frameBorder="0"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -177,10 +239,39 @@ export default function GiveAway({ report }) {
           </div>
         </div>
 
+        {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
-          <button className="btn btn-circle btn-md btn-info" title="Follow">
-            <FaIcons.FaBell />
-          </button>
+          
+          {/* Follow/Unfollow Buttons - Separate visual components */}
+          {!report.isFollowed ? (
+            <button 
+              className="btn btn-circle btn-md btn-info"
+              title="Follow this report"
+              onClick={handleFollow}
+              disabled={isFollowLoading || !currentUser}
+            >
+              {isFollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBell />
+              )}
+            </button>
+          ) : (
+            <button 
+              className="btn btn-circle btn-md btn-warning"
+              title="Unfollow this report"
+              onClick={handleUnfollow}
+              disabled={isUnfollowLoading || !currentUser}
+            >
+              {isUnfollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBellSlash />
+              )}
+            </button>
+          )}
+
+          {/* Delete Button (only for authors) */}
           {report.isAuthor && (
             <button 
               className="btn btn-circle btn-md btn-error" 

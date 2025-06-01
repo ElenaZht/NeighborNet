@@ -62,7 +62,8 @@ CREATE TABLE give_aways (
     swap_options TEXT,
     neighborhood_id INTEGER,
     city VARCHAR(255),
-    status VARCHAR(20)
+    status VARCHAR(20),
+    followers INTEGER DEFAULT 0
 );
 
 CREATE TABLE offer_help (
@@ -112,3 +113,29 @@ CREATE TABLE comments (
 SELECT id, nbr_name, nbr_name_en, city_name, city_name_en, city_gov_id 
 FROM neighborhoods 
 WHERE ST_Contains(geometry, ST_SetSRID(ST_Point(34.881587, 31.961376), 4326));
+
+CREATE TABLE followers (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    report_id INTEGER NOT NULL,
+    report_type VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_followers_user_id 
+        FOREIGN KEY (user_id) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE,
+    
+    -- Check constraint to ensure valid report types
+    CONSTRAINT chk_followers_report_type 
+        CHECK (report_type IN ('offer_help', 'help_request', 'give_away', 'issue_report')),
+    
+    -- Unique constraint to prevent duplicate follows
+    CONSTRAINT uk_followers_user_report 
+        UNIQUE (user_id, report_id, report_type)
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_followers_report_id_type ON followers(report_id, report_type);
+CREATE INDEX idx_followers_user_id ON followers(user_id);

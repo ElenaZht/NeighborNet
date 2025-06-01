@@ -105,11 +105,12 @@ export const apiClient = async (url, options = {}) => {
     } catch (parseError) {
         console.error('API Error (could not parse response):', {
             url,
-            status: response.status
+            status: response.status,
+            message: parseError.message
         });
       throw {
         status: response.status,
-        message: `Request failed with status ${response.status}`
+        message: parseError.message
       };
     }
 

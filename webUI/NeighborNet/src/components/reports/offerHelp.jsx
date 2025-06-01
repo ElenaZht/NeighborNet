@@ -5,6 +5,8 @@ import { Comments } from '../reports/comments'
 import { removeOfferHelp } from '../../features/reports/offerhelp/removeOfferHelpThunk'
 import { clearFeed } from '../../features/reports/feed/feedSlice.js';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk.js';
+import { followReport } from '../../features/reports/feed/followThunk';
+import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 import { format, parseISO } from 'date-fns'
 import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/offer_help_placeholder.jpg"
@@ -17,6 +19,8 @@ export default function OfferHelp({ report }) {
   const [showForm, setShowForm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
 
@@ -69,6 +73,46 @@ export default function OfferHelp({ report }) {
     setShowDeleteConfirmation(false);
   };
 
+  const handleFollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to follow reports');
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      await dispatch(followReport({
+        reportType: 'offer_help',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to follow:', error);
+      alert('Failed to follow report. Please try again.');
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!currentUser) {
+      alert('Please log in to unfollow reports');
+      return;
+    }
+
+    setIsUnfollowLoading(true);
+    try {
+      await dispatch(unfollowReport({
+        reportType: 'offer_help',
+        reportId: report.id
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to unfollow:', error);
+      alert('Failed to unfollow report. Please try again.');
+    } finally {
+      setIsUnfollowLoading(false);
+    }
+  };
+
   if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
@@ -102,16 +146,25 @@ export default function OfferHelp({ report }) {
               <div className="card-body w-3/5 p-4 text-left">
                 <div className="flex justify-between items-start">
                   <h2 className="card-title text-left">Offer Help Report</h2>
-                  <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
-                    {report.status || 'No status'}
+                  <div className="flex items-center gap-2">
+                    {/* Follow indicator - Eye icon */}
+                    {report.isFollowed && (
+                      <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">
+                        <FaIcons.FaEye className="text-sm" />
+                        <span>Following</span>
+                      </div>
+                    )}
+                    <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                      {report.status || 'No status'}
+                    </div>
+                    <button 
+                      onClick={toggleActionBar}
+                      className="btn btn-sm btn-square"
+                      aria-label={showActions ? "Close actions" : "Open actions"}
+                    >
+                      <FaIcons.FaEllipsisV />
+                    </button>
                   </div>
-                  <button 
-                    onClick={toggleActionBar}
-                    className="btn btn-sm btn-square"
-                    aria-label={showActions ? "Close actions" : "Open actions"}
-                  >
-                    <FaIcons.FaEllipsisV />
-                  </button>
                 </div>
                 <div className="divider my-0.5"></div>
                 
@@ -223,9 +276,36 @@ export default function OfferHelp({ report }) {
               <span>Next version</span>
             </div>
           </div>
-          <button className="btn btn-circle btn-md btn-info" title="Follow">
-            <FaIcons.FaBell />
-          </button>
+          
+          {/* Follow/Unfollow Buttons - Replace the simple follow button */}
+          {!report.isFollowed ? (
+            <button 
+              className="btn btn-circle btn-md btn-info"
+              title="Follow this report"
+              onClick={handleFollow}
+              disabled={isFollowLoading || !currentUser}
+            >
+              {isFollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBell />
+              )}
+            </button>
+          ) : (
+            <button 
+              className="btn btn-circle btn-md btn-warning"
+              title="Unfollow this report"
+              onClick={handleUnfollow}
+              disabled={isUnfollowLoading || !currentUser}
+            >
+              {isUnfollowLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaBellSlash />
+              )}
+            </button>
+          )}
+
           {report.isAuthor && (
             <button 
               className="btn btn-circle btn-md btn-error" 
@@ -240,6 +320,7 @@ export default function OfferHelp({ report }) {
               )}
             </button>
           )}
+          
           <div className="flex flex-col items-center">
             <button className="btn btn-circle btn-md bg-gray-400 text-gray-600 cursor-not-allowed" title="Upvote" disabled={true}>
               <FaIcons.FaThumbsUp />

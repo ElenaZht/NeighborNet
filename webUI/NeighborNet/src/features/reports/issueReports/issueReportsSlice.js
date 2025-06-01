@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { addIssueReport } from './addIssueReportThunk';
 import { getIssueReport } from './getIssueReportThunk';
+import { removeIssueReport } from './removeIssueReportThunk';
 
 const initialState = {
     allIssueReports: [],
-    currentIssueReport: null,
     loading: false,
     error: null,
     status: ''
@@ -32,20 +32,22 @@ const issueReportsSlice = createSlice({
                 state.error = action.payload || 'Failed to create issue report';
             })
 
-            // Get Single Issue Report
-            .addCase(getIssueReport.pending, (state) => {
+            // Remove Issue Report
+            .addCase(removeIssueReport.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getIssueReport.fulfilled, (state, action) => {
+            .addCase(removeIssueReport.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentIssueReport = action.payload;
+                // Remove the deleted issue report from the array using the returned ID
+                state.allIssueReports = state.allIssueReports.filter(
+                    report => report.id !== action.payload
+                );
                 state.error = null;
             })
-            .addCase(getIssueReport.rejected, (state, action) => {
+            .addCase(removeIssueReport.rejected, (state, action) => {
                 state.loading = false;
-                state.currentIssueReport = null;
-                state.error = action.payload || 'Failed to fetch issue report';
+                state.error = action.payload || 'Failed to delete issue report';
             })
     }
 })

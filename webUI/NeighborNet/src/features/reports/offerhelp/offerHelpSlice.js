@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { addOfferHelp } from './addOfferHeplThunk';
 import { getOfferHelp } from './getOfferHelpThunk';
+import { removeOfferHelp } from './removeOfferHelpThunk';
 
 const initialState = {
     allOfferHelp: [],
-    currentOfferHelp: null,
     loading: false,
     error: null,
     status: ''
@@ -32,20 +32,24 @@ const offerHelpSlice = createSlice({
                 state.error = action.payload || 'Failed to create help offer';
             })
             
-            // Get Single Offer Help
-            .addCase(getOfferHelp.pending, (state) => {
+
+            // Remove Offer Help
+            .addCase(removeOfferHelp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getOfferHelp.fulfilled, (state, action) => {
+            .addCase(removeOfferHelp.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentOfferHelp = action.payload;
+                // Remove the deleted offer help from the array using the returned ID
+                state.allOfferHelp = state.allOfferHelp.filter(
+                    offerHelp => offerHelp.id !== action.payload
+                );
+
                 state.error = null;
             })
-            .addCase(getOfferHelp.rejected, (state, action) => {
+            .addCase(removeOfferHelp.rejected, (state, action) => {
                 state.loading = false;
-                state.currentOfferHelp = null;
-                state.error = action.payload || 'Failed to fetch help offer';
+                state.error = action.payload || 'Failed to delete offer help';
             })
     }
 })

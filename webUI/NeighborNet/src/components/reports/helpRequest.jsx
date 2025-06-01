@@ -2,28 +2,29 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from '../reports/comments'
-import { getHelpRequest } from '../../features/reports/helpRequests/getHelpRequestThunk'
 import { format, parseISO } from 'date-fns'
 import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from '../../assets/help_request_placeholder.jpeg';
+import {removeHelpRequest} from '../../features/reports/helpRequests/removeHelpRequestThunk.js';
+import { clearFeed } from '../../features/reports/feed/feedSlice.js';
+import { getAllReports } from '../../features/reports/feed/getAllReportsThunk.js';
 
 
 export default function HelpRequest({report}) {
   const dispatch = useDispatch()
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false)
-  const [showForm, setShowForm] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const currentUser = useSelector(state => state.user.currentUser);
+  const feedFilters = useSelector(state => state.feed.filters);
   
   const toggleActionBar = () => {
     setShowActions(!showActions)
   }
-  
-  const toggleForm = () => {
-    setShowForm(!showForm)
-  }
-  
+
   const toggleComments = () => {
     setShowComments(!showComments)
   }
@@ -37,6 +38,39 @@ export default function HelpRequest({report}) {
       top: 0,
       behavior: 'smooth'
     });
+  };
+  
+  const handleDeleteRequest = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+    const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await dispatch(removeHelpRequest(report.id)).unwrap();
+      
+      // Refresh the feed after successful deletion
+      dispatch(clearFeed());
+      await dispatch(getAllReports({
+        offset: 0,
+        limit: 10,
+        neighborhood_id: currentUser?.neighborhood_id,
+        city: currentUser?.city,
+        loc: currentUser?.location,
+        filters: feedFilters
+      }));
+      
+    } catch (error) {
+      console.error('Failed to delete giveaway:', error);
+      alert('Failed to delete giveaway. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
   };
 
   useEffect(() => {
@@ -183,40 +217,6 @@ export default function HelpRequest({report}) {
                 <span>📝 This feature will be available in the next version</span>
               </div>
             </div>
-
-            {/* Dropdown form*/}
-            <div className={`overflow-hidden transition-all duration-300 ${
-              showForm ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="p-5 bg-base-200 text-left">
-                <div className="form-control mb-4">
-                  <label className="label justify-start p-0 pb-2">
-                    <span className="label-text font-medium">Message to requester</span>
-                  </label>
-                  <textarea 
-                    className="textarea textarea-bordered w-full" 
-                    placeholder={`Hi, I'd like to help with ${report.title}...`}
-                    rows="3"
-                  ></textarea>
-                </div>
-                <div className="form-control mb-4">
-                  <label className="label justify-start p-0 pb-2">
-                    <span className="label-text font-medium">Phone number</span>
-                  </label>
-                  <input 
-                    type="tel" 
-                    placeholder="Your contact number" 
-                    className="input input-bordered w-full" 
-                  />
-                </div>
-                <button className="btn w-full mt-2 bg-gray-400 text-gray-600 cursor-not-allowed" disabled={true}>
-                  Submit Offer
-                </button>
-                <div className="text-sm text-gray-500 mt-2 text-center">
-                  <span>📝 This feature will be available in the next version</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -225,6 +225,20 @@ export default function HelpRequest({report}) {
           <button className="btn btn-circle btn-md btn-info" title="Follow">
             <FaIcons.FaBell />
           </button>
+          {report.isAuthor && (
+            <button 
+              className="btn btn-circle btn-md btn-error" 
+              title="Delete"
+              onClick={handleDeleteRequest}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaTrash />
+              )}
+            </button>
+          )}
           <div className="flex flex-col items-center">
             <button className="btn btn-circle btn-md bg-gray-400 text-gray-600 cursor-not-allowed" title="Upvote" disabled={true}>
               <FaIcons.FaThumbsUp />
@@ -257,6 +271,35 @@ export default function HelpRequest({report}) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmation && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Delete "{report.title}"?</h3>
+            <p className="mb-6 text-gray-700">
+              Are you sure you want to delete this help request? This action cannot be undone and all associated comments will also be removed.
+            </p>
+            
+            <div className="flex flex-row gap-3 sm:flex-row sm:justify-between">
+              <button 
+                onClick={handleCancelDelete}
+                className="btn btn-outline flex-1 order-2 sm:order-1"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmDelete}
+                className={`btn bg-red-600 text-white hover:bg-red-700 flex-1 order-1 sm:order-2 ${isDeleting ? 'loading' : ''}`}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Back to Top Button */}
       <button

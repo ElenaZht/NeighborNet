@@ -4,18 +4,25 @@ import { Comments } from '../reports/comments'
 import { format, parseISO } from 'date-fns'
 import { getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/give_away_placeholder.jpeg"
+import { useDispatch, useSelector } from 'react-redux';
+import { removeGiveAwayThunk } from '../../features/reports/giveaways/removeGiveAwayThunk.js';
+import { clearFeed } from '../../features/reports/feed/feedSlice';
+import { getAllReports } from '../../features/reports/feed/getAllReportsThunk';
 
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showComments, setShowComments] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const dispatch = useDispatch();
+  const currentUser = useSelector(state => state.user.currentUser);
+  const feedFilters = useSelector(state => state.feed.filters);
   
   const toggleActionBar = () => {
     setShowActions(!showActions);
   };
   
-
   const toggleComments = () => {
     setShowComments(!showComments);
   };
@@ -24,6 +31,38 @@ export default function GiveAway({ report }) {
     setShowMap(!showMap);
   };
 
+  const handleDeleteRequest = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await dispatch(removeGiveAwayThunk(report.id)).unwrap();
+      
+      // Refresh the feed after successful deletion
+      dispatch(clearFeed());
+      await dispatch(getAllReports({
+        offset: 0,
+        limit: 10,
+        neighborhood_id: currentUser?.neighborhood_id,
+        city: currentUser?.city,
+        loc: currentUser?.location,
+        filters: feedFilters
+      }));
+      
+    } catch (error) {
+      console.error('Failed to delete giveaway:', error);
+      alert('Failed to delete giveaway. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
+  };
 
   if (!report) {
     return (
@@ -142,6 +181,20 @@ export default function GiveAway({ report }) {
           <button className="btn btn-circle btn-md btn-info" title="Follow">
             <FaIcons.FaBell />
           </button>
+          {report.isAuthor && (
+            <button 
+              className="btn btn-circle btn-md btn-error" 
+              title="Delete"
+              onClick={handleDeleteRequest}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <FaIcons.FaTrash />
+              )}
+            </button>
+          )}
         </div>
       </div>
       
@@ -165,6 +218,35 @@ export default function GiveAway({ report }) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmation && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Delete "{report.title}"?</h3>
+            <p className="mb-6 text-gray-700">
+              Are you sure you want to delete this giveaway? This action cannot be undone and all associated comments will also be removed.
+            </p>
+            
+            <div className="flex flex-row gap-3 sm:flex-row sm:justify-between">
+              <button 
+                onClick={handleCancelDelete}
+                className="btn btn-outline flex-1 order-2 sm:order-1"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmDelete}
+                className={`btn bg-red-600 text-white hover:bg-red-700 flex-1 order-1 sm:order-2 ${isDeleting ? 'loading' : ''}`}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

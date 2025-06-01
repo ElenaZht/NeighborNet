@@ -59,7 +59,7 @@ export const removeReport = async (reportId, tableName) => {
             .delete()
             .returning('*');
             
-        return deleted[0];// returns deleted report
+        return deleted
         
     } catch (error) {
         console.error('Error removing report:', error);

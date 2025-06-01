@@ -20,7 +20,7 @@ const initialState = {
         areaFilter: areaFilters[2],
         categoryFilter: categoryFilters,
         order: orderOptions[0],
-        allOwnFollowed: allOwnFollowed[2],
+        allOwnFollowed: allOwnFollowed[0],
     }
 };
 

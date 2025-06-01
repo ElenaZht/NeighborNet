@@ -1,11 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { addGiveAway } from './addGiveAwayThunk';
-import { getGiveAway } from './getGiveAwayThunk';
+import { removeGiveAwayThunk } from './removeGiveAwayThunk';
 
 
 const initialState = {
     allGiveAways: [],
-    currentGiveAway: null,
     loading: false,
     error: null,
     status: ''
@@ -33,20 +32,26 @@ const giveAwaysSlice = createSlice({
                 state.error = action.payload || 'Failed to create give-away listing';
             })
 
-            // Get Single Give Away
-            .addCase(getGiveAway.pending, (state) => {
+            // Remove Give Away
+            .addCase(removeGiveAwayThunk.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getGiveAway.fulfilled, (state, action) => {
+            .addCase(removeGiveAwayThunk.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentGiveAway = action.payload;
+                // Remove the deleted giveaway from the array using the returned ID
+                state.allGiveAways = state.allGiveAways.filter(
+                    giveAway => giveAway.id !== action.payload
+                );
+                // Clear currentGiveAway if it was the deleted one
+                if (state.currentGiveAway && state.currentGiveAway.id === action.payload) {
+                    state.currentGiveAway = null;
+                }
                 state.error = null;
             })
-            .addCase(getGiveAway.rejected, (state, action) => {
+            .addCase(removeGiveAwayThunk.rejected, (state, action) => {
                 state.loading = false;
-                state.currentGiveAway = null;
-                state.error = action.payload || 'Failed to fetch give-away';
+                state.error = action.payload || 'Failed to delete give-away';
             })
     }
 })

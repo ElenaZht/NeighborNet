@@ -173,12 +173,15 @@ export default function HelpRequest({report}) {
             {/* "I can help" button*/}
             <div className="p-4 border-t border-gray-200">
               <button 
-                className="btn btn-secondary w-full flex items-center justify-center gap-2"
-                onClick={toggleForm}
+                className="btn w-full flex items-center justify-center gap-2 bg-gray-400 text-gray-600 cursor-not-allowed"
+                disabled={true}
               >
                 I can help
-                {showForm ? <FaIcons.FaChevronUp /> : <FaIcons.FaChevronDown />}
+                <FaIcons.FaChevronDown />
               </button>
+              <div className="text-sm text-gray-500 mt-2 text-center">
+                <span>📝 This feature will be available in the next version</span>
+              </div>
             </div>
 
             {/* Dropdown form*/}
@@ -206,10 +209,12 @@ export default function HelpRequest({report}) {
                     className="input input-bordered w-full" 
                   />
                 </div>
-                <button className="btn btn-primary w-full mt-2" onClick={() => {
-
-                  setShowForm(false);
-                }}>Submit Offer</button>
+                <button className="btn w-full mt-2 bg-gray-400 text-gray-600 cursor-not-allowed" disabled={true}>
+                  Submit Offer
+                </button>
+                <div className="text-sm text-gray-500 mt-2 text-center">
+                  <span>📝 This feature will be available in the next version</span>
+                </div>
               </div>
             </div>
           </div>
@@ -220,9 +225,14 @@ export default function HelpRequest({report}) {
           <button className="btn btn-circle btn-md btn-info" title="Follow">
             <FaIcons.FaBell />
           </button>
-          <button className="btn btn-circle btn-md btn-primary" title="Upvote">
-            <FaIcons.FaThumbsUp />
-          </button>
+          <div className="flex flex-col items-center">
+            <button className="btn btn-circle btn-md bg-gray-400 text-gray-600 cursor-not-allowed" title="Upvote" disabled={true}>
+              <FaIcons.FaThumbsUp />
+            </button>
+            <div className="text-xs text-gray-500 mt-1 text-center w-20">
+              <span>Next version</span>
+            </div>
+          </div>
         </div>
       </div>
       

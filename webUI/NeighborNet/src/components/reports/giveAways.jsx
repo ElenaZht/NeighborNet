@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from '../reports/comments'
 import { format, parseISO } from 'date-fns'
@@ -8,7 +8,6 @@ import placeholderImage from "../../assets/give_away_placeholder.jpeg"
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
-  const [showForm, setShowForm] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
   
@@ -16,9 +15,6 @@ export default function GiveAway({ report }) {
     setShowActions(!showActions);
   };
   
-  const toggleForm = () => {
-    setShowForm(!showForm);
-  };
 
   const toggleComments = () => {
     setShowComments(!showComments);
@@ -129,43 +125,14 @@ export default function GiveAway({ report }) {
 
             <div className="p-4 border-t border-gray-200">
               <button 
-                className="btn btn-secondary w-full flex items-center justify-center gap-2"
-                onClick={toggleForm}
+                className="btn w-full flex items-center justify-center gap-2 bg-gray-400 text-gray-600 cursor-not-allowed"
+                disabled={true}
               >
                 I want this item
-                {showForm ? <FaIcons.FaChevronUp /> : <FaIcons.FaChevronDown />}
+                <FaIcons.FaChevronDown />
               </button>
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-300 ${
-              showForm ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="p-5 bg-base-200 text-left">
-                <div className="form-control mb-4">
-                  <label className="label justify-start p-0 pb-2">
-                    <span className="label-text font-medium">Message to owner</span>
-                  </label>
-                  <textarea 
-                    className="textarea textarea-bordered w-full" 
-                    placeholder={`Hi, I'm interested in your ${report.title}...`}
-                    rows="3"
-                  ></textarea>
-                </div>
-                <div className="form-control mb-4">
-                  <label className="label justify-start p-0 pb-2">
-                    <span className="label-text font-medium">Phone number</span>
-                  </label>
-                  <input 
-                    type="tel" 
-                    placeholder="Your contact number" 
-                    className="input input-bordered w-full" 
-                  />
-                </div>
-                <button className="btn btn-primary w-full mt-2" onClick={() => {
-                  // Handle form submission here
-                  // Then close the form
-                  setShowForm(false);
-                }}>Submit Request</button>
+              <div className="text-sm text-gray-500 mt-2 text-center">
+                <span>📝 This feature will be available in the next version</span>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { getAllReports } from './getAllReportsThunk';
 const areaFilters  = ['COUNTRY', 'CITY', 'NBR']
 const categoryFilters = ['GIVEAWAY', 'OFFERHELP', 'HELPREQUEST', 'ISSUEREPORT']
 const orderOptions = ['DATE', 'DISTANCE']
+const allOwnFollowed = ['ALL', 'OWN', 'FOLLOWED']
 
 const initialState = {
     feedItems: [],
@@ -18,7 +19,8 @@ const initialState = {
     filters: {
         areaFilter: areaFilters[2],
         categoryFilter: categoryFilters,
-        order: orderOptions[0]
+        order: orderOptions[0],
+        allOwnFollowed: allOwnFollowed[2],
     }
 };
 

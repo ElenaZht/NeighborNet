@@ -4,6 +4,7 @@ import { getAllReports } from '../features/reports/feed/getAllReportsThunk';
 import { setStoreFilters, resetOffset, clearFeed} from '../features/reports/feed/feedSlice'
 import { areaFilters, categoryFilters, orderOptions } from '../../../../filters';
 
+const allOwnFollowed = ['ALL', 'OWN', 'FOLLOWED'];
 
 export default function FeedFilter() {
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ export default function FeedFilter() {
     areaFilter: currentFilters?.areaFilter || areaFilters[2],
     categoryFilter: currentFilters?.categoryFilter || [...categoryFilters],
     order: currentFilters?.order || orderOptions[0],
+    allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0], // Default to 'ALL'
   });
 
   // Filter options to labels
@@ -34,6 +36,12 @@ export default function FeedFilter() {
   const orderFilterOptions = [
     { key: 'DATE', label: 'Date' },
     { key: 'DISTANCE', label: 'Distance' }
+  ];
+
+  const allOwnFollowedOptions = [
+    { key: 'ALL', label: 'All Reports' },
+    { key: 'OWN', label: 'My Reports' },
+    { key: 'FOLLOWED', label: 'Followed Reports' }
   ];
 
   // Handle area filter change
@@ -66,12 +74,18 @@ export default function FeedFilter() {
     setFilters(prev => ({ ...prev, order }));
   };
 
+  // Handle allOwnFollowed filter change
+  const handleAllOwnFollowedChange = (allOwnFollowed) => {
+    setFilters(prev => ({ ...prev, allOwnFollowed }));
+  };
+
   // Clear all filters
   const clearFilters = () => {
     setFilters({
       areaFilter: areaFilters[2],
       categoryFilter: [...categoryFilters],
       order: orderOptions[0],
+      allOwnFollowed: allOwnFollowed[0], // Reset to 'ALL'
     });
   };
 
@@ -80,7 +94,8 @@ export default function FeedFilter() {
     const filterParams = {
       areaFilter: filters.areaFilter,
       categoryFilter: filters.categoryFilter,
-      order: filters.order
+      order: filters.order,
+      allOwnFollowed: filters.allOwnFollowed
     };
 
     if (currentUser) {
@@ -93,7 +108,7 @@ export default function FeedFilter() {
                 neighborhood_id: currentUser.neighborhood_id,
                 city: currentUser.city,
                 loc: currentUser.location,
-                filters
+                filters: filterParams // Use filterParams instead of filters
             }));
     }
   
@@ -134,6 +149,37 @@ export default function FeedFilter() {
           </div>
         </div>
       </div>
+
+      {/* Show/Own/Followed Filter - Only show if user is logged in */}
+      {currentUser && (
+        <div>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Show</h3>
+          <div className="relative bg-gray-100 rounded-lg p-1">
+            <div 
+              className="absolute top-1 bottom-1 bg-green-500 rounded-md transition-all duration-200 ease-in-out"
+              style={{
+                width: `${100 / allOwnFollowedOptions.length}%`,
+                left: `${(allOwnFollowedOptions.findIndex(opt => opt.key === filters.allOwnFollowed) * 100) / allOwnFollowedOptions.length}%`
+              }}
+            />
+            <div className="relative flex">
+              {allOwnFollowedOptions.map(option => (
+                <button
+                  key={option.key}
+                  className={`flex-1 py-2 px-1 text-xs font-medium rounded-md transition-colors duration-200 relative z-10 ${
+                    filters.allOwnFollowed === option.key 
+                      ? 'text-white' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  onClick={() => handleAllOwnFollowedChange(option.key)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category Filters */}
       <div>

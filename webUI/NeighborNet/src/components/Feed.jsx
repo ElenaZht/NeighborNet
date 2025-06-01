@@ -22,6 +22,8 @@ export default function Feed() {
 
     useEffect(() => {
       if (currentUser) {
+              console.log("Loading more reports with filters", filters)
+
             dispatch(getAllReports({ 
                 offset: 0, 
                 limit: pagination.limit, 

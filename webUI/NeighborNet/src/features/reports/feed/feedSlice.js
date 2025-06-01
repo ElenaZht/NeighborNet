@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { getAllReports } from './getAllReportsThunk';
 import { followReport } from './followThunk';
 import { unfollowReport } from './unfollowThunk';
+import { getNeighborhoodById } from '../../neighborhoods/getNeighborhoodThunk';
 
 
 const areaFilters  = ['COUNTRY', 'CITY', 'NBR']
@@ -15,13 +16,14 @@ const initialState = {
     error: null,
     status: '',
     neighborhood: {},
+    neighborhoodLoading: false, // Separate loading state for neighborhood
     pagination: {
         limit: 10,
         offset: 0,
         hasMore: true
     },
     filters: {
-        areaFilter: areaFilters[2],
+        areaFilter: areaFilters[0],
         categoryFilter: categoryFilters,
         order: orderOptions[0],
         allOwnFollowed: allOwnFollowed[0],
@@ -106,6 +108,21 @@ const feedSlice = createSlice({
             })
             .addCase(unfollowReport.rejected, (state, action) => {
                 state.error = action.payload || 'Failed to unfollow report';
+            })
+            
+            // Get Neighborhood By ID
+            .addCase(getNeighborhoodById.pending, (state) => {
+                state.neighborhoodLoading = true; // Use separate loading state
+                state.error = null;
+            })
+            .addCase(getNeighborhoodById.fulfilled, (state, action) => {
+                state.neighborhoodLoading = false;
+                state.neighborhood = action.payload;
+                state.error = null;
+            })
+            .addCase(getNeighborhoodById.rejected, (state, action) => {
+                state.neighborhoodLoading = false;
+                state.error = action.payload || 'Failed to fetch neighborhood';
             })
 
     },

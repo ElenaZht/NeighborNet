@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllReports } from '../features/reports/feed/getAllReportsThunk';
 import IssueReport from './reports/issueReport';
@@ -15,25 +15,44 @@ export default function Feed() {
     loading, 
     error, 
     pagination, 
-    filters 
+    filters,
+    neighborhood,
+    neighborhoodLoading
   } = useSelector(state => state.feed);
-
   const currentUser = useSelector(state => state.user.currentUser) || null
+  const [title, setTitle] = useState('')
+  useEffect(() => {
+    if (currentUser) {
 
-    useEffect(() => {
-      if (currentUser) {
-              console.log("Loading more reports with filters", filters)
+      dispatch(getAllReports({ 
+          offset: 0, 
+          limit: pagination.limit, 
+          neighborhood_id: currentUser.neighborhood_id,
+          city: currentUser.city,
+          loc: currentUser.location,
+          filters
+      }));
+    }
+  }, [currentUser, dispatch]);
 
-            dispatch(getAllReports({ 
-                offset: 0, 
-                limit: pagination.limit, 
-                neighborhood_id: currentUser.neighborhood_id,
-                city: currentUser.city,
-                loc: currentUser.location,
-                filters
-            }));
+  useEffect(() => {
+    const generateTitile = async() => {
+      if (neighborhood && filters.areaFilter == 'NBR'){
+        setTitle(neighborhood.nbr_name_en)
+        return
       }
-    }, [currentUser]);
+      if(!neighborhood && filters.areaFilter == 'NBR' || neighborhood && filters.areaFilter == 'CITY'){
+        setTitle(currentUser.city)
+        return
+      }
+      if (filters.areaFilter == 'COUNTRY'){
+        setTitle('Israel')
+        return
+      }
+    }
+
+    generateTitile()
+  }, [neighborhood, filters])
 
   const handleLoadMore = () => {
     if (!loading && pagination.hasMore && currentUser) {
@@ -66,6 +85,8 @@ export default function Feed() {
     }
   };
 
+
+
   if (loading && feedItems.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -93,31 +114,19 @@ export default function Feed() {
     );
   }
 
-  // Generate feed title based on filters
-  const getFeedTitle = () => {
-    if (currentUser?.city && currentUser?.neighborhood_id) {
-      return `Feed for ${currentUser.neighborhood_id}, ${currentUser.city}`;
-    } else if (currentUser?.city) {
-      return `Feed for ${currentUser.city}`;
-    } else if (currentUser?.neighborhood_id) {
-      return `Feed for ${currentUser.neighborhood_id}`;
-    }
-    return 'All Reports';
-  };
+
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
-          {getFeedTitle()}
-        </h1>
+      <div className="text-center mb-6">
+        <h1 className="text-4xl font-bold">Feed</h1>
+        {title && !neighborhoodLoading && <h2 className="text-2xl font-semibold mt-2">for: {title}</h2>}
       </div>
 
       {/* Reports List */}
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-2xl mx-auto">
         {feedItems.length === 0 ? (
-          <div className="alert alert-info">
+          <div className="alert alert-info mx-auto max-w-2xl">
             <span>No reports found for this area.</span>
           </div>
         ) : (

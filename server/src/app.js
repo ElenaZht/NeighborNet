@@ -18,6 +18,7 @@ import morgan from 'morgan';
 import followersRouter from './routes/followersRouter.js'
 
 const app = express()
+app.use(morgan('dev')); // Logging middleware for development
 
 app.use(express.json())
 app.use(cookieParser())
@@ -39,9 +40,8 @@ app.use('/offer-help', offerHelpReportsRouter)
 app.use('/help-requests', helpRequestReporstRouter)
 app.use('/comments', commentsRouter)
 app.use('/reports', reportsRouter)
-app.use('/neighborhood', neighborhoodRouter)
+app.use('/neighborhoods', neighborhoodRouter)
 app.use('/followers', followersRouter)
-app.use(morgan('dev')); // Logging middleware for development
 
 app.listen(3001, (error) => {
     if (error){

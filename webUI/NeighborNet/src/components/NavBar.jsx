@@ -7,6 +7,8 @@ import HelpRequestInputForm from './reports/helpRequestInputForm';
 import OfferHelpInputForm from './reports/offerHelpInputForm';
 import IssueReportInputForm from './reports/issueReportInputForm';
 import GiveAwayInputForm from './reports/giveAwayInputForm';
+import { getNeighborhoodById } from '../features/neighborhoods/getNeighborhoodThunk';
+
 
 function NavBar() {
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
@@ -16,11 +18,27 @@ function NavBar() {
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [activeForm, setActiveForm] = useState(null);
   const currentUser = useSelector(state => state.user.currentUser) || null
+  const neighborhood = useSelector(state => state.user.neighborhood) || null;
+  const neighborhoodLoading = useSelector(state => state.user.neighborhoodLoading) || false;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const accountDropdownRef = useRef(null);
   const createDropdownRef = useRef(null);
   const formDropdownRef = useRef(null);
+
+  // Fetch neighborhood info if user has neighborhood id
+  useEffect(() => {
+    const fetchNeighborhood = async () => {
+      if (currentUser && currentUser.neighborhood_id) {
+        try {
+          await dispatch(getNeighborhoodById(currentUser.neighborhood_id)).unwrap();
+        } catch (error) {
+          console.error('Failed to fetch neighborhood:', error);
+        }
+      }
+    }
+    fetchNeighborhood();
+  }, [currentUser]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -76,14 +94,37 @@ function NavBar() {
     }
   };
 
+
   return (
     <div className="navbar bg-base-100 px-4 shadow-md">
       <div className="navbar-start">
-        {/* Empty start section for spacing */}
+        <Link to='/' className="btn btn-ghost normal-case text-xl flex items-center gap-2">
+          {/* Icon with gradient */}
+          <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+            <svg 
+              className="w-5 h-5 text-white" 
+              fill="currentColor" 
+              viewBox="0 0 20 20"
+            >
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+            </svg>
+          </div>
+          {/* Text with gradient */}
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold">
+            NeighborNet
+          </span>
+        </Link>
+
+        {neighborhood && !neighborhoodLoading && 
+          <div className="flex items-center gap-2 ml-4">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <h1 className="text-lg font-semibold">{neighborhood.nbr_name_en}</h1>
+          </div>
+        }
       </div>
-      
+       
       <div className="navbar-center">
-        <Link to='/' className="btn btn-ghost normal-case text-xl">NeighborNet</Link>
+        {/* Empty center section */}
       </div>
 
       <div className="navbar-end">

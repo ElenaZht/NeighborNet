@@ -10,6 +10,8 @@ import { clearFeed } from '../../features/reports/feed/feedSlice.js';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk.js';
 import { followReport } from '../../features/reports/feed/followThunk';
 import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
+import EditHelpRequestForm from './editHelpRequestForm.jsx';
+import { FaTimes } from 'react-icons/fa';
 
 export default function HelpRequest({report}) {
   const dispatch = useDispatch()
@@ -21,8 +23,22 @@ export default function HelpRequest({report}) {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
+
+  // Prevent body scroll when edit dialog is open
+  useEffect(() => {
+    if (showEditDialog || showDeleteConfirmation) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showEditDialog, showDeleteConfirmation]);
   
   const toggleActionBar = () => {
     setShowActions(!showActions)
@@ -47,7 +63,7 @@ export default function HelpRequest({report}) {
     setShowDeleteConfirmation(true);
   };
 
-    const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
       await dispatch(removeHelpRequest(report.id)).unwrap();
@@ -64,8 +80,8 @@ export default function HelpRequest({report}) {
       }));
       
     } catch (error) {
-      console.error('Failed to delete giveaway:', error);
-      alert('Failed to delete giveaway. Please try again.');
+      console.error('Failed to delete help request:', error);
+      alert('Failed to delete help request. Please try again.');
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirmation(false);
@@ -116,6 +132,33 @@ export default function HelpRequest({report}) {
     }
   };
 
+  const handleEditRequest = () => {
+    setShowEditDialog(true);
+  };
+
+  const handleEditSuccess = async () => {
+    setShowEditDialog(false);
+    
+    // Force refresh the feed to show updated data
+    dispatch(clearFeed());
+    await dispatch(getAllReports({
+      offset: 0,
+      limit: 20, // Load more items to ensure we get the updated report
+      neighborhood_id: currentUser?.neighborhood_id,
+      city: currentUser?.city,
+      loc: currentUser?.location,
+      filters: feedFilters
+    }));
+  };
+
+  const handleEditError = (errorMessage) => {
+    console.error('Failed to edit help request:', errorMessage);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditDialog(false);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       // Show button when user scrolls down 400px
@@ -125,7 +168,6 @@ export default function HelpRequest({report}) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
 
   if (!report) {
     return (
@@ -244,24 +286,24 @@ export default function HelpRequest({report}) {
                   <div className="relative mt-3 border rounded-lg overflow-hidden">
                     <button 
                       className="absolute top-2 right-2 bg-base-100 p-1 rounded-full shadow-md z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMap(false);
-                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMap(false);
+                      }}
                     >
-                    <FaIcons.FaTimes className="text-error" />
-                        </button>
-                        <div className="w-full h-48">
-                          <iframe 
-                            title="Location Map"
-                            className="w-full h-full"
-                            frameBorder="0"
-                            src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                            allowFullScreen
-                          ></iframe>
-                        </div>
-                      </div>
-                  )}
+                      <FaIcons.FaTimes className="text-error" />
+                    </button>
+                    <div className="w-full h-48">
+                      <iframe 
+                        title="Location Map"
+                        className="w-full h-full"
+                        frameBorder="0"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -284,7 +326,7 @@ export default function HelpRequest({report}) {
         {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
           
-          {/* Follow/Unfollow Buttons - Replace the simple follow button */}
+          {/* Follow/Unfollow Buttons */}
           {!report.isFollowed ? (
             <button 
               className="btn btn-circle btn-md btn-info"
@@ -313,6 +355,17 @@ export default function HelpRequest({report}) {
             </button>
           )}
 
+          {/* Edit Button (only for authors) */}
+          {report.isAuthor && (
+            <button 
+              className="btn btn-circle btn-md btn-secondary" 
+              title="Edit"
+              onClick={handleEditRequest}
+            >
+              <FaIcons.FaEdit />
+            </button>
+          )}
+
           {/* Delete Button (only for authors) */}
           {report.isAuthor && (
             <button 
@@ -328,6 +381,7 @@ export default function HelpRequest({report}) {
               )}
             </button>
           )}
+
           <div className="flex flex-col items-center">
             <button className="btn btn-circle btn-md bg-gray-400 text-gray-600 cursor-not-allowed" title="Upvote" disabled={true}>
               <FaIcons.FaThumbsUp />
@@ -361,9 +415,41 @@ export default function HelpRequest({report}) {
         </div>
       </div>
 
+      {/* Edit Dialog Modal */}
+      {showEditDialog && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Edit Help Request</h3>
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-sm btn-circle"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <EditHelpRequestForm 
+              reportData={report}
+              onSuccess={handleEditSuccess}
+              onError={handleEditError}
+            />
+
+            <div className="flex justify-start mt-4">
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Delete "{report.title}"?</h3>
             <p className="mb-6 text-gray-700">

@@ -163,10 +163,15 @@ export default function HelpReportInputForm() {
             city: '',
             location: {lat: '', lng: ''}
             });
-
+            
             // Clear address input
             if (addressInputRef.current) {
               addressInputRef.current.clearAddress();
+            }
+            
+            // Refresh the feed to show the new report
+            if (window.refreshFeed) {
+              window.refreshFeed();
             }
             
             // Hide success message after 5 seconds

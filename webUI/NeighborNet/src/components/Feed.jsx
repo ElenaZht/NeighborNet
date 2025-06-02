@@ -1,47 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAllReports } from '../features/reports/feed/getAllReportsThunk';
-import IssueReport from './reports/issueReport';
-import HelpRequest from './reports/helpRequest';
-import OfferHelp from './reports/offerHelp';
-import GiveAway from './reports/giveAways';
-import { nextOffset } from '../features/reports/feed/feedSlice';
-
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllReports } from '../features/reports/feed/getAllReportsThunk.js'
+import { nextOffset, clearFeed } from '../features/reports/feed/feedSlice.js'
+import IssueReport from './reports/issueReport.jsx'
+import HelpRequest from './reports/helpRequest.jsx'
+import OfferHelp from './reports/offerHelp.jsx'
+import GiveAway from './reports/giveAways.jsx'
 
 export default function Feed() {
-  const dispatch = useDispatch();
-  const { 
-    feedItems, 
-    loading, 
-    error, 
-    pagination, 
-    filters,
-    neighborhood,
-    neighborhoodLoading
-  } = useSelector(state => state.feed);
-  const currentUser = useSelector(state => state.user.currentUser) || null
+  const dispatch = useDispatch()
+  const { feedItems, loading, error, pagination } = useSelector(state => state.feed)
+  const { currentUser } = useSelector(state => state.user)
+  const { filters } = useSelector(state => state.feed)
+  const neighborhood = useSelector(state => state.user.neighborhood)
   const [title, setTitle] = useState('')
-  useEffect(() => {
-    if (currentUser) {
 
+  useEffect(() => {
+    if (currentUser && feedItems.length === 0) {
       dispatch(getAllReports({ 
-          offset: 0, 
-          limit: pagination.limit, 
-          neighborhood_id: currentUser.neighborhood_id,
-          city: currentUser.city,
-          loc: currentUser.location,
-          filters
+        offset: 0, 
+        limit: 10, 
+        neighborhood_id: currentUser.neighborhood_id,
+        city: currentUser.city,
+        loc: currentUser.location,
+        filters
       }));
     }
-  }, [currentUser, dispatch]);
+  }, [dispatch, currentUser, filters, feedItems.length]);
 
   useEffect(() => {
-    const generateTitile = async() => {
-      if (neighborhood && filters.areaFilter == 'NBR'){
-        setTitle(neighborhood.nbr_name_en)
+    const generateTitile = () => {
+      if (!filters) return
+      
+      if (filters.areaFilter == 'NEIGHBORHOOD' && neighborhood){
+        setTitle(neighborhood.name)
         return
       }
-      if(!neighborhood && filters.areaFilter == 'NBR' || neighborhood && filters.areaFilter == 'CITY'){
+      if (filters.areaFilter == 'CITY' && currentUser){
         setTitle(currentUser.city)
         return
       }
@@ -53,6 +48,29 @@ export default function Feed() {
 
     generateTitile()
   }, [neighborhood, filters])
+
+  // Function to refresh feed (for use by input forms)
+  const refreshFeed = () => {
+    if (currentUser) {
+      dispatch(clearFeed());
+      dispatch(getAllReports({ 
+        offset: 0, 
+        limit: 10, 
+        neighborhood_id: currentUser.neighborhood_id,
+        city: currentUser.city,
+        loc: currentUser.location,
+        filters
+      }));
+    }
+  };
+
+  // Expose refresh function globally for input forms
+  useEffect(() => {
+    window.refreshFeed = refreshFeed;
+    return () => {
+      delete window.refreshFeed;
+    };
+  }, [currentUser, filters]);
 
   const handleLoadMore = () => {
     if (!loading && pagination.hasMore && currentUser) {
@@ -85,72 +103,54 @@ export default function Feed() {
     }
   };
 
-
-
-  if (loading && feedItems.length === 0) {
+  if (!currentUser) {
     return (
       <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-        <span className="ml-2">Loading reports...</span>
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Please log in to view the feed</h2>
+          <p className="text-gray-600">You need to be logged in to see community reports</p>
+        </div>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="alert alert-error max-w-4xl mx-auto m-4">
-        <span>Error loading reports: {error}</span>
-        <button 
-          className="btn btn-sm btn-outline"
-          onClick={() => {
-            if (currentUser) {
-              handleLoadMore()
-            }
-          }}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-4xl font-bold">Feed</h1>
-        {title && !neighborhoodLoading && <h2 className="text-2xl font-semibold mt-2">for: {title}</h2>}
+        <h1 className="text-3xl font-bold text-gray-800">Community Feed</h1>
+        <p className="text-gray-600 mt-2">Latest updates from {title}</p>
       </div>
 
-      {/* Reports List */}
-      <div className="space-y-6 max-w-2xl mx-auto">
-        {feedItems.length === 0 ? (
-          <div className="alert alert-info mx-auto max-w-2xl">
-            <span>No reports found for this area.</span>
-          </div>
-        ) : (
-          feedItems.map(renderReport)
-        )}
+      {error && (
+        <div className="alert alert-error mb-4">
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Feed Items */}
+      <div className="space-y-6">
+        {feedItems.map(renderReport)}
       </div>
 
       {/* Load More Button */}
-      {pagination.hasMore && feedItems.length > 0 && (
-        <div className="flex justify-center mt-8 mb-4">
+      {pagination.hasMore && (
+        <div className="flex justify-center mt-8">
           <button 
-            className={`btn btn-primary btn-lg ${loading ? 'loading' : ''}`}
             onClick={handleLoadMore}
+            className={`btn btn-primary ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Loading More...' : 'Load More Reports'}
+            {loading ? 'Loading...' : 'Load More'}
           </button>
         </div>
       )}
 
-      {/* End of feed indicator */}
-      {!pagination.hasMore && feedItems.length > 0 && (
-        <div className="text-center mt-8 mb-4 p-4 text-gray-500">
-          <span>You've reached the end of the feed</span>
+      {/* No items message */}
+      {feedItems.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">No reports yet</h3>
+          <p className="text-gray-500">Be the first to share something with your community!</p>
         </div>
       )}
     </div>

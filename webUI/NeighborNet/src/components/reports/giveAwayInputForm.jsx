@@ -115,50 +115,53 @@ export default function GiveAwayInputForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
-    // Check authentication
-    if (!isAuthenticated) {
-      setShowAuthPrompt(true);
-      return;
-    }
     
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
 
     try {
-
       const resultAction = await dispatch(addGiveAway(formData));
       
       if (addGiveAway.fulfilled.match(resultAction)) {
-        // Success - clear form and localStorage
+        // Success - show message and reset form
         setSuccess(true);
+        
+        // Clear saved form data
         localStorage.removeItem(FORM_STORAGE_KEY);
         
         // Reset form
         setFormData({
           title: '',
           description: '',
-          address: '',
           img_url: '',
           is_free: true,
           swap_options: '',
           city: '',
+          address: '',
           location: {lat: '', lng: ''}
         });
         
-        // Clear the address input
+        //Clear the address input
         if (addressInputRef.current) {
           addressInputRef.current.clearAddress();
         }
+        
+        // Refresh the feed to show the new report
+        if (window.refreshFeed) {
+          window.refreshFeed();
+        }
+        
         // Hide success message after 5 seconds
-        setTimeout(() => setSuccess(false), 5000);
+        setTimeout(() => {
+          setSuccess(false);
+        }, 5000);
       } else {
         throw new Error(resultAction.payload || 'Failed to submit giveaway');
       }
+      
     } catch (err) {
       setError(err.message || "Failed to submit giveaway. Please try again.");
       console.error("Error submitting giveaway:", err);

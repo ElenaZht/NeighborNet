@@ -129,12 +129,12 @@ export const editIssueReport = async (req, res) => {
             followers: req.body.followers,
             verifies: req.body.verifies,
             city: req.body.city,
-            location: req.body.city
+            location: req.body.location
         };
         
-        if (location) {
+        if (req.body.location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            const neighborhood = await getNeighborhoodByCoordinates(req.body.location.lat, req.body.location.lng)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id

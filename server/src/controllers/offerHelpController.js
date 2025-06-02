@@ -133,24 +133,41 @@ export const editOfferHelpReport = async (req, res) => {
             return res.status(403).json({ message: "User is not an owner" });
         }
         
+        // Only include fields that are provided in the request
         const updateData = { 
-            id: reportId,
-            title: req.body.title,
-            img_url: req.body.img_url,
-            address: req.body.address,
-            barter_options: req.body.barter_options,
-            city: req.body.city,
-            location: req.body.location,
-            description: req.body.description
+            id: reportId
         };
         
-        if (location) {
-            //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+        // Add fields only if they exist in the request body
+        if (req.body.title !== undefined) updateData.title = req.body.title;
+        if (req.body.img_url !== undefined) updateData.img_url = req.body.img_url;
+        if (req.body.address !== undefined) updateData.address = req.body.address;
+        if (req.body.barter_options !== undefined) updateData.barter_options = req.body.barter_options;
+        if (req.body.city !== undefined) updateData.city = req.body.city;
+        if (req.body.location !== undefined) updateData.location = req.body.location;
+        if (req.body.description !== undefined) updateData.description = req.body.description;
+        
+        // Only try to detect neighborhood if we have valid coordinates
+        if (req.body.location && 
+            req.body.location.lat && 
+            req.body.location.lng &&
+            !isNaN(req.body.location.lat) && 
+            !isNaN(req.body.location.lng)) {
             
-            if (neighborhood !== undefined){
-                updateData.neighborhood_id = neighborhood.id
-            }    
+            try {
+                const neighborhood = await getNeighborhoodByCoordinates(
+                    parseFloat(req.body.location.lat), 
+                    parseFloat(req.body.location.lng)
+                );
+                
+                if (neighborhood !== undefined){
+                    updateData.neighborhood_id = neighborhood.id
+                }    
+            } catch (neighborhoodError) {
+                // Log the error but don't fail the update
+                console.warn('Failed to detect neighborhood:', neighborhoodError.message);
+                // Continue with the update without neighborhood_id
+            }
         }
 
         // Update the report

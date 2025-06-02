@@ -136,21 +136,11 @@ export default function OfferHelpInputForm() {
     if (!validateForm()) {
       return;
     }
-  
+
     setIsSubmitting(true);
-  
+
     try {
-      const offerHelpData = {
-        title: formData.title,
-        description: formData.description,
-        address: formData.address,
-        img_url: formData.img_url,
-        barter_options: formData.barterOptions.length > 0 ? formData.barterOptions : null,
-        city: formData.city,
-        location: formData.location
-      };
-      
-      const resultAction = await dispatch(addOfferHelp(offerHelpData));
+      const resultAction = await dispatch(addOfferHelp(formData));
       
       if (addOfferHelp.fulfilled.match(resultAction)) {
         // Success - show message and reset form
@@ -172,6 +162,11 @@ export default function OfferHelpInputForm() {
         //Clear the address input
         if (addressInputRef.current) {
           addressInputRef.current.clearAddress();
+        }
+        
+        // Refresh the feed to show the new report
+        if (window.refreshFeed) {
+          window.refreshFeed();
         }
         
         // Hide success message after 5 seconds

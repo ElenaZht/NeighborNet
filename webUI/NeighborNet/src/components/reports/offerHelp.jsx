@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as FaIcons from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 import { Comments } from '../reports/comments'
 import { removeOfferHelp } from '../../features/reports/offerhelp/removeOfferHelpThunk'
 import { clearFeed } from '../../features/reports/feed/feedSlice.js';
@@ -10,6 +11,7 @@ import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 import { format, parseISO } from 'date-fns'
 import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/offer_help_placeholder.jpg"
+import EditOfferHelpForm from './editOfferHelpForm.jsx';
 
 export default function OfferHelp({ report }) {
   const dispatch = useDispatch()
@@ -19,10 +21,24 @@ export default function OfferHelp({ report }) {
   const [showForm, setShowForm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
+
+  // Prevent body scroll when edit modal is open
+  useEffect(() => {
+    if (showEditDialog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showEditDialog]);
 
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -38,6 +54,40 @@ export default function OfferHelp({ report }) {
   
   const toggleForm = () => {
     setShowForm(!showForm);
+  };
+
+  const handleEditOfferHelp = () => {
+    setShowEditDialog(true);
+    setShowActions(false); // Close action bar
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditDialog(false);
+  };
+
+  const handleEditSuccess = (updatedReport) => {
+    setShowEditDialog(false);
+    
+    // Refresh the feed to show updated data
+    if (window.refreshFeed) {
+      window.refreshFeed();
+    } else {
+      // Fallback refresh method
+      dispatch(clearFeed());
+      dispatch(getAllReports({
+        offset: 0,
+        limit: 10,
+        neighborhood_id: currentUser?.neighborhood_id,
+        city: currentUser?.city,
+        loc: currentUser?.location,
+        filters: feedFilters
+      }));
+    }
+  };
+
+  const handleEditError = (error) => {
+    console.error('Edit error:', error);
+    // Error is already handled in the form component
   };
 
   const handleDeleteRequest = () => {
@@ -306,6 +356,18 @@ export default function OfferHelp({ report }) {
             </button>
           )}
 
+          {/* Edit Button (only for authors) */}
+          {report.isAuthor && (
+            <button 
+              className="btn btn-circle btn-md btn-secondary" 
+              title="Edit"
+              onClick={handleEditOfferHelp}
+            >
+              <FaIcons.FaEdit />
+            </button>
+          )}
+
+          {/* Delete Button (only for authors) */}
           {report.isAuthor && (
             <button 
               className="btn btn-circle btn-md btn-error" 
@@ -352,6 +414,38 @@ export default function OfferHelp({ report }) {
           </div>
         </div>
       </div>
+
+      {/* Edit Dialog Modal */}
+      {showEditDialog && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Edit Offer Help</h3>
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-sm btn-circle"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <EditOfferHelpForm 
+              reportData={report}
+              onSuccess={handleEditSuccess}
+              onError={handleEditError}
+            />
+
+            <div className="flex justify-start mt-4">
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirmation && (

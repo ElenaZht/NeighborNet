@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } f
 import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
 
 
-const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
+const AddressInputForm = forwardRef(({ onAddressSelect, initialAddress }, ref) => {
   const [address, setAddress] = useState('');
   const [predictions, setPredictions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -16,6 +16,13 @@ const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
   const [warning, setWarning] = useState('')
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+
+  // Set initial address when component mounts or initialAddress changes
+  useEffect(() => {
+    if (initialAddress && initialAddress !== address) {
+      setAddress(initialAddress);
+    }
+  }, [initialAddress]);
 
   // Permissioned actions for parent(addressInputRef.current.clearAddress())
   useImperativeHandle(ref, () => ({

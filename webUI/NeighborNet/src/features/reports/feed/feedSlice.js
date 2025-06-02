@@ -61,7 +61,14 @@ const feedSlice = createSlice({
                     state.pagination.hasMore = false;
                 } 
                 else {
-                    state.feedItems.push(...action.payload.reports);
+                    // Check if this is a fresh load (offset 0) or pagination
+                    if (state.pagination.offset === 0) {
+                        // Fresh load - replace all items
+                        state.feedItems = action.payload.reports;
+                    } else {
+                        // Pagination - append new items
+                        state.feedItems.push(...action.payload.reports);
+                    }
                 }
                 state.error = null;
             })

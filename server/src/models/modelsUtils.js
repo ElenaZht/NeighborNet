@@ -25,9 +25,16 @@ export const getReport = async (reportId, tableName) => {
 export const createReport = async (reportData, tableName) => {
   try {
 
-    if (reportData.location){
-        reportData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
-          [reportData.location.lat, reportData.location.lng])
+    if (reportData.location && 
+        reportData.location.lat && 
+        reportData.location.lng &&
+        !isNaN(parseFloat(reportData.location.lat)) && 
+        !isNaN(parseFloat(reportData.location.lng))) {
+        reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+          [parseFloat(reportData.location.lng), parseFloat(reportData.location.lat)])
+    } else if (reportData.location) {
+      // If location exists but is invalid, remove it
+      delete reportData.location;
     }
 
     const [insertedReport] = await db(tableName)
@@ -101,18 +108,31 @@ export const updateReport = async (reportData, tableName) => {
       throw new Error('Report ID is required for update');
     }
     
-    if (reportData.locatin) {
-      reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng]);
+    const { id, ...updateData } = reportData;
+    
+    if (updateData.location && 
+        updateData.location.lat && 
+        updateData.location.lng &&
+        !isNaN(parseFloat(updateData.location.lat)) && 
+        !isNaN(parseFloat(updateData.location.lng))) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+        [parseFloat(updateData.location.lng), parseFloat(updateData.location.lat)]);
+    } else if (updateData.location) {
+      // If location exists but is invalid, remove it from update to keep existing value
+      delete updateData.location;
     }
     
     const existingReport = await db(tableName).where({ id }).first();
     if (!existingReport) {
-      throw new Error(`Report with ID ${id} not found`);
+      const error = new Error(`Report with ID ${id} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
     }
+    
     // Update the database record
-    const updatedReport = await db(tableName)
+    const [updatedReport] = await db(tableName)
       .where({ id })
-      .update(reportData)
+      .update(updateData)
       .returning('*');
       
     return updatedReport;

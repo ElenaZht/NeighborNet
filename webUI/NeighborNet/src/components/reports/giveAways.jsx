@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from '../reports/comments'
 import { format, parseISO } from 'date-fns'
@@ -10,6 +10,8 @@ import { clearFeed } from '../../features/reports/feed/feedSlice';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk';
 import { followReport } from '../../features/reports/feed/followThunk';
 import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
+import EditGiveAwayForm from './editGiveAwayForm';
+import { FaTimes } from 'react-icons/fa';
 
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
@@ -19,9 +21,24 @@ export default function GiveAway({ report }) {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  
   const dispatch = useDispatch();
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
+
+  // Prevent body scroll when edit dialog is open
+  useEffect(() => {
+    if (showEditDialog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showEditDialog]);
   
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -106,6 +123,33 @@ export default function GiveAway({ report }) {
     } finally {
       setIsUnfollowLoading(false);
     }
+  };
+
+  const handleEditRequest = () => {
+    setShowEditDialog(true);
+  };
+
+  const handleEditSuccess = async () => {
+    setShowEditDialog(false);
+    
+    // Force refresh the feed to show updated data
+    dispatch(clearFeed());
+    await dispatch(getAllReports({
+      offset: 0,
+      limit: 20, // Load more items to ensure we get the updated report
+      neighborhood_id: currentUser?.neighborhood_id,
+      city: currentUser?.city,
+      loc: currentUser?.location,
+      filters: feedFilters
+    }));
+  };
+
+  const handleEditError = (errorMessage) => {
+    console.error('Failed to edit giveaway:', errorMessage);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditDialog(false);
   };
 
   if (!report) {
@@ -271,6 +315,17 @@ export default function GiveAway({ report }) {
             </button>
           )}
 
+          {/* Edit Button (only for authors) */}
+          {report.isAuthor && (
+            <button 
+              className="btn btn-circle btn-md btn-secondary" 
+              title="Edit"
+              onClick={handleEditRequest}
+            >
+              <FaIcons.FaEdit />
+            </button>
+          )}
+
           {/* Delete Button (only for authors) */}
           {report.isAuthor && (
             <button 
@@ -310,9 +365,41 @@ export default function GiveAway({ report }) {
         </div>
       </div>
 
+      {/* Edit Dialog Modal */}
+      {showEditDialog && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Edit Giveaway</h3>
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-sm btn-circle"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <EditGiveAwayForm 
+              reportData={report}
+              onSuccess={handleEditSuccess}
+              onError={handleEditError}
+            />
+
+            <div className="flex justify-start mt-4">
+              <button 
+                onClick={handleCancelEdit}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Delete "{report.title}"?</h3>
             <p className="mb-6 text-gray-700">

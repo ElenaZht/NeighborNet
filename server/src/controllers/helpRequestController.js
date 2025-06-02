@@ -154,9 +154,10 @@ export const editHelpRequestReport = async (req, res) => {
             city: req.body.city
         };
         
-        if (location) {
+        // Fix: use req.body.location instead of undefined location variable
+        if (req.body.location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            const neighborhood = await getNeighborhoodByCoordinates(req.body.location.lat, req.body.location.lng)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id

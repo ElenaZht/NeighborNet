@@ -60,7 +60,6 @@ export const removeFollowerRecord = async (followerData) => {
         if (!report_id) throw new Error('Report ID is required');
         if (!report_type) throw new Error('Report type is required');
 
-        // Delete the follower record
         const deletedCount = await db('followers')
             .where({
                 user_id,

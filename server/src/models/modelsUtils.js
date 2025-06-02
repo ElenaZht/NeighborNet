@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { ReportStatus } from "../../../../reportsStatuses.js";
 
 
 export const getReport = async (reportId, tableName) => {
@@ -24,6 +25,10 @@ export const getReport = async (reportId, tableName) => {
 
 export const createReport = async (reportData, tableName) => {
   try {
+    // Set default status to ACTIVE for all new reports if not already set
+    if (!reportData.status) {
+      reportData.status = ReportStatus.ACTIVE;
+    }
 
     if (reportData.location && 
         reportData.location.lat && 
@@ -36,7 +41,7 @@ export const createReport = async (reportData, tableName) => {
       // If location exists but is invalid, remove it
       delete reportData.location;
     }
-
+    
     const [insertedReport] = await db(tableName)
       .insert(reportData)
       .returning('*');
@@ -84,16 +89,13 @@ export const updateStatus = async (reportId, newStatus, tableName) => {
       throw error;
     }
 
-    //Check is user an owner
-
-
     // Update the status
-    const updatedReport = await db(tableName)
+    const [updatedReport] = await db(tableName)
       .where({ id: reportId })
       .update({ status: newStatus })
       .returning('*');
       
-    return updatedReport;
+    return updatedReport; // Return the first (and only) element from the array
     
   } catch (error) {
     console.error('Error updating report status:', error);

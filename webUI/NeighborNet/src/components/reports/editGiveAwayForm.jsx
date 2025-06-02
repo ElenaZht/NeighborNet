@@ -93,11 +93,9 @@ export default function EditGiveAwayForm({ reportData, onSuccess, onError }) {
     return true;
   };
 
-  // Function to get only changed fields
   const getChangedFields = () => {
     const changes = {};
     
-    // Compare each field with original data
     Object.keys(formData).forEach(key => {
       if (key === 'location') {
         // Special handling for location object
@@ -123,7 +121,6 @@ export default function EditGiveAwayForm({ reportData, onSuccess, onError }) {
     return changes;
   };
 
-  // Check if there are any changes
   const hasChanges = () => {
     const changedFields = getChangedFields();
     return Object.keys(changedFields).length > 0;

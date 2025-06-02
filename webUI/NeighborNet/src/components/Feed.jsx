@@ -49,7 +49,6 @@ export default function Feed() {
     generateTitile()
   }, [neighborhood, filters])
 
-  // Function to refresh feed (for use by input forms)
   const refreshFeed = () => {
     if (currentUser) {
       dispatch(clearFeed());
@@ -87,7 +86,6 @@ export default function Feed() {
     }
   };
 
-  // Render individual report based on type
   const renderReport = (report) => {
     switch (report.record_type) {
       case 'issue_report':

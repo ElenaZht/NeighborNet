@@ -93,11 +93,9 @@ export default function EditIssueReportForm({ reportData, onSuccess, onError }) 
     return true;
   };
 
-  // Function to get only changed fields
   const getChangedFields = () => {
     const changes = {};
     
-    // Compare each field with original data
     Object.keys(formData).forEach(key => {
       if (key === 'location') {
         // Special handling for location object

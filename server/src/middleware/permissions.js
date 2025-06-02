@@ -1,7 +1,6 @@
 import { getReport } from "../models/modelsUtils.js";
 
 export const isAccountOwner = (req, res, next) => {
-    // req.user is populated by the authenticate middleware
     if (!req.user) {
         return res.status(401).json({ message: 'Authentication required' });
     }
@@ -20,7 +19,6 @@ export const isAccountOwner = (req, res, next) => {
 };
 
 export const isReportOwner = async (req, res, next) => {
-    // req.user is populated by the authenticate middleware
     if (!req.user) {
         return res.status(401).json({ message: 'Authentication required' });
     }

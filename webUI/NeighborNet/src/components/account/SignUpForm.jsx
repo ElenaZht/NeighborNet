@@ -76,7 +76,7 @@ export default function SignUpForm() {
       newErrors.lng = 'Longitude must be between -180 and 180';
     }
     
-    // If one coordinate is provided, both should be provided
+    // both coordinates should be provided
     if ((formData.lat && !formData.lng) || (!formData.lat && formData.lng)) {
       if (!newErrors.lat) newErrors.lat = 'Both latitude and longitude must be provided';
       if (!newErrors.lng) newErrors.lng = 'Both latitude and longitude must be provided';

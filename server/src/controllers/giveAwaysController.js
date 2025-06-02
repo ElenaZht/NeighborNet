@@ -235,6 +235,10 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
+
+
+        //Check is user an owner
+
         const updatedreport = await updateGiveAwayStatusDB(reportId, newStatus)
         console.log("updatedreport", updatedreport)
         if (!updatedreport.status || updatedreport.status !== newStatus){

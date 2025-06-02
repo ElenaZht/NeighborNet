@@ -64,10 +64,8 @@ export default function HelpReportInputForm() {
     
     setFormData(updatedFormData);
     
-    // Also save to localStorage as user types
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
     
-    // Reset auth prompt when user starts entering data
     if (showAuthPrompt) {
       setShowAuthPrompt(false);
     }

@@ -13,18 +13,14 @@ export const Comments = ({ reportId, reportType }) => {
   const { comments, loading, error } = useSelector(state => state.comments);
   const currentUser = useSelector(state => state.user.currentUser);
 
-  // Set current report and fetch comments when component mounts or reportId changes
   useEffect(() => {
     if (reportId && reportType) {
-      // Set the current report in Redux store
       dispatch(setCurrentReport({ reportId, reportType }));
       
-      // Fetch comments for this report
       dispatch(getComments({ reportId, reportType }));
     }
   }, [dispatch, reportId, reportType]);
 
-  // Handle submitting a new comment
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -36,7 +32,6 @@ export const Comments = ({ reportId, reportType }) => {
         content: newComment
       })).unwrap();
       
-      // Clear the input after successful submission
       setNewComment('');
       
     } catch (error) {

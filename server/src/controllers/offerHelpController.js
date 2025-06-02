@@ -164,9 +164,7 @@ export const editOfferHelpReport = async (req, res) => {
                     updateData.neighborhood_id = neighborhood.id
                 }    
             } catch (neighborhoodError) {
-                // Log the error but don't fail the update
                 console.warn('Failed to detect neighborhood:', neighborhoodError.message);
-                // Continue with the update without neighborhood_id
             }
         }
 

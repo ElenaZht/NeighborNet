@@ -12,6 +12,8 @@ import { followReport } from '../../features/reports/feed/followThunk';
 import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 import EditGiveAwayForm from './editGiveAwayForm';
 import { FaTimes } from 'react-icons/fa';
+import { updateGiveAwayStatus } from '../../features/reports/giveaways/updateGiveAwayStatusThunk.js';
+import { ReportStatus } from '../../../../../reportsStatuses.js';
 
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
@@ -22,6 +24,7 @@ export default function GiveAway({ report }) {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   
   const dispatch = useDispatch();
   const currentUser = useSelector(state => state.user.currentUser);
@@ -152,6 +155,28 @@ export default function GiveAway({ report }) {
     setShowEditDialog(false);
   };
 
+  const handleStatusUpdate = async (newStatus) => {
+    if (!currentUser || !report.isAuthor) {
+      alert('You can only update status of your own reports');
+      return;
+    }
+
+    setIsUpdatingStatus(true);
+    try {
+      await dispatch(updateGiveAwayStatus({
+        reportId: report.id,
+        newStatus: newStatus
+      })).unwrap();
+
+      
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   if (!report) {
     return (
       <div className="alert alert-info max-w-4xl mx-auto m-4">
@@ -194,7 +219,7 @@ export default function GiveAway({ report }) {
                       </div>
                     )}
                     <div className={`badge ${getStatusColorClass(report.status)} mt-1`}>
-                      {report.status || 'Available'}
+                      {report.status ? report.status : ''}
                     </div>
                     <button 
                       onClick={toggleActionBar}
@@ -285,6 +310,75 @@ export default function GiveAway({ report }) {
 
         {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
+          
+          {/* Status Update Buttons (only for authors) */}
+          {report.isAuthor && (
+            <>
+              <div className="divider text-xs text-gray-500 m-0">Status</div>
+              
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.ACTIVE ? 'bg-blue-600 text-white border-blue-600' : 'btn-outline border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+                }`}
+                title="Mark as Active"
+                onClick={() => handleStatusUpdate(ReportStatus.ACTIVE)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.ACTIVE}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.ACTIVE ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaCheck />
+                )}
+              </button>
+
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.IN_PROGRESS ? 'bg-purple-500 text-white border-purple-500' : 'btn-outline border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white'
+                }`}
+                title="Mark as In Progress"
+                onClick={() => handleStatusUpdate(ReportStatus.IN_PROGRESS)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.IN_PROGRESS}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.IN_PROGRESS ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaClock />
+                )}
+              </button>
+
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.FULFILLED ? 'bg-green-600 text-white border-green-600' : 'btn-outline border-green-600 text-green-600 hover:bg-green-600 hover:text-white'
+                }`}
+                title="Mark as Fulfilled"
+                onClick={() => handleStatusUpdate(ReportStatus.FULFILLED)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.FULFILLED}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.FULFILLED ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaGift />
+                )}
+              </button>
+
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.CLOSED ? 'bg-gray-600 text-white border-gray-600' : 'btn-outline border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white'
+                }`}
+                title="Mark as Closed"
+                onClick={() => handleStatusUpdate(ReportStatus.CLOSED)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.CLOSED}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.CLOSED ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaTimes />
+                )}
+              </button>
+
+              <div className="divider text-xs text-gray-500 m-0">Actions</div>
+            </>
+          )}
           
           {/* Follow/Unfollow Buttons - Separate visual components */}
           {!report.isFollowed ? (

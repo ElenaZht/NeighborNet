@@ -1,11 +1,12 @@
+import { db } from "../config/db.js";
 import { 
-    createHelpRequestReport, 
-    getReportById, 
-    removeHelpRequestReportDB,
-    updateHelpRequestDB,
-    updateHelpRequestStatusDB
- } from "../models/helpRequestModel.js";
- import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
+    createHelpRequestReport,     
+    updateHelpRequestDB,         
+    removeHelpRequestReportDB,   
+    updateHelpRequestStatusDB    
+} from "../models/helpRequestModel.js";
+import { getReport } from "../models/modelsUtils.js";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 
 export const addHelpRequest = async (req, res) => {
@@ -154,7 +155,6 @@ export const editHelpRequestReport = async (req, res) => {
             city: req.body.city
         };
         
-        // Fix: use req.body.location instead of undefined location variable
         if (req.body.location) {
             //detect another neighborhood if possible
             const neighborhood = await getNeighborhoodByCoordinates(req.body.location.lat, req.body.location.lng)
@@ -224,9 +224,16 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateHelpRequestStatusDB(reportId, newStatus)
+
+        // Check if user is owner - add this validation
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({message: "Authentication required"});
+        }
+
+        const updatedreport = await updateHelpRequestStatusDB(reportId, newStatus, userId)
         console.log("updatedreport", updatedreport)
-        if (!updatedreport.status || updatedreport.status !== newStatus){
+        if (!updatedreport || !updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})
             return
         }

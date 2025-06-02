@@ -90,7 +90,6 @@ const AddressInputForm = forwardRef(({ onAddressSelect, initialAddress }, ref) =
     autocompleteRef.current = new google.maps.places.AutocompleteService();
   };
 
-  // Handle input changes and fetch predictions
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
@@ -102,7 +101,6 @@ const AddressInputForm = forwardRef(({ onAddressSelect, initialAddress }, ref) =
         {
           input: value,
           sessionToken: sessionTokenRef.current,
-          // componentRestrictions: { country: 'us' }, // Optional: restrict to US
         },
         handlePredictions
       );

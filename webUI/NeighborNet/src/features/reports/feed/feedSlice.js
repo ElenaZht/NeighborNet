@@ -3,6 +3,9 @@ import { getAllReports } from './getAllReportsThunk';
 import { followReport } from './followThunk';
 import { unfollowReport } from './unfollowThunk';
 import { getNeighborhoodById } from '../../neighborhoods/getNeighborhoodThunk';
+import { updateGiveAwayStatus } from '../giveaways/updateGiveAwayStatusThunk.js';
+import { updateHelpRequestStatus } from '../helpRequests/updateHelpRequestStatusThunk.js';
+import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatusThunk.js'; // Add this import
 
 
 const areaFilters  = ['COUNTRY', 'CITY', 'NBR']
@@ -16,7 +19,7 @@ const initialState = {
     error: null,
     status: '',
     neighborhood: {},
-    neighborhoodLoading: false, // Separate loading state for neighborhood
+    neighborhoodLoading: false,
     pagination: {
         limit: 10,
         offset: 0,
@@ -46,6 +49,15 @@ const feedSlice = createSlice({
         },
         clearFeed: (state) => {
             state.feedItems = []
+        },
+        updateReportStatus: (state, action) => {
+            const { reportId, reportType, newStatus } = action.payload;
+            const report = state.feedItems.find(item => 
+                item.id === parseInt(reportId) && item.record_type === reportType
+            );
+            if (report) {
+                report.status = newStatus;
+            }
         }
     },
     extraReducers: (builder) => {
@@ -131,9 +143,37 @@ const feedSlice = createSlice({
                 state.neighborhoodLoading = false;
                 state.error = action.payload || 'Failed to fetch neighborhood';
             })
-
+            
+            // Handle status updates without refetching
+            .addCase(updateGiveAwayStatus.fulfilled, (state, action) => {
+                const { reportId, newStatus } = action.payload;
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === 'give_away'
+                );
+                if (report) {
+                    report.status = newStatus;
+                }
+            })
+            .addCase(updateHelpRequestStatus.fulfilled, (state, action) => {
+                const { reportId, newStatus } = action.payload;
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === 'help_request'
+                );
+                if (report) {
+                    report.status = newStatus;
+                }
+            })
+            .addCase(updateIssueReportStatus.fulfilled, (state, action) => {
+                const { reportId, newStatus } = action.payload;
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === 'issue_report'
+                );
+                if (report) {
+                    report.status = newStatus;
+                }
+            })
     },
 });
 
-export const {nextOffset, resetOffset, setStoreFilters, clearFeed} = feedSlice.actions;
+export const {nextOffset, resetOffset, setStoreFilters, clearFeed, updateReportStatus} = feedSlice.actions;
 export default feedSlice.reducer;

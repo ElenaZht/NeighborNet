@@ -136,7 +136,6 @@ export const loginUser = async (req, res) => {
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
         
-        // Set refresh token as HTTP-only cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             maxAge: process.env.REFRESH_DEFAULT_MAX_AGE,

@@ -5,7 +5,7 @@ export const getAllReports = async (req, res) => {
     try {
         const {neighborhood_id, limit=10, offset=0, city} = req.query
         const {filters, loc} = req.body
-        const userId = req.user?.id || null; // Get user ID from authenticated user
+        const userId = req.user?.id || null;
         
         console.log("controller filters", filters)
         if (!city) {

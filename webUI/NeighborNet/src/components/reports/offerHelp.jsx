@@ -87,7 +87,6 @@ export default function OfferHelp({ report }) {
 
   const handleEditError = (error) => {
     console.error('Edit error:', error);
-    // Error is already handled in the form component
   };
 
   const handleDeleteRequest = () => {
@@ -99,7 +98,6 @@ export default function OfferHelp({ report }) {
     try {
       await dispatch(removeOfferHelp(report.id)).unwrap();
       
-      // Refresh the feed after successful deletion
       dispatch(clearFeed());
       await dispatch(getAllReports({
         offset: 0,

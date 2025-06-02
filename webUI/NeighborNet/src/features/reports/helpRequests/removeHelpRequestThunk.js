@@ -10,9 +10,7 @@ export const removeHelpRequest = createAsyncThunk(
                 `${BASE_URL}/help-requests/${helpRequestId}`,
                 { credentials: 'include' }
             );
-            
-            // The server returns { message, deletedReport } or just an empty object for 204
-            // We just need to return the helpRequest for the slice to filter it out
+
             return helpRequestId;
             
         } catch (error) {

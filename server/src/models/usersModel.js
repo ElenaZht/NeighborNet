@@ -139,7 +139,7 @@ export const updateUserInDB = async (user_id, userData) => {
         if (userData.hashed_password) userInfo['hashed_password'] = userData.hashed_password;
         if (userData.location) {
             userInfo.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', 
-                [userInfo.location.lat, userData.location.lng]);
+                [userData.location.lat, userData.location.lng]);
         }
         if (userData.city) userInfo['city'] = userData.city
         if (userData.neighborhood_id) userInfo['neighborhood_id'] = userData.neighborhood_id

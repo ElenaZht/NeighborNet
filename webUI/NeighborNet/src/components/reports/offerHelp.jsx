@@ -4,6 +4,7 @@ import * as FaIcons from 'react-icons/fa';
 import { FaTimes } from 'react-icons/fa';
 import { Comments } from '../reports/comments'
 import { removeOfferHelp } from '../../features/reports/offerhelp/removeOfferHelpThunk'
+import { updateOfferHelpStatus } from '../../features/reports/offerhelp/updateOfferHelpStatusThunk'
 import { clearFeed } from '../../features/reports/feed/feedSlice.js';
 import { getAllReports } from '../../features/reports/feed/getAllReportsThunk.js';
 import { followReport } from '../../features/reports/feed/followThunk';
@@ -24,6 +25,7 @@ export default function OfferHelp({ report }) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
 
@@ -87,6 +89,28 @@ export default function OfferHelp({ report }) {
 
   const handleEditError = (error) => {
     console.error('Edit error:', error);
+  };
+
+  const handleStatusUpdate = async (newStatus) => {
+    if (!currentUser || !report.isAuthor) {
+      alert('You can only update status of your own reports');
+      return;
+    }
+
+    setIsUpdatingStatus(true);
+    try {
+      await dispatch(updateOfferHelpStatus({
+        reportId: report.id,
+        newStatus: newStatus
+      })).unwrap();
+
+      
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
 
   const handleDeleteRequest = () => {
@@ -202,7 +226,7 @@ export default function OfferHelp({ report }) {
                         <span>Following</span>
                       </div>
                     )}
-                    <div className={`badge ${getStatusColorClass('FULFILLED')} mt-1`}>
+                    <div className={`${getStatusColorClass(report.status)} mt-1`}>
                       {report.status || 'No status'}
                     </div>
                     <button 
@@ -315,16 +339,63 @@ export default function OfferHelp({ report }) {
           </div>
         </div>
 
+        {/* Action Sidebar */}
         <div className={`bg-base-200 shadow-lg flex flex-col items-center py-4 gap-4 transition-all duration-300 ${showActions ? 'w-24 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
-          <div className="flex flex-col items-center">
-            <button className="btn btn-circle btn-md bg-gray-400 text-gray-600 cursor-not-allowed" title="Approve" disabled={true}>
-              <FaIcons.FaCheck />
-            </button>
-            <div className="text-xs text-gray-500 mt-1 text-center w-20">
-              <span>Next version</span>
-            </div>
-          </div>
           
+          {/* Status Update Buttons (only for authors) */}
+          {report.isAuthor && (
+            <>
+              <div className="divider text-xs text-gray-500 m-0">Status</div>
+              
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.ACTIVE ? 'bg-blue-600 text-white border-blue-600' : 'btn-outline border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+                }`}
+                title="Mark as Active"
+                onClick={() => handleStatusUpdate(ReportStatus.ACTIVE)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.ACTIVE}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.ACTIVE ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaCheck />
+                )}
+              </button>
+
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.IN_PROGRESS ? 'bg-purple-500 text-white border-purple-500' : 'btn-outline border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white'
+                }`}
+                title="Mark as In Progress"
+                onClick={() => handleStatusUpdate(ReportStatus.IN_PROGRESS)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.IN_PROGRESS}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.IN_PROGRESS ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaClock />
+                )}
+              </button>
+
+              <button 
+                className={`btn btn-circle btn-sm ${
+                  report.status === ReportStatus.CLOSED ? 'bg-gray-600 text-white border-gray-600' : 'btn-outline border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white'
+                }`}
+                title="Mark as Closed"
+                onClick={() => handleStatusUpdate(ReportStatus.CLOSED)}
+                disabled={isUpdatingStatus || report.status === ReportStatus.CLOSED}
+              >
+                {isUpdatingStatus && report.status !== ReportStatus.CLOSED ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <FaIcons.FaTimes />
+                )}
+              </button>
+
+              <div className="divider text-xs text-gray-500 m-0">Actions</div>
+            </>
+          )}
+
           {/* Follow/Unfollow Buttons - Replace the simple follow button */}
           {!report.isFollowed ? (
             <button 

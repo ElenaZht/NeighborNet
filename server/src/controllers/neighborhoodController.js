@@ -1,4 +1,4 @@
-import {getNeoghborhoodById} from '../models/neighborhoodModel.js'
+import {getNeighborhoodDB} from '../models/neighborhoodModel.js'
 
 
 export const getNeighborhoodById = async (req, res) => {
@@ -12,7 +12,7 @@ export const getNeighborhoodById = async (req, res) => {
     }
     
     try {
-        const neighborhood = await getNeoghborhoodById(id);
+        const neighborhood = await getNeighborhoodDB(id);
         if (!neighborhood) {
             return res.status(404).json({ 
                 success: false, 

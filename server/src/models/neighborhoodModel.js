@@ -34,7 +34,7 @@ export const getNeighborhoodByCoordinates = async(lat, lng) => {
 
 }
 
-export const getNeoghborhoodById = async (neighborhoodId) => {
+export const getNeighborhoodDB = async (neighborhoodId) => {
     if (!neighborhoodId) return null
 
     try {
@@ -43,7 +43,6 @@ export const getNeoghborhoodById = async (neighborhoodId) => {
             .where('id', neighborhoodId)
             .first();
         
-        // If no neighborhood found with this ID, return null
         if (!result) {
             console.log(`No neighborhood found with ID: ${neighborhoodId}`);
             return null;

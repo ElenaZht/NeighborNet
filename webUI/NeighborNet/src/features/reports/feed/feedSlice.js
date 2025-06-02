@@ -1,17 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getAllReports } from './getAllReportsThunk';
-import { followReport } from './followThunk';
-import { unfollowReport } from './unfollowThunk';
+import { getAllReports } from './getAllReportsThunk.js';
+import { followReport } from './followThunk.js';
+import { unfollowReport } from './unfollowThunk.js';
 import { getNeighborhoodById } from '../../neighborhoods/getNeighborhoodThunk';
 import { updateGiveAwayStatus } from '../giveaways/updateGiveAwayStatusThunk.js';
 import { updateHelpRequestStatus } from '../helpRequests/updateHelpRequestStatusThunk.js';
-import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatusThunk.js'; // Add this import
+import { updateOfferHelpStatus } from '../offerhelp/updateOfferHelpStatusThunk.js';
+import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatusThunk.js';
+import {areaFilters, categoryFilters, orderOptions, allOwnFollowed} from '../../../../../../filters.js'
 
-
-const areaFilters  = ['COUNTRY', 'CITY', 'NBR']
-const categoryFilters = ['GIVEAWAY', 'OFFERHELP', 'HELPREQUEST', 'ISSUEREPORT']
-const orderOptions = ['DATE', 'DISTANCE']
-const allOwnFollowed = ['ALL', 'OWN', 'FOLLOWED']
 
 const initialState = {
     feedItems: [],
@@ -158,6 +155,15 @@ const feedSlice = createSlice({
                 const { reportId, newStatus } = action.payload;
                 const report = state.feedItems.find(item => 
                     item.id === parseInt(reportId) && item.record_type === 'help_request'
+                );
+                if (report) {
+                    report.status = newStatus;
+                }
+            })
+            .addCase(updateOfferHelpStatus.fulfilled, (state, action) => {
+                const { reportId, newStatus } = action.payload;
+                const report = state.feedItems.find(item => 
+                    item.id === parseInt(reportId) && item.record_type === 'offer_help'
                 );
                 if (report) {
                     report.status = newStatus;

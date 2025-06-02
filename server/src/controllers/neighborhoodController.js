@@ -13,7 +13,6 @@ export const getNeighborhoodById = async (req, res) => {
     
     try {
         const neighborhood = await getNeoghborhoodById(id);
-        console.log("found neighb", neighborhood)
         if (!neighborhood) {
             return res.status(404).json({ 
                 success: false, 

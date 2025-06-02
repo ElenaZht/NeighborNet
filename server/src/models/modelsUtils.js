@@ -1,5 +1,5 @@
 import { db } from "../config/db.js";
-import { ReportStatus } from "../../../../reportsStatuses.js";
+import { ReportStatus } from "../../../reportsStatuses.js";
 
 
 export const getReport = async (reportId, tableName) => {

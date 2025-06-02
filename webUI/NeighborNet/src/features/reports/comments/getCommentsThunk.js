@@ -11,7 +11,6 @@ export const getComments = createAsyncThunk(
                 `${BASE_URL}/comments/${reportType}/${reportId}`,
                 { credentials: 'include' } // Include cookies for authentication
             );
-            
             return response.comments; // The controller returns { message, comments }
             
         } catch (error) {

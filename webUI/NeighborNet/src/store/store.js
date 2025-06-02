@@ -4,7 +4,6 @@ import issueReportsReducer from "../features/reports/issueReports/issueReportsSl
 import giveAwaysReducer from "../features/reports/giveaways/giveAwaysSlice.js";
 import offerHelpReducer from "../features/reports/offerhelp/offerHelpSlice.js";
 import helpRequestsReducer from "../features/reports/helpRequests/helpRequestsSlice.js"
-import commentsReducer from '../features/reports/comments/commentsSlice.js'
 import feedReducer from '../features/reports/feed/feedSlice.js'
 
 
@@ -15,7 +14,6 @@ const store = configureStore({
         giveAways: giveAwaysReducer,
         offerHelp: offerHelpReducer,
         helpRequests: helpRequestsReducer,
-        comments: commentsReducer,
         feed: feedReducer,
     }
 })

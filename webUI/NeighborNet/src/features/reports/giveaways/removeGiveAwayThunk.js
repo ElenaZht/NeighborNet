@@ -11,8 +11,6 @@ export const removeGiveAwayThunk = createAsyncThunk(
                 { credentials: 'include' }
             );
             
-            // The server returns { message, deletedReport } or just an empty object for 204
-            // We just need to return the giveAwayId for the slice to filter it out
             return giveAwayId;
             
         } catch (error) {

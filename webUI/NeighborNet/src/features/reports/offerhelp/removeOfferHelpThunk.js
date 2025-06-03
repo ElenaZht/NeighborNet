@@ -13,7 +13,7 @@ export const removeOfferHelp = createAsyncThunk(
                 throw new Error('Invalid response from server');
             }
 
-            return reportId; // Return the ID of the deleted report
+            return reportId; // ID of the deleted report
             
         } catch (error) {
             return rejectWithValue(error.message || 'Failed to delete offer help report');

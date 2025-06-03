@@ -1,7 +1,6 @@
 import React from 'react'
 import Feed from '../components/Feed.jsx'
 import FeedFilter from '../components/FeedFilter.jsx'
-import InputForms from '../components/InputForms.jsx'
 
 
 export default function HomePage() {

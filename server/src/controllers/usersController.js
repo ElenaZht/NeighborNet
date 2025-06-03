@@ -29,6 +29,7 @@ export const signUpUser = async (req, res) => {
         if (!email) return res.status(400).json({ message: 'Email is required' });
         if (!password) return res.status(400).json({ message: 'Password is required' });
         if (!address) return res.status(400).json({ message: 'Address is required' });
+        if (!city) return res.status(400).json({ message: 'City is required' });
         
         // Email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

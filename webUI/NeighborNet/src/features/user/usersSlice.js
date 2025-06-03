@@ -17,7 +17,7 @@ const initialState = {
     location: {lat: '', lng: ''},
     city: '',
     neighborhood_id: null,
-    neighborhood: {}
+    neighborhood: null
 };
 
 const usersSlice = createSlice({
@@ -30,7 +30,7 @@ const usersSlice = createSlice({
                 state.currentUser = null;
                 state.isAuthenticated = false;
                 state.accessToken = null;
-                state.neighborhood = {};
+                state.neighborhood = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 return;
@@ -134,9 +134,11 @@ const usersSlice = createSlice({
                 state.currentUser = null;
                 state.isAuthenticated = false;
                 state.accessToken = null;
+                state.neighborhood = null;
+                state.neighborhoodLoading = false;
+                state.error = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                state.error = null;
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;

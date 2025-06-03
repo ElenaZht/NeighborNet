@@ -14,6 +14,8 @@ import EditGiveAwayForm from './editGiveAwayForm';
 import { FaTimes } from 'react-icons/fa';
 import { updateGiveAwayStatus } from '../../features/reports/giveaways/updateGiveAwayStatusThunk.js';
 import { ReportStatus } from '../../../../../reportsStatuses.js';
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock.jsx'
 
 export default function GiveAway({ report }) {
   const [showMap, setShowMap] = useState(false);
@@ -30,18 +32,8 @@ export default function GiveAway({ report }) {
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
 
-  // Prevent body scroll when edit dialog is open
-  useEffect(() => {
-    if (showEditDialog) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showEditDialog]);
+  // Replace the useEffect with the custom hook
+  useBodyScrollLock(showEditDialog);
   
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -132,19 +124,10 @@ export default function GiveAway({ report }) {
     setShowEditDialog(true);
   };
 
-  const handleEditSuccess = async () => {
+  const handleEditSuccess = (updatedReport) => {
     setShowEditDialog(false);
     
-    // Force refresh the feed to show updated data
-    dispatch(clearFeed());
-    await dispatch(getAllReports({
-      offset: 0,
-      limit: 20, // Load more items to ensure we get the updated report
-      neighborhood_id: currentUser?.neighborhood_id,
-      city: currentUser?.city,
-      loc: currentUser?.location,
-      filters: feedFilters
-    }));
+    dispatch(refreshFeed());
   };
 
   const handleEditError = (errorMessage) => {

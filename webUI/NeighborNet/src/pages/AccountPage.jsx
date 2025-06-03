@@ -5,11 +5,11 @@ import { deleteAccount } from '../features/user/thunks/deleteAccountThunk'
 import { editUser } from '../features/user/thunks/editUserThunk'
 import AddressInputForm from '../components/AddressInputForm'
 import { FaTimes } from 'react-icons/fa'
+import { useBodyScrollLock } from '../utils/useBodyScrollLock'
 
 export default function AccountPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,19 +19,8 @@ export default function AccountPage() {
   const { currentUser, error } = useSelector(state => state.user);
   const addressInputRef = useRef(null);
 
-  // Prevent body scroll when modals are open
-  useEffect(() => {
-    if (showEditModal || showConfirmation) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    // Cleanup function to restore scroll when component unmounts
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showEditModal, showConfirmation]);
+  // Use the custom hook instead of direct DOM manipulation
+  useBodyScrollLock(showEditModal || showConfirmation);
   
   const handleDeleteRequest = () => {
     setShowConfirmation(true);
@@ -347,8 +336,8 @@ export default function AccountPage() {
                         </svg>
                       ) : (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       )}
                     </button>

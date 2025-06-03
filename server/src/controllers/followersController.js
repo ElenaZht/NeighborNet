@@ -1,13 +1,12 @@
 import { addFollowerRecord, removeFollowerRecord } from '../models/followersModel.js';
+import { isValidReportType } from '../../../reportTypes.js';
 
 export const addFollower = async (req, res) => {
     try {
         const { reportType, reportId } = req.params;
         const userId = req.user.id;
 
-        // Validate report type
-        const validTypes = ['offer_help', 'help_request', 'give_away', 'issue_report'];
-        if (!validTypes.includes(reportType)) {
+        if (!isValidReportType(reportType)) {
             return res.status(400).json({
                 message: 'Invalid report type'
             });
@@ -53,9 +52,7 @@ export const removeFollower = async (req, res) => {
         const { reportType, reportId } = req.params;
         const userId = req.user.id;
 
-        // Validate report type
-        const validTypes = ['offer_help', 'help_request', 'give_away', 'issue_report'];
-        if (!validTypes.includes(reportType)) {
+        if (!isValidReportType(reportType)) {
             return res.status(400).json({
                 message: 'Invalid report type'
             });

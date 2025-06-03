@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect} from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { logoutUser } from '../features/user/thunks/logoutThunk';
@@ -8,6 +8,7 @@ import OfferHelpInputForm from './reports/offerHelpInputForm';
 import IssueReportInputForm from './reports/issueReportInputForm';
 import GiveAwayInputForm from './reports/giveAwayInputForm';
 import { getNeighborhoodById } from '../features/neighborhoods/getNeighborhoodThunk';
+import { useClickAway } from '../utils/useClickAway';
 
 
 function NavBar() {
@@ -22,9 +23,18 @@ function NavBar() {
   const neighborhoodLoading = useSelector(state => state.user.neighborhoodLoading) || false;
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const accountDropdownRef = useRef(null);
-  const createDropdownRef = useRef(null);
-  const formDropdownRef = useRef(null);
+  
+  const accountDropdownRef = useClickAway(() => {
+    setShowAccount(false);
+  });
+  
+  const createDropdownRef = useClickAway(() => {
+    setShowCreateDropdown(false);
+  });
+  
+  const formDropdownRef = useClickAway(() => {
+    setActiveForm(null);
+  });
 
   // Fetch neighborhood info if user has neighborhood id
   useEffect(() => {
@@ -39,26 +49,6 @@ function NavBar() {
     }
     fetchNeighborhood();
   }, [currentUser]);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
-        setShowAccount(false);
-      }
-      if (createDropdownRef.current && !createDropdownRef.current.contains(event.target)) {
-        setShowCreateDropdown(false);
-      }
-      if (formDropdownRef.current && !formDropdownRef.current.contains(event.target)) {
-        setActiveForm(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true);

@@ -8,6 +8,7 @@ import { updateHelpRequestStatus } from '../helpRequests/updateHelpRequestStatus
 import { updateOfferHelpStatus } from '../offerhelp/updateOfferHelpStatusThunk.js';
 import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatusThunk.js';
 import {areaFilters, categoryFilters, orderOptions, allOwnFollowed} from '../../../../../../filters.js'
+import { refreshFeed } from './refreshFeedThunk.js';
 
 
 const initialState = {
@@ -23,7 +24,7 @@ const initialState = {
         hasMore: true
     },
     filters: {
-        areaFilter: areaFilters[0],
+        areaFilter: areaFilters[2],
         categoryFilter: categoryFilters,
         order: orderOptions[0],
         allOwnFollowed: allOwnFollowed[0],
@@ -178,6 +179,17 @@ const feedSlice = createSlice({
                     report.status = newStatus;
                 }
             })
+            .addCase(refreshFeed.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(refreshFeed.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(refreshFeed.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to refresh feed';
+            });
     },
 });
 

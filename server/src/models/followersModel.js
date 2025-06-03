@@ -1,5 +1,5 @@
 import { db } from '../config/db.js';
-
+import { isValidReportType } from '../../../reportTypes.js';
 
 export const addFollowerRecord = async (followerData) => {
     try {
@@ -9,42 +9,53 @@ export const addFollowerRecord = async (followerData) => {
         if (!report_id) throw new Error('Report ID is required');
         if (!report_type) throw new Error('Report type is required');
 
-        // Check if already following
-        const existingFollower = await db('followers')
-            .where({
-                user_id,
-                report_id,
-                report_type
-            })
-            .first();
-
-        if (existingFollower) {
-            throw new Error('User is already following this report');
+        // Validate report type using centralized validation
+        if (!isValidReportType(report_type)) {
+            throw new Error(`Invalid report type: ${report_type}`);
         }
 
-        // Verify the report exists
-        const reportTable = getReportTable(report_type);
-        const reportExists = await db(reportTable)
-            .where({ id: report_id })
-            .first();
+        // Use transaction for atomic operation
+        return await db.transaction(async (trx) => {
+            // Check if already following
+            const existingFollower = await trx('followers')
+                .where({
+                    user_id,
+                    report_id,
+                    report_type
+                })
+                .first();
 
-        if (!reportExists) {
-            throw new Error(`Report not found in ${reportTable}`);
-        }
+            if (existingFollower) {
+                throw new Error('User is already following this report');
+            }
 
-        // Insert the follower record
-        const [insertedFollower] = await db('followers')
-            .insert({
-                user_id,
-                report_id,
-                report_type
-            })
-            .returning(['id', 'user_id', 'report_id', 'report_type', 'created_at']);
+            // Verify the report exists
+            const reportTable = getReportTable(report_type);
+            const reportExists = await trx(reportTable)
+                .where({ id: report_id })
+                .first();
 
-        // Update the followers count in the report table
-        await updateFollowersCount(report_type, report_id, 1);
-        console.log("add follower", insertedFollower)
-        return insertedFollower;
+            if (!reportExists) {
+                throw new Error(`Report not found in ${reportTable}`);
+            }
+
+            // Insert the follower record
+            const [insertedFollower] = await trx('followers')
+                .insert({
+                    user_id,
+                    report_id,
+                    report_type
+                })
+                .returning(['id', 'user_id', 'report_id', 'report_type', 'created_at']);
+
+            // Update the followers count in the report table
+            await trx(reportTable)
+                .where({ id: report_id })
+                .increment('followers', 1);
+
+            console.log("add follower", insertedFollower);
+            return insertedFollower;
+        });
 
     } catch (error) {
         console.error('Error adding follower record:', error);
@@ -60,23 +71,35 @@ export const removeFollowerRecord = async (followerData) => {
         if (!report_id) throw new Error('Report ID is required');
         if (!report_type) throw new Error('Report type is required');
 
-        const deletedCount = await db('followers')
-            .where({
-                user_id,
-                report_id,
-                report_type
-            })
-            .del();
-
-        if (deletedCount > 0) {
-            // Update the followers count in the report table
-            await updateFollowersCount(report_type, report_id, -1);
+        // Validate report type using centralized validation
+        if (!isValidReportType(report_type)) {
+            throw new Error(`Invalid report type: ${report_type}`);
         }
-        console.log("del follow", deletedCount)
-        return {
-            success: deletedCount > 0,
-            deletedCount
-        };
+
+        // Use transaction for atomic operation
+        return await db.transaction(async (trx) => {
+            const deletedCount = await trx('followers')
+                .where({
+                    user_id,
+                    report_id,
+                    report_type
+                })
+                .del();
+
+            if (deletedCount > 0) {
+                // Update the followers count in the report table
+                const reportTable = getReportTable(report_type);
+                await trx(reportTable)
+                    .where({ id: report_id })
+                    .decrement('followers', 1);
+            }
+
+            console.log("del follow", deletedCount);
+            return {
+                success: deletedCount > 0,
+                deletedCount
+            };
+        });
 
     } catch (error) {
         console.error('Error removing follower record:', error);
@@ -86,37 +109,23 @@ export const removeFollowerRecord = async (followerData) => {
 
 // Helper function to get the correct table name for each report type
 const getReportTable = (reportType) => {
-    switch (reportType) {
-        case 'offer_help':
-            return 'offer_help';
-        case 'help_request':
-            return 'help_requests';
-        case 'give_away':
-            return 'give_aways';
-        case 'issue_report':
-            return 'issue_reports';
-        default:
-            throw new Error(`Invalid report type: ${reportType}`);
-    }
-};
-
-// Helper function to update followers count in the respective report table
-const updateFollowersCount = async (reportType, reportId, increment) => {
-    try {
-        const tableName = getReportTable(reportType);
-        
-        await db(tableName)
-            .where({ id: reportId })
-            .increment('followers', increment);
-            
-    } catch (error) {
-        console.error('Error updating followers count:', error);
-        // Don't throw here as the main operation succeeded
-    }
+    const tableMap = {
+        'offer_help': 'offer_help',
+        'help_request': 'help_requests',
+        'give_away': 'give_aways',
+        'issue_report': 'issue_reports'
+    };
+    
+    return tableMap[reportType];
 };
 
 export const getFollowersByReport = async (reportType, reportId) => {
     try {
+        // Validate report type using centralized validation
+        if (!isValidReportType(reportType)) {
+            throw new Error(`Invalid report type: ${reportType}`);
+        }
+
         const followers = await db('followers as f')
             .join('users as u', 'f.user_id', '=', 'u.id')
             .where({

@@ -9,8 +9,7 @@ export const getAllReports = async (req, res) => {
         
         console.log("controller filters", filters)
         if (!city) {
-            res.status(400).json({message: "City is required"})
-            return
+            return res.status(400).json({message: "City is required"})
         }
         
         const allReports = await getAllReportsFromDB(city, neighborhood_id, loc, limit, offset, filters, userId)

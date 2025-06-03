@@ -4,6 +4,7 @@ import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa';
 import { editOfferHelp } from '../../features/reports/offerhelp/editOfferHelpThunk';
 import AddressInputForm from '../AddressInputForm';
 import { barterChoices } from '../../utils/barterChoises';
+import { useClickAway } from '../../utils/useClickAway';
 
 export default function EditOfferHelpForm({ reportData, onSuccess, onError }) {
   const dispatch = useDispatch();
@@ -154,6 +155,11 @@ export default function EditOfferHelpForm({ reportData, onSuccess, onError }) {
     }
   };
 
+  // Close dropdown if clicked outside
+  const barterDropdownRef = useClickAway(() => {
+    setShowBarterDropdown(false);
+  });
+
   return (
     <div className="max-w-4xl mx-auto">
       {error && (
@@ -218,7 +224,7 @@ export default function EditOfferHelpForm({ reportData, onSuccess, onError }) {
               <label className="label">
                 <span className="label-text font-medium">Accepted as Barter (Optional)</span>
               </label>
-              <div className="relative">
+              <div className="relative" ref={barterDropdownRef}>
                 <div 
                   className="flex items-center justify-between p-3 border rounded-lg cursor-pointer"
                   onClick={toggleBarterDropdown}

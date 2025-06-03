@@ -16,7 +16,10 @@ export default function Feed() {
   const [title, setTitle] = useState('')
 
   useEffect(() => {
-    if (currentUser && feedItems.length === 0) {
+    if (currentUser) {
+      if (feedItems.length > 0) {
+        dispatch(clearFeed());
+      }
       dispatch(getAllReports({ 
         offset: 0, 
         limit: 10, 
@@ -26,14 +29,19 @@ export default function Feed() {
         filters
       }));
     }
-  }, [dispatch, currentUser, filters, feedItems.length]);
+  }, [dispatch, currentUser, filters]);
 
   useEffect(() => {
-    const generateTitile = () => {
+    const generateTitle = () => {
       if (!filters) return
       
-      if (filters.areaFilter == 'NEIGHBORHOOD' && neighborhood){
+      if (filters.areaFilter == 'NBR' && neighborhood){
         setTitle(neighborhood.name)
+        return
+      }
+      if (filters.areaFilter == 'NBR' && !neighborhood){
+        // Fallback to city name if NBR filter is selected but no neighborhood
+        setTitle(currentUser?.city || 'Local Area')
         return
       }
       if (filters.areaFilter == 'CITY' && currentUser){
@@ -46,8 +54,8 @@ export default function Feed() {
       }
     }
 
-    generateTitile()
-  }, [neighborhood, filters])
+    generateTitle()
+  }, [neighborhood, filters, currentUser])
 
   const refreshFeed = () => {
     if (currentUser) {
@@ -62,14 +70,6 @@ export default function Feed() {
       }));
     }
   };
-
-  // Expose refresh function globally for input forms
-  useEffect(() => {
-    window.refreshFeed = refreshFeed;
-    return () => {
-      delete window.refreshFeed;
-    };
-  }, [currentUser, filters]);
 
   const handleLoadMore = () => {
     if (!loading && pagination.hasMore && currentUser) {

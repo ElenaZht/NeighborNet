@@ -13,6 +13,7 @@ import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 import EditIssueReportForm from './editIssueReportForm';
 import { FaTimes } from 'react-icons/fa';
 import { updateIssueReportStatus } from '../../features/reports/issueReports/updateIssueReportStatusThunk.js'; // Add this import
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock.jsx'
 
 export default function IssueReport({ report }) {
   const dispatch = useDispatch()
@@ -29,17 +30,7 @@ export default function IssueReport({ report }) {
   const feedFilters = useSelector(state => state.feed.filters);
 
   // Prevent body scroll when edit dialog is open
-  useEffect(() => {
-    if (showEditDialog || showDeleteConfirmation) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showEditDialog, showDeleteConfirmation]);
+  useBodyScrollLock(showEditDialog || showDeleteConfirmation);
 
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -462,7 +453,7 @@ export default function IssueReport({ report }) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={report.id} reportType="issue_report" />
+            <Comments reportId={report.id} reportType="issue_report" isVisible={showComments} />
           </div>
         </div>
       </div>

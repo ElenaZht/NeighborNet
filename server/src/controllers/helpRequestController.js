@@ -1,11 +1,9 @@
-import { db } from "../config/db.js";
 import { 
     createHelpRequestReport,     
     updateHelpRequestDB,         
     removeHelpRequestReportDB,   
     updateHelpRequestStatusDB    
 } from "../models/helpRequestModel.js";
-import { getReport } from "../models/modelsUtils.js";
 import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 

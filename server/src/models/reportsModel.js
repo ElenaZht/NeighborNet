@@ -1,6 +1,6 @@
 import { db } from "../config/db.js";
 import { categoryFilters } from "../../../filters.js";
-const allOwnFollowed = ['ALL', 'OWN', 'FOLLOWED']
+import { allOwnFollowed } from "../../../filters.js";
 
 
 export const getAllReportsFromDB = async (city, neighborhoodId, location, limit, offset, filters, userId = null) => {
@@ -13,7 +13,12 @@ export const getAllReportsFromDB = async (city, neighborhoodId, location, limit,
             queryFilters.city = city;
             break;
         case 'NBR':
-            queryFilters.neighborhood_id = neighborhoodId;
+            if (neighborhoodId) {
+                queryFilters.neighborhood_id = neighborhoodId;
+            } else {
+                // Fallback to city filter if no neighborhood is available
+                queryFilters.city = city;
+            }
             break;
         default:
             throw new Error("Invalid area filter");

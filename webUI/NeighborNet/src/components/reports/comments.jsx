@@ -4,22 +4,23 @@ import { getComments } from '../../features/reports/comments/getCommentsThunk';
 import { addComment } from '../../features/reports/comments/addCommentThunk';
 import placeholderAvatar from '../../assets/Profile_avatar_placeholder_large.png';
 
-export const Comments = ({ reportId, reportType }) => {
+export const Comments = ({ reportId, reportType, isVisible }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [addingComment, setAddingComment] = useState(false);
+  const [hasLoadedComments, setHasLoadedComments] = useState(false);
   
   const dispatch = useDispatch();
   const currentUser = useSelector(state => state.user.currentUser);
 
-  // Fetch comments when component mounts or reportId/reportType changes
+  // Fetch comments only when section becomes visible and hasn't been loaded yet
   useEffect(() => {
-    if (reportId && reportType) {
+    if (isVisible && !hasLoadedComments && reportId && reportType) {
       fetchCommentsForReport();
     }
-  }, [reportId, reportType]);
+  }, [isVisible, hasLoadedComments, reportId, reportType]);
 
   const fetchCommentsForReport = async () => {
     setLoading(true);
@@ -28,6 +29,7 @@ export const Comments = ({ reportId, reportType }) => {
     try {
       const result = await dispatch(getComments({ reportType, reportId })).unwrap();
       setComments(result || []);
+      setHasLoadedComments(true); // Mark as loaded
     } catch (error) {
       console.error('Error fetching comments:', error);
       setError('Failed to load comments');
@@ -107,6 +109,10 @@ export const Comments = ({ reportId, reportType }) => {
           <div className="flex justify-center p-4">
             <span className="loading loading-spinner loading-md"></span>
           </div>
+        ) : !hasLoadedComments ? (
+          <p className="text-sm text-gray-500">
+            Comments will load when expanded...
+          </p>
         ) : comments.length === 0 ? (
           <p className="text-sm text-gray-500">
             No comments yet. Be the first to comment!

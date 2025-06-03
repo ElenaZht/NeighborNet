@@ -3,6 +3,9 @@ import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addOfferHelp } from '../../features/reports/offerhelp/addOfferHeplThunk';
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
+import { useClickAway } from '../../utils/useClickAway';
+
 import AddressInputForm from '../AddressInputForm'
 import { barterChoices } from '../../utils/barterChoises';
 
@@ -29,6 +32,10 @@ export default function OfferHelpInputForm() {
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showBarterDropdown, setShowBarterDropdown] = useState(false);
+
+  const barterDropdownRef = useClickAway(() => {
+    setShowBarterDropdown(false);
+  });
 
 
   // Load saved form data on component mount
@@ -140,46 +147,38 @@ export default function OfferHelpInputForm() {
     setIsSubmitting(true);
 
     try {
-      const resultAction = await dispatch(addOfferHelp(formData));
+      await dispatch(addOfferHelp(formData)).unwrap();
       
-      if (addOfferHelp.fulfilled.match(resultAction)) {
-        // Success - show message and reset form
-        setSuccess(true);
-        
-        // Clear saved form data
-        localStorage.removeItem(FORM_STORAGE_KEY);
-        
-        // Reset form
-        setFormData({
-          title: '',
-          description: '',
-          img_url: '',
-          barterOptions: [],
-          city: '',
-          address: '',
-          location: {lat: '', lng: ''}
-        });
-        //Clear the address input
-        if (addressInputRef.current) {
-          addressInputRef.current.clearAddress();
-        }
-        
-        // Refresh the feed to show the new report
-        if (window.refreshFeed) {
-          window.refreshFeed();
-        }
-        
-        // Hide success message after 5 seconds
-        setTimeout(() => {
-          setSuccess(false);
-        }, 5000);
-      } else {
-        throw new Error(resultAction.payload || 'Failed to submit help offer');
+      dispatch(refreshFeed());
+      
+      // Success - show message and reset form
+      setSuccess(true);
+      
+      // Clear saved form data
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        img_url: '',
+        barterOptions: [],
+        city: '',
+        address: '',
+        location: {lat: '', lng: ''}
+      });
+      //Clear the address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
       }
       
-    } catch (err) {
-      setError(err.message || "Failed to submit help offer. Please try again.");
-      console.error("Error submitting help offer:", err);
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(false);
+      }, 5000);
+    } catch (error) {
+      setError(error.message || "Failed to submit help offer. Please try again.");
+      console.error("Error submitting help offer:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -276,7 +275,7 @@ export default function OfferHelpInputForm() {
                   <label className="label">
                     <span className="label-text font-medium">Accepted as Barter (Optional)</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative" ref={barterDropdownRef}>
                     <div 
                       className="flex items-center justify-between p-3 border rounded-lg cursor-pointer"
                       onClick={toggleBarterDropdown}

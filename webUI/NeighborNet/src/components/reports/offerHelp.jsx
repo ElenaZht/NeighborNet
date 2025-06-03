@@ -13,6 +13,8 @@ import { format, parseISO } from 'date-fns'
 import { ReportStatus, getStatusColorClass } from '../../../../../reportsStatuses.js'
 import placeholderImage from "../../assets/offer_help_placeholder.jpg"
 import EditOfferHelpForm from './editOfferHelpForm.jsx';
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock.jsx'
 
 export default function OfferHelp({ report }) {
   const dispatch = useDispatch()
@@ -29,19 +31,9 @@ export default function OfferHelp({ report }) {
   const currentUser = useSelector(state => state.user.currentUser);
   const feedFilters = useSelector(state => state.feed.filters);
 
-  // Prevent body scroll when edit modal is open
-  useEffect(() => {
-    if (showEditDialog) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showEditDialog]);
-
+  // Replace the useEffect with the custom hook
+  useBodyScrollLock(showEditDialog);
+  
   const toggleActionBar = () => {
     setShowActions(!showActions);
   };
@@ -70,21 +62,7 @@ export default function OfferHelp({ report }) {
   const handleEditSuccess = (updatedReport) => {
     setShowEditDialog(false);
     
-    // Refresh the feed to show updated data
-    if (window.refreshFeed) {
-      window.refreshFeed();
-    } else {
-      // Fallback refresh method
-      dispatch(clearFeed());
-      dispatch(getAllReports({
-        offset: 0,
-        limit: 10,
-        neighborhood_id: currentUser?.neighborhood_id,
-        city: currentUser?.city,
-        loc: currentUser?.location,
-        filters: feedFilters
-      }));
-    }
+    dispatch(refreshFeed());
   };
 
   const handleEditError = (error) => {
@@ -396,7 +374,7 @@ export default function OfferHelp({ report }) {
             </>
           )}
 
-          {/* Follow/Unfollow Buttons - Replace the simple follow button */}
+          {/* Follow/Unfollow Buttons */}
           {!report.isFollowed ? (
             <button 
               className="btn btn-circle btn-md btn-info"
@@ -479,7 +457,7 @@ export default function OfferHelp({ report }) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={report.id} reportType="offer_help" />
+            <Comments reportId={report.id} reportType="offer_help" isVisible={showComments} />
           </div>
         </div>
       </div>

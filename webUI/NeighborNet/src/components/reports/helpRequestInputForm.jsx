@@ -3,13 +3,15 @@ import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addHelpRequest } from '../../features/reports/helpRequests/addHelpRequestThunk.js'
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
 import AddressInputForm from '../AddressInputForm'
 import { categories } from '../../utils/requestCategories.jsx';
+import { useClickAway } from '../../utils/useClickAway';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'help_request_draft';
 
-export default function HelpReportInputForm() {
+export default function HelpRequestInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
   const addressInputRef = useRef(null);
@@ -141,49 +143,40 @@ export default function HelpReportInputForm() {
     setIsSubmitting(true);
 
     try {
-        
-        const resultAction = await dispatch(addHelpRequest(formData));
-        
-        if (addHelpRequest.fulfilled.match(resultAction)) {
-            setSuccess(true);
-            
-            // Clear saved form data after successful submission
-            localStorage.removeItem(FORM_STORAGE_KEY);
-            
-            // Reset form
-            setFormData({
-            title: '',
-            description: '',
-            address: '',
-            img_url: '',
-            category: '',
-            urgency: 'normal',
-            city: '',
-            location: {lat: '', lng: ''}
-            });
-            
-            // Clear address input
-            if (addressInputRef.current) {
-              addressInputRef.current.clearAddress();
-            }
-            
-            // Refresh the feed to show the new report
-            if (window.refreshFeed) {
-              window.refreshFeed();
-            }
-            
-            // Hide success message after 5 seconds
-            setTimeout(() => {
-            setSuccess(false);
-            }, 5000);
-            
-        } else {
-            throw new Error(resultAction.payload || 'Failed to submit help request');
-        }
+      await dispatch(addHelpRequest(formData)).unwrap();
       
-    } catch (err) {
-      setError(err.message || "Failed to submit help request. Please try again.");
-      console.error("Error submitting help request:", err);
+      dispatch(refreshFeed());
+      
+      setSuccess(true);
+      
+      // Clear saved form data after successful submission
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      
+      // Reset form
+      setFormData({
+      title: '',
+      description: '',
+      address: '',
+      img_url: '',
+      category: '',
+      urgency: 'normal',
+      city: '',
+      location: {lat: '', lng: ''}
+      });
+      
+      // Clear address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
+      }
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+      setSuccess(false);
+      }, 5000);
+      
+    } catch (error) {
+      setError(error.message || "Failed to submit help request. Please try again.");
+      console.error("Error submitting help request:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -199,6 +192,10 @@ export default function HelpReportInputForm() {
     formData.location = addressResult.location
     setFormData(formData)
   }
+
+  const dropdownRef = useClickAway(() => {
+    setShowCategoryDropdown(false);
+  });
 
   return (
     <div className="max-w-4xl mx-auto m-4">

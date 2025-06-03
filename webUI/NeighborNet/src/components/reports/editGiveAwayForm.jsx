@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { editGiveAway } from '../../features/reports/giveaways/editGiveAwayThunk.js';
 import AddressInputForm from '../AddressInputForm'
 

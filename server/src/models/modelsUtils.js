@@ -55,29 +55,44 @@ export const createReport = async (reportData, tableName) => {
 }
 
 export const removeReport = async (reportId, tableName) => {
-    try {
-        const report = await db(tableName)
-            .where({ id: reportId })
-            .first()
+  return await db.transaction(async (trx) => {
+    const report = await trx(tableName)
+      .where({ id: reportId })
+      .first();
 
-        if (!report){
-            const error = new Error(`Report with id ${reportId} not found`);
-            error.type = 'NOT_FOUND';
-            throw error;
-        }
-
-        const deleted = await db(tableName)
-            .where({ id: reportId })
-            .delete()
-            .returning('*');
-            
-        return deleted
-        
-    } catch (error) {
-        console.error('Error removing report:', error);
-        throw error;
+    if (!report) {
+      const error = new Error(`Report with id ${reportId} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
     }
-}
+
+    // Get report type from table name
+    const reportTypeMap = {
+      'give_aways': 'give_away',
+      'issue_reports': 'issue_report',
+      'help_requests': 'help_request',
+      'offer_help': 'offer_help'
+    };
+    const reportType = reportTypeMap[tableName];
+
+    // Delete related records first
+    await trx('comments')
+      .where({ report_id: reportId, report_type: reportType })
+      .del();
+      
+    await trx('followers')
+      .where({ report_id: reportId, report_type: reportType })
+      .del();
+
+    // Delete the report
+    const [deleted] = await trx(tableName)
+      .where({ id: reportId })
+      .delete()
+      .returning('*');
+      
+    return [deleted];
+  });
+};
 
 export const updateStatus = async (reportId, newStatus, tableName) => {
   try {

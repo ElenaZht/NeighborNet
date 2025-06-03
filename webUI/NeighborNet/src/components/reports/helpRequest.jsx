@@ -13,6 +13,9 @@ import { unfollowReport } from '../../features/reports/feed/unfollowThunk';
 import EditHelpRequestForm from './editHelpRequestForm.jsx';
 import { FaTimes } from 'react-icons/fa';
 import { updateHelpRequestStatus } from '../../features/reports/helpRequests/updateHelpRequestStatusThunk.js';
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
+import { useBodyScrollLock } from '../../utils/useBodyScrollLock.jsx'
+
 
 export default function HelpRequest({report}) {
   const dispatch = useDispatch()
@@ -30,17 +33,7 @@ export default function HelpRequest({report}) {
   const feedFilters = useSelector(state => state.feed.filters);
 
   // Prevent body scroll when edit dialog is open
-  useEffect(() => {
-    if (showEditDialog || showDeleteConfirmation) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showEditDialog, showDeleteConfirmation]);
+  useBodyScrollLock(showEditDialog || showDeleteConfirmation);
   
   const toggleActionBar = () => {
     setShowActions(!showActions)
@@ -138,19 +131,10 @@ export default function HelpRequest({report}) {
     setShowEditDialog(true);
   };
 
-  const handleEditSuccess = async () => {
+  const handleEditSuccess = (updatedReport) => {
     setShowEditDialog(false);
     
-    // Force refresh the feed to show updated data
-    dispatch(clearFeed());
-    await dispatch(getAllReports({
-      offset: 0,
-      limit: 20, // Load more items to ensure we get the updated report
-      neighborhood_id: currentUser?.neighborhood_id,
-      city: currentUser?.city,
-      loc: currentUser?.location,
-      filters: feedFilters
-    }));
+    dispatch(refreshFeed());
   };
 
   const handleEditError = (errorMessage) => {
@@ -502,7 +486,7 @@ export default function HelpRequest({report}) {
       }`}>
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Comments reportId={report.id} reportType="help_request" />
+            <Comments reportId={report.id} reportType="help_request" isVisible={showComments} />
           </div>
         </div>
       </div>

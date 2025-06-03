@@ -51,33 +51,35 @@ export const addUser = async (userData) => {
     }
 }
 
-export const deleteUser = async (user_id) => {
-    try {
-            // check if user exists
-            const user = await db('users')
-                .where({ id: user_id })
-                .first();
-                
-            if (!user) {
-                throw new Error('User not found');
-            }
-            
-            const deletedCount = await db('users')
-                .where({ id: user_id })
-                .del();
-                
-            return {
-                success: deletedCount > 0,
-                message: deletedCount > 0 ? 'User successfully deleted' : 'No user deleted',
-                deletedCount, 
-                user
-            };
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        throw error;
+export const deleteUser = async (userId) => {
+  return await db.transaction(async (trx) => {
+    const user = await trx('users').where({ id: userId }).first();
+    
+    if (!user) {
+      throw new Error('User not found');
     }
-}
+    
+    // Delete user's comments
+    await trx('comments').where({ user_id: userId }).del();
+    
+    // Delete user's followers relationships
+    await trx('followers').where({ user_id: userId }).del();
+    
+    // Delete user's reports from all tables
+    const reportTables = ['give_aways', 'issue_reports', 'help_requests', 'offer_help'];
+    for (const table of reportTables) {
+      await trx(table).where({ userid: userId }).del();
+    }
+    
+    // Finally delete the user
+    const [deletedUser] = await trx('users')
+      .where({ id: userId })
+      .del()
+      .returning('*');
+      
+    return deletedUser;
+  });
+};
 
 export const authenticateUser = async (email, password) => {
     try {

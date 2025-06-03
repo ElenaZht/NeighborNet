@@ -2,29 +2,36 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllReports } from '../features/reports/feed/getAllReportsThunk';
 import { setStoreFilters, resetOffset, clearFeed} from '../features/reports/feed/feedSlice'
-import { areaFilters, categoryFilters, orderOptions } from '../../../../filters';
-
-const allOwnFollowed = ['ALL', 'OWN', 'FOLLOWED'];
+import { areaFilters, categoryFilters, orderOptions, allOwnFollowed } from '../../../../filters';
+import { useClickAway } from '../utils/useClickAway';
 
 export default function FeedFilter() {
   const dispatch = useDispatch();
   const { filters: currentFilters, pagination, loading } = useSelector(state => state.feed);
-  const currentUser = useSelector(state => state.user.currentUser) || null
+  const currentUser = useSelector(state => state.user.currentUser) || null;
+  
+  // Check if user has a neighborhood
+  const hasNeighborhood = currentUser?.neighborhood_id;
   
   // Filter state
   const [filters, setFilters] = useState({
-    areaFilter: currentFilters?.areaFilter || areaFilters[2],
+    areaFilter: currentFilters?.areaFilter || (hasNeighborhood ? areaFilters[2] : areaFilters[1]), // Default to CITY if no neighborhood
     categoryFilter: currentFilters?.categoryFilter || [...categoryFilters],
     order: currentFilters?.order || orderOptions[0],
-    allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0], // Default to 'ALL'
+    allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0],
   });
 
-  // Filter options to labels
-  const areaFilterOptions = [
-    { key: 'COUNTRY', label: 'Country' },
-    { key: 'CITY', label: 'City' },
-    { key: 'NBR', label: 'Neighborhood' }
-  ];
+  // Filter options to labels - dynamically create based on neighborhood availability
+  const areaFilterOptions = hasNeighborhood 
+    ? [
+        { key: 'COUNTRY', label: 'Country' },
+        { key: 'CITY', label: 'City' },
+        { key: 'NBR', label: 'Neighborhood' }
+      ]
+    : [
+        { key: 'COUNTRY', label: 'Country' },
+        { key: 'CITY', label: 'City' }
+      ];
 
   const categoryFilterOptions = [
     { key: 'GIVEAWAY', label: 'Give Away' },
@@ -44,12 +51,14 @@ export default function FeedFilter() {
     { key: 'FOLLOWED', label: 'Followed Reports' }
   ];
 
-  // Handle area filter change
   const handleAreaFilterChange = (areaFilter) => {
+    // Prevent selecting NBR if user has no neighborhood
+    if (areaFilter === 'NBR' && !hasNeighborhood) {
+      return;
+    }
     setFilters(prev => ({ ...prev, areaFilter }));
   };
 
-  // Handle category filter toggle
   const handleCategoryToggle = (category) => {
     setFilters(prev => {
       const currentCategories = prev.categoryFilter;
@@ -82,10 +91,10 @@ export default function FeedFilter() {
   // Clear all filters
   const clearFilters = () => {
     setFilters({
-      areaFilter: areaFilters[2],
+      areaFilter: hasNeighborhood ? areaFilters[2] : areaFilters[1], // Default to CITY if no neighborhood
       categoryFilter: [...categoryFilters],
       order: orderOptions[0],
-      allOwnFollowed: allOwnFollowed[0], // Reset to 'ALL'
+      allOwnFollowed: allOwnFollowed[0],
     });
   };
 
@@ -108,7 +117,7 @@ export default function FeedFilter() {
                 neighborhood_id: currentUser.neighborhood_id,
                 city: currentUser.city,
                 loc: currentUser.location,
-                filters: filterParams // Use filterParams instead of filters
+                filters: filterParams
             }));
     }
   
@@ -148,6 +157,11 @@ export default function FeedFilter() {
             ))}
           </div>
         </div>
+        {!hasNeighborhood && (
+          <p className="text-xs text-gray-500 mt-1">
+            Neighborhood filter unavailable - your location is in a small area without defined neighborhoods
+          </p>
+        )}
       </div>
 
       {/* Show/Own/Followed Filter - Only show if user is logged in */}

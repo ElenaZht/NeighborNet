@@ -32,6 +32,7 @@ app.use(cors({
 // Serve static for client
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 app.use('/', express.static(path.join(__dirname,'../../webUI/NeighborNet/dist')));
 app.use('/users', usersRouter)
 app.use('/issue-reports', issueReportsRouter)
@@ -42,10 +43,8 @@ app.use('/comments', commentsRouter)
 app.use('/reports', reportsRouter)
 app.use('/neighborhoods', neighborhoodRouter)
 app.use('/followers', followersRouter)
-
-// Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../webUI/NeighborNet/dist/index.html'));
+app.use((req, res, next) => {
+    res.redirect('/');
 });
 
 app.listen(3001, (error) => {

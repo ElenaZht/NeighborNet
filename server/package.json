@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
+    "start:prod": "NODE_ENV=production node src/app.js",
     "debug": "node --inspect-brk src/app.js",
     "migrate": "knex --knexfile src/db/knexfile.js migrate:latest",
     "seed": "knex --knexfile src/db/knexfile.js seed:run"

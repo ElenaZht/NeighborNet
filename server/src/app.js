@@ -43,6 +43,11 @@ app.use('/reports', reportsRouter)
 app.use('/neighborhoods', neighborhoodRouter)
 app.use('/followers', followersRouter)
 
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../webUI/NeighborNet/dist/index.html'));
+});
+
 app.listen(3001, (error) => {
     if (error){
         console.log("error:", error)

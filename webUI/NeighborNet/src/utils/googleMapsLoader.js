@@ -34,7 +34,7 @@ export const loadGoogleMapsScript = () => {
     
     // Create and add script
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDZbVH4NZTDe_1trTVbRSEwa_51eHWbx8k&libraries=places&callback=Function.prototype`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places&callback=Function.prototype`;
     script.async = true;
     script.defer = true;
     

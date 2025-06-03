@@ -1,4 +1,3 @@
-import { db } from "../config/db.js";
 import { getReport, createReport, removeReport, updateStatus, updateReport } from "./modelsUtils.js";
 
 
@@ -50,13 +49,12 @@ export const updateHelpRequestDB = async (reportData) => {
   }
 }
 
-export const updateHelpRequestStatusDB = async (reportId, newStatus) => {
-  try {
-    const updatedReport = await updateStatus(reportId, newStatus, 'help_requests') 
-    return updatedReport;
-    
-  } catch (error) {
-    console.error('Error updating report status:', error);
-    throw error;
-  }
-}
+export const updateHelpRequestStatusDB = async (reportId, newStatus, userId = null) => {
+    try {
+        const updatedReport = await updateStatus(reportId, newStatus, 'help_requests');
+        return updatedReport;
+    } catch (error) {
+        console.error('Error updating help request status:', error);
+        throw error;
+    }
+};

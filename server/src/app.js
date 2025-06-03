@@ -12,9 +12,13 @@ import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 import offerHelpReportsRouter from './routes/offerHelpRouter.js'
 import helpRequestReporstRouter from './routes/helpRequestRouter.js'
 import commentsRouter from './routes/commentsRouter.js'
-
+import reportsRouter from './routes/reportsRouter.js'
+import neighborhoodRouter from './routes/neighborhoodRouter.js'
+import morgan from 'morgan';
+import followersRouter from './routes/followersRouter.js'
 
 const app = express()
+app.use(morgan('dev')); // Logging middleware for development
 
 app.use(express.json())
 app.use(cookieParser())
@@ -30,13 +34,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/', express.static(path.join(__dirname,'../../webUI/NeighborNet/dist')));
 app.use('/users', usersRouter)
-//todo * route for any unmatched routes
-
 app.use('/issue-reports', issueReportsRouter)
 app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)
 app.use('/help-requests', helpRequestReporstRouter)
 app.use('/comments', commentsRouter)
+app.use('/reports', reportsRouter)
+app.use('/neighborhoods', neighborhoodRouter)
+app.use('/followers', followersRouter)
 
 app.listen(3001, (error) => {
     if (error){

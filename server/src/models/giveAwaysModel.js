@@ -1,5 +1,5 @@
-import { db } from "../config/db.js";
 import { getReport, createReport, removeReport, updateStatus, updateReport } from "./modelsUtils.js";
+
 
 export async function createGiveAwayReport(giveAwayData) {
   try {

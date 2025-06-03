@@ -29,6 +29,7 @@ export const signUpUser = async (req, res) => {
         if (!email) return res.status(400).json({ message: 'Email is required' });
         if (!password) return res.status(400).json({ message: 'Password is required' });
         if (!address) return res.status(400).json({ message: 'Address is required' });
+        if (!city) return res.status(400).json({ message: 'City is required' });
         
         // Email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -136,7 +137,6 @@ export const loginUser = async (req, res) => {
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
         
-        // Set refresh token as HTTP-only cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             maxAge: process.env.REFRESH_DEFAULT_MAX_AGE,
@@ -151,7 +151,11 @@ export const loginUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 photo_url: user.photo_url,
-                address: user.address
+                address: user.address,
+                city: user.city,
+                location: user.location,
+                neighborhood_id: user.neighborhood_id
+
             },
             accessToken
         });

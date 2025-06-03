@@ -33,8 +33,14 @@ export const addUser = async (userData) => {
         
         const [insertedUser] = await db('users')
             .insert(saveUserData)
-            .returning(['id', 'username', 'email', 'photo_url', 'address', 
-                'city', 'location', 'neighborhood_id'
+            .returning(['id',
+                 'username',
+                  'email', 
+                  'photo_url',
+                  'address', 
+                  'city',
+                  db.raw('ST_AsGeoJSON(location)::json as location'),
+                  'neighborhood_id'
             ]);
             
         return insertedUser;
@@ -45,38 +51,53 @@ export const addUser = async (userData) => {
     }
 }
 
-export const deleteUser = async (user_id) => {
-    try {
-            // check if user exists
-            const user = await db('users')
-                .where({ id: user_id })
-                .first();
-                
-            if (!user) {
-                throw new Error('User not found');
-            }
-            
-            const deletedCount = await db('users')
-                .where({ id: user_id })
-                .del();
-                
-            return {
-                success: deletedCount > 0,
-                message: deletedCount > 0 ? 'User successfully deleted' : 'No user deleted',
-                deletedCount, 
-                user
-            };
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        throw error;
+export const deleteUser = async (userId) => {
+  return await db.transaction(async (trx) => {
+    const user = await trx('users').where({ id: userId }).first();
+    
+    if (!user) {
+      throw new Error('User not found');
     }
-}
+    
+    // Delete user's comments
+    await trx('comments').where({ user_id: userId }).del();
+    
+    // Delete user's followers relationships
+    await trx('followers').where({ user_id: userId }).del();
+    
+    // Delete user's reports from all tables
+    const reportTables = ['give_aways', 'issue_reports', 'help_requests', 'offer_help'];
+    for (const table of reportTables) {
+      await trx(table).where({ userid: userId }).del();
+    }
+    
+    // Finally delete the user
+    const [deletedUser] = await trx('users')
+      .where({ id: userId })
+      .del()
+      .returning('*');
+      
+    return deletedUser;
+  });
+};
 
 export const authenticateUser = async (email, password) => {
     try {
         // Find the user with the given email
-        const user = await db('users').where({ email }).first();
+                const user = await db('users')
+            .select([
+                'id',
+                'username', 
+                'email', 
+                'photo_url',
+                'address',
+                'hashed_password', 
+                'city',
+                db.raw('ST_AsGeoJSON(location)::json as location'),
+                'neighborhood_id'
+            ])
+            .where({ email })
+            .first();
         
         if (!user) {
             return null;
@@ -120,7 +141,7 @@ export const updateUserInDB = async (user_id, userData) => {
         if (userData.hashed_password) userInfo['hashed_password'] = userData.hashed_password;
         if (userData.location) {
             userInfo.location = db.raw('ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography', 
-                [userInfo.location.lat, userData.location.lng]);
+                [userData.location.lat, userData.location.lng]);
         }
         if (userData.city) userInfo['city'] = userData.city
         if (userData.neighborhood_id) userInfo['neighborhood_id'] = userData.neighborhood_id
@@ -128,7 +149,7 @@ export const updateUserInDB = async (user_id, userData) => {
         const [updatedUser] = await db('users')
             .where({ id: user_id })
             .update(userInfo)
-            .returning(['id', 'username', 'email', 'photo_url', 'address', 'location']);
+            .returning(['id', 'username', 'email', 'photo_url', 'address', db.raw('ST_AsGeoJSON(location)::json as location')]);
         
         return updatedUser;
         

@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addGiveAway } from '../../features/reports/giveaways/addGiveAwayThunk';
 import { Link } from 'react-router-dom';
 import AddressInputForm from '../AddressInputForm'
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk.js';
+import { useClickAway } from '../../utils/useClickAway';
 
 
 // Form storage key for localStorage
@@ -115,53 +117,48 @@ export default function GiveAwayInputForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
-    // Check authentication
-    if (!isAuthenticated) {
-      setShowAuthPrompt(true);
-      return;
-    }
     
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
 
     try {
-
-      const resultAction = await dispatch(addGiveAway(formData));
+      await dispatch(addGiveAway(formData)).unwrap();
       
-      if (addGiveAway.fulfilled.match(resultAction)) {
-        // Success - clear form and localStorage
-        setSuccess(true);
-        localStorage.removeItem(FORM_STORAGE_KEY);
-        
-        // Reset form
-        setFormData({
-          title: '',
-          description: '',
-          address: '',
-          img_url: '',
-          is_free: true,
-          swap_options: '',
-          city: '',
-          location: {lat: '', lng: ''}
-        });
-        
-        // Clear the address input
-        if (addressInputRef.current) {
-          addressInputRef.current.clearAddress();
-        }
-        // Hide success message after 5 seconds
-        setTimeout(() => setSuccess(false), 5000);
-      } else {
-        throw new Error(resultAction.payload || 'Failed to submit giveaway');
+      dispatch(refreshFeed());
+      
+      // Success - show message and reset form
+      setSuccess(true);
+      
+      // Clear saved form data
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        img_url: '',
+        is_free: true,
+        swap_options: '',
+        city: '',
+        address: '',
+        location: {lat: '', lng: ''}
+      });
+      
+      //Clear the address input
+      if (addressInputRef.current) {
+        addressInputRef.current.clearAddress();
       }
-    } catch (err) {
-      setError(err.message || "Failed to submit giveaway. Please try again.");
-      console.error("Error submitting giveaway:", err);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(false);
+      }, 5000);
+    } catch (error) {
+      setError(error.message || "Failed to submit giveaway. Please try again.");
+      console.error("Error submitting giveaway:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -176,7 +173,7 @@ export default function GiveAwayInputForm() {
 
   return (
     <div className="max-w-4xl mx-auto m-4">
-      <div className="card bg-base-100 shadow-xl">
+      <div className="card bg-base-100">
         <div className="card-body">
           <h2 className="card-title text-left text-2xl mb-4">Post a Giveaway Item</h2>
           

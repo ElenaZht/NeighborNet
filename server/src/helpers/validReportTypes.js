@@ -1,1 +1,0 @@
-export const validReportTypes = ['offer_help', 'help_request', 'give_away', 'issue_report'];

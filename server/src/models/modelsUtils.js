@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { ReportStatus } from "../../../reportsStatuses.js";
 
 
 export const getReport = async (reportId, tableName) => {
@@ -24,12 +25,23 @@ export const getReport = async (reportId, tableName) => {
 
 export const createReport = async (reportData, tableName) => {
   try {
-
-    if (reportData.location){
-        reportData.location =  db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
-          [reportData.location.lat, reportData.location.lng])
+    // Set default status to ACTIVE for all new reports if not already set
+    if (!reportData.status) {
+      reportData.status = ReportStatus.ACTIVE;
     }
 
+    if (reportData.location && 
+        reportData.location.lat && 
+        reportData.location.lng &&
+        !isNaN(parseFloat(reportData.location.lat)) && 
+        !isNaN(parseFloat(reportData.location.lng))) {
+        reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+          [parseFloat(reportData.location.lng), parseFloat(reportData.location.lat)])
+    } else if (reportData.location) {
+      // If location exists but is invalid, remove it
+      delete reportData.location;
+    }
+    
     const [insertedReport] = await db(tableName)
       .insert(reportData)
       .returning('*');
@@ -43,29 +55,44 @@ export const createReport = async (reportData, tableName) => {
 }
 
 export const removeReport = async (reportId, tableName) => {
-    try {
-        const report = await db(tableName)
-            .where({ id: reportId })
-            .first()
+  return await db.transaction(async (trx) => {
+    const report = await trx(tableName)
+      .where({ id: reportId })
+      .first();
 
-        if (!report){
-            const error = new Error(`Report with id ${reportId} not found`);
-            error.type = 'NOT_FOUND';
-            throw error;
-        }
-
-        const deleted = await db(tableName)
-            .where({ id: reportId })
-            .delete()
-            .returning('*');
-            
-        return deleted[0];// returns deleted report
-        
-    } catch (error) {
-        console.error('Error removing report:', error);
-        throw error;
+    if (!report) {
+      const error = new Error(`Report with id ${reportId} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
     }
-}
+
+    // Get report type from table name
+    const reportTypeMap = {
+      'give_aways': 'give_away',
+      'issue_reports': 'issue_report',
+      'help_requests': 'help_request',
+      'offer_help': 'offer_help'
+    };
+    const reportType = reportTypeMap[tableName];
+
+    // Delete related records first
+    await trx('comments')
+      .where({ report_id: reportId, report_type: reportType })
+      .del();
+      
+    await trx('followers')
+      .where({ report_id: reportId, report_type: reportType })
+      .del();
+
+    // Delete the report
+    const [deleted] = await trx(tableName)
+      .where({ id: reportId })
+      .delete()
+      .returning('*');
+      
+    return [deleted];
+  });
+};
 
 export const updateStatus = async (reportId, newStatus, tableName) => {
   try {
@@ -77,16 +104,13 @@ export const updateStatus = async (reportId, newStatus, tableName) => {
       throw error;
     }
 
-    //Check is user an owner
-
-
     // Update the status
-    const updatedReport = await db(tableName)
+    const [updatedReport] = await db(tableName)
       .where({ id: reportId })
       .update({ status: newStatus })
       .returning('*');
       
-    return updatedReport;
+    return updatedReport; // Return the first (and only) element from the array
     
   } catch (error) {
     console.error('Error updating report status:', error);
@@ -101,18 +125,31 @@ export const updateReport = async (reportData, tableName) => {
       throw new Error('Report ID is required for update');
     }
     
-    if (reportData.locatin) {
-      reportData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, [reportData.location.lat, reportData.location.lng]);
+    const { id, ...updateData } = reportData;
+    
+    if (updateData.location && 
+        updateData.location.lat && 
+        updateData.location.lng &&
+        !isNaN(parseFloat(updateData.location.lat)) && 
+        !isNaN(parseFloat(updateData.location.lng))) {
+      updateData.location = db.raw(`ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography`, 
+        [parseFloat(updateData.location.lng), parseFloat(updateData.location.lat)]);
+    } else if (updateData.location) {
+      // If location exists but is invalid, remove it from update to keep existing value
+      delete updateData.location;
     }
     
     const existingReport = await db(tableName).where({ id }).first();
     if (!existingReport) {
-      throw new Error(`Report with ID ${id} not found`);
+      const error = new Error(`Report with ID ${id} not found`);
+      error.type = 'NOT_FOUND';
+      throw error;
     }
+    
     // Update the database record
-    const updatedReport = await db(tableName)
+    const [updatedReport] = await db(tableName)
       .where({ id })
-      .update(reportData)
+      .update(updateData)
       .returning('*');
       
     return updatedReport;

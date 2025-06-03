@@ -2,45 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getComments } from '../../features/reports/comments/getCommentsThunk';
 import { addComment } from '../../features/reports/comments/addCommentThunk';
-import { setCurrentReport } from '../../features/reports/comments/commentsSlice';
 import placeholderAvatar from '../../assets/Profile_avatar_placeholder_large.png';
 
-
-export const Comments = ({ reportId, reportType }) => {
+export const Comments = ({ reportId, reportType, isVisible }) => {
+  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [addingComment, setAddingComment] = useState(false);
+  const [hasLoadedComments, setHasLoadedComments] = useState(false);
   
-  const { comments, loading, error } = useSelector(state => state.comments);
+  const dispatch = useDispatch();
   const currentUser = useSelector(state => state.user.currentUser);
 
-  // Set current report and fetch comments when component mounts or reportId changes
+  // Fetch comments only when section becomes visible and hasn't been loaded yet
   useEffect(() => {
-    if (reportId && reportType) {
-      // Set the current report in Redux store
-      dispatch(setCurrentReport({ reportId, reportType }));
-      
-      // Fetch comments for this report
-      dispatch(getComments({ reportId, reportType }));
+    if (isVisible && !hasLoadedComments && reportId && reportType) {
+      fetchCommentsForReport();
     }
-  }, [dispatch, reportId, reportType]);
+  }, [isVisible, hasLoadedComments, reportId, reportType]);
 
-  // Handle submitting a new comment
+  const fetchCommentsForReport = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await dispatch(getComments({ reportType, reportId })).unwrap();
+      setComments(result || []);
+      setHasLoadedComments(true); // Mark as loaded
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      setError('Failed to load comments');
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !currentUser) return;
+
+    setAddingComment(true);
+    setError(null);
 
     try {
-      await dispatch(addComment({
+      const result = await dispatch(addComment({
         reportId,
         reportType,
         content: newComment
       })).unwrap();
       
-      // Clear the input after successful submission
+      // Add the new comment to the beginning of the list
+      setComments(prevComments => [result.comment, ...prevComments]);
       setNewComment('');
       
     } catch (error) {
       console.error('Error adding comment:', error);
+      setError('Failed to add comment');
+    } finally {
+      setAddingComment(false);
     }
   };
 
@@ -53,14 +74,15 @@ export const Comments = ({ reportId, reportType }) => {
             placeholder="Add a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
+            disabled={addingComment}
           ></textarea>
           <div className="flex justify-end">
             <button 
               type="submit" 
               className="btn btn-primary btn-sm"
-              disabled={!newComment.trim() || loading}
+              disabled={!newComment.trim() || addingComment}
             >
-              {loading ? (
+              {addingComment ? (
                 <span className="loading loading-spinner loading-xs"></span>
               ) : 'Post Comment'}
             </button>
@@ -71,6 +93,7 @@ export const Comments = ({ reportId, reportType }) => {
           <span>Please log in to add comments.</span>
         </div>
       )}
+      
       <h2 className="text-xl font-medium mb-4">Comments</h2>
 
       {/* Error message */}
@@ -82,14 +105,18 @@ export const Comments = ({ reportId, reportType }) => {
 
       {/* Comments list */}
       <div className="space-y-4 mb-6">
-        {comments.length === 0 && !loading ? (
-          <p className="text-sm text-gray-500">
-            No comments yet. Be the first to comment!
-          </p>
-        ) : loading ? (
+        {loading ? (
           <div className="flex justify-center p-4">
             <span className="loading loading-spinner loading-md"></span>
           </div>
+        ) : !hasLoadedComments ? (
+          <p className="text-sm text-gray-500">
+            Comments will load when expanded...
+          </p>
+        ) : comments.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No comments yet. Be the first to comment!
+          </p>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="card bg-base-100 shadow-sm">
@@ -100,6 +127,10 @@ export const Comments = ({ reportId, reportType }) => {
                       <img 
                         src={comment.img_url || placeholderAvatar} 
                         alt={comment.username} 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = placeholderAvatar;
+                        }}
                       />
                     </div>
                   </div>
@@ -107,7 +138,7 @@ export const Comments = ({ reportId, reportType }) => {
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-bold text-sm">{comment.username}</span>
                       <span className="text-xs text-gray-500">
-                        {}
+                        {comment.datetime ? new Date(comment.datetime).toLocaleDateString() : ''}
                       </span>
                     </div>
                     <p className="text-sm text-left">{comment.content}</p>
@@ -118,7 +149,6 @@ export const Comments = ({ reportId, reportType }) => {
           ))
         )}
       </div>
-
     </div>
   );
 };

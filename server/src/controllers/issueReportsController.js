@@ -25,8 +25,8 @@ export const addIssueReport = async (req, res) => {
         if (!username) return res.status(400).json({ message: 'Username is required' });
         if (!title) return res.status(400).json({ message: 'Title is required' });
         
-        if (description && description.length > 100) {
-            return res.status(400).json({ message: 'Description must be 100 characters or less' });
+        if (description && description.length > 500) {
+            return res.status(400).json({ message: 'Description must be 500 characters or less' });
         }
         
         const reportData = { 
@@ -129,12 +129,12 @@ export const editIssueReport = async (req, res) => {
             followers: req.body.followers,
             verifies: req.body.verifies,
             city: req.body.city,
-            location: req.body.city
+            location: req.body.location
         };
         
-        if (location) {
+        if (req.body.location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            const neighborhood = await getNeighborhoodByCoordinates(req.body.location.lat, req.body.location.lng)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id
@@ -160,29 +160,6 @@ export const editIssueReport = async (req, res) => {
                 ? 'An unexpected error occurred' 
                 : error.message
         });
-    }
-}
-
-export const getIssueReport = async (req, res) => {
-    try {
-        const reportId = req.params.reportId
-        if (!reportId){
-            res.status(400).json({message: "Report id is missing"})
-            return
-        }
-
-        const report = await getReportById(reportId)
-        if (!report){
-            res.status(404).json({message: "Report not found"})
-            return
-        }
-
-        res.status(200).json({message: "Report found successfully", report})
-        return
-
-    } catch (error) {
-        res.status(500).json({message: `Failed to fetch report: ${error.toString()}`})
-        console.info("Faile to get report: ", error)
     }
 }
 

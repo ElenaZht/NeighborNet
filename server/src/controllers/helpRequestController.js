@@ -1,11 +1,10 @@
 import { 
-    createHelpRequestReport, 
-    getReportById, 
-    removeHelpRequestReportDB,
-    updateHelpRequestDB,
-    updateHelpRequestStatusDB
- } from "../models/helpRequestModel.js";
- import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
+    createHelpRequestReport,     
+    updateHelpRequestDB,         
+    removeHelpRequestReportDB,   
+    updateHelpRequestStatusDB    
+} from "../models/helpRequestModel.js";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
 
 
 export const addHelpRequest = async (req, res) => {
@@ -154,9 +153,9 @@ export const editHelpRequestReport = async (req, res) => {
             city: req.body.city
         };
         
-        if (location) {
+        if (req.body.location) {
             //detect another neighborhood if possible
-            const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng)
+            const neighborhood = await getNeighborhoodByCoordinates(req.body.location.lat, req.body.location.lng)
             
             if (neighborhood !== undefined){
                 updateData.neighborhood_id = neighborhood.id
@@ -186,30 +185,6 @@ export const editHelpRequestReport = async (req, res) => {
     }
 }
 
-export const getHelpRequestReport = async (req, res) => {
-    try {
-        const reportId = req.params.reportId
-        if (!reportId){
-            res.status(400).json({message: "Report id is missing"})
-            return
-        }
-
-        const report = await getReportById(reportId)
-        if (!report){
-            res.status(404).json({message: "Report not found"})
-            return
-        }
-
-        res.status(200).json({message: "Report found successfully", report})
-        return
-
-    } catch (error) {
-        res.status(500).json({message: `Failed to fetch report: ${error.toString()}`})
-        console.info("Faile to get report: ", error)
-    }
-
-}
-
 export const updateReportStatus = async (req, res) => {
     try {
         const reportId = req.params.reportId
@@ -223,9 +198,16 @@ export const updateReportStatus = async (req, res) => {
             res.status(400).json({message: "Report new status is missing"})
             return   
         }
-        const updatedreport = await updateHelpRequestStatusDB(reportId, newStatus)
+
+        // Check if user is owner - add this validation
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({message: "Authentication required"});
+        }
+
+        const updatedreport = await updateHelpRequestStatusDB(reportId, newStatus, userId)
         console.log("updatedreport", updatedreport)
-        if (!updatedreport.status || updatedreport.status !== newStatus){
+        if (!updatedreport || !updatedreport.status || updatedreport.status !== newStatus){
             res.status(500).json({message: "Failed to update report status"})
             return
         }

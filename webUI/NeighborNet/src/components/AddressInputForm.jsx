@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
+import { useClickAway } from '../utils/useClickAway';
 
 
-const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
+const AddressInputForm = forwardRef(({ onAddressSelect, initialAddress }, ref) => {
   const [address, setAddress] = useState('');
   const [predictions, setPredictions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef(null);
-  const inputRef = useRef(null);
+  const inputRef = useRef(null);  // Keep this existing ref
   const sessionTokenRef = useRef(null);
   const [coordinates, setCoordinates] = useState(null);
-  const [street, setStreet] = useState('')
-  const [city, setCity] = useState('')
   const [warning, setWarning] = useState('')
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+
+  // Set initial address when component mounts or initialAddress changes
+  useEffect(() => {
+    if (initialAddress && initialAddress !== address) {
+      setAddress(initialAddress);
+    }
+  }, [initialAddress]);
 
   // Permissioned actions for parent(addressInputRef.current.clearAddress())
   useImperativeHandle(ref, () => ({
@@ -83,7 +89,6 @@ const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
     autocompleteRef.current = new google.maps.places.AutocompleteService();
   };
 
-  // Handle input changes and fetch predictions
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
@@ -95,7 +100,6 @@ const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
         {
           input: value,
           sessionToken: sessionTokenRef.current,
-          // componentRestrictions: { country: 'us' }, // Optional: restrict to US
         },
         handlePredictions
       );
@@ -145,45 +149,39 @@ const AddressInputForm = forwardRef(({ onAddressSelect }, ref) => {
             // find street in place object
             const street = (place.address_components?.find(c => c.types.includes('route'))?.long_name)
             const city = (place.address_components?.find(c => c.types.includes('locality'))?.long_name)
-            setCity(city)
-            setStreet(street)
+            
+            if (!city) {
+              setWarning('Unable to detect city from this address. Please try a more specific address or select a different location.');
+            } else {
+              setWarning('');
+            }
+            
             onAddressSelect({address: suggestion.description, location: {
               lat: place.geometry.location.lat(),
               lng: place.geometry.location.lng()
             }, city: city});
-            
-
-          }}
+          }
+        }
       }
     );
-    
   };
 
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (inputRef.current && !inputRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
+  // Close suggestions when clicking outside - rename to avoid conflict
+  const suggestionsContainerRef = useClickAway(() => {
+    setShowSuggestions(false);
+  });
 
   return (
     <div className="card w-full max-w-md bg-base-100">
       <div className="card-body">        
         <div className="form-control w-full">
-          <div className="relative" ref={inputRef}>
+          <div className="relative" ref={suggestionsContainerRef}>
             <label className="label">
               <span className="label-text font-medium">Pickup Address</span>
             </label>
             
             <input
+              ref={inputRef}  // Keep the existing inputRef for the input element
               type="text"
               value={address}
               onChange={handleAddressChange}

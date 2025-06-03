@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addIssueReport } from '../../features/reports/issueReports/addIssueReportThunk';
 import { Link } from 'react-router-dom';
 import AddressInputForm from '../AddressInputForm'
+import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk';
+import { useClickAway } from '../../utils/useClickAway';
 
 
 // Form storage key for localStorage
@@ -124,6 +126,9 @@ export default function IssueReportInputForm() {
       if (addressInputRef.current) {
         addressInputRef.current.clearAddress();
       }
+      
+      // Refresh the feed to show the new report
+      dispatch(refreshFeed());
 
       // Hide success message after 5 seconds
       setTimeout(() => {
@@ -165,7 +170,7 @@ export default function IssueReportInputForm() {
 
   return (
     <div className="max-w-4xl mx-auto m-4">
-      <div className="card bg-base-100 shadow-xl">
+      <div className="card bg-base-100">
         <div className="card-body">
           <h2 className="card-title text-left text-2xl mb-4">Submit Issue Report</h2>
           

@@ -5,12 +5,12 @@ export const setStoreRef = (store) => {
   };
 
 
-// Track if we're already refreshing to prevent multiple refresh requests
+// Track if already refreshing to prevent multiple refresh requests
 let isRefreshing = false;
 let failedRequestsQueue = [];
 
 export const apiClient = async (url, options = {}) => {
-  // Get access token
+  // access token
   const token = localStorage.getItem('token');
 
   const headers = {
@@ -35,11 +35,11 @@ export const apiClient = async (url, options = {}) => {
       return await response.json();
     }
 
-    // If we get a 401 Unauthorized, try to refresh the token
+    // If 401 Unauthorized, try to refresh the token
     if (response.status === 401) {
       let newToken;
 
-      // If we're not already refreshing, start the refresh process
+      // If not already refreshing, start the refresh process
       if (!isRefreshing) {
         isRefreshing = true;
 
@@ -52,7 +52,7 @@ export const apiClient = async (url, options = {}) => {
           failedRequestsQueue = [];
 
         } catch (error) {
-          // If refresh fails, reject all queued requests
+          // If refresh fails, reject all
           failedRequestsQueue.forEach(request => request.reject(error));
           failedRequestsQueue = [];
           throw error;
@@ -61,7 +61,7 @@ export const apiClient = async (url, options = {}) => {
           isRefreshing = false;
         }
       } else {
-        // If we're already refreshing, queue this request
+        // If already refreshing, queue this request
         newToken = await new Promise((resolve, reject) => {
           failedRequestsQueue.push({ resolve, reject });
         });
@@ -79,7 +79,7 @@ export const apiClient = async (url, options = {}) => {
       const retryResponse = await fetch(url, retryConfig);
       
       if (!retryResponse.ok) {
-        // If retry still fails, parse error and throw
+        // If still fails, parse error and throw
         const errorData = await retryResponse.json();
         throw {
           status: retryResponse.status,
@@ -105,11 +105,12 @@ export const apiClient = async (url, options = {}) => {
     } catch (parseError) {
         console.error('API Error (could not parse response):', {
             url,
-            status: response.status
+            status: response.status,
+            message: parseError.message
         });
       throw {
         status: response.status,
-        message: `Request failed with status ${response.status}`
+        message: parseError.message
       };
     }
 

@@ -12,7 +12,6 @@ function LogInForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Get loading and error states from Redux store
   const { loading, error } = useSelector(state => state.user);
 
   const handleChange = (e) => {
@@ -59,12 +58,16 @@ function LogInForm() {
           password: formData.password
         }));
         
-        if (!result.error) {
-          navigate('/'); // Redirect on successful login
+        // Check if the action was rejected
+        if (loginUser.rejected.match(result)) {
+          // The error payload contains the status and message
+          const errorPayload = result.payload;
+          console.error('Login failed:', errorPayload?.status, errorPayload?.message || errorPayload);
+        } else if (loginUser.fulfilled.match(result)) {
+          navigate('/');
         }
       } catch (error) {
         console.error('Login failed:', error);
-        // Optional: handle any unexpected errors not caught by the Redux action
       }
     }
   };

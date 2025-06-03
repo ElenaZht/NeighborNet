@@ -13,7 +13,6 @@ export const editUser = createAsyncThunk(
                 {credentials: 'include'}
             );
             
-            // Check if response contains the expected data
             if (!response || !response.editedUser) {
                 throw new Error('Invalid response from server');
             }

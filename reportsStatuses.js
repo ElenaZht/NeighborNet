@@ -23,16 +23,16 @@ export const validateStatus = (status) => {
 }
 export const getStatusColorClass = (status) => {
   switch(status) {
-    case ReportStatus.DRAFT: return 'badge-ghost';
-    case ReportStatus.PENDING: return 'badge-warning';
-    case ReportStatus.ACTIVE: return 'badge-primary';
-    case ReportStatus.IN_PROGRESS: return 'badge-info';
-    case ReportStatus.FULFILLED:
-    case ReportStatus.RESOLVED: return 'badge-success';
-    case ReportStatus.CLOSED: return 'badge-neutral';
-    case ReportStatus.EXPIRED: return 'badge-secondary';
-    case ReportStatus.REJECTED: return 'badge-error';
-    case ReportStatus.ARCHIVED: return 'badge-outline';
-    default: return 'badge-neutral';
+    case ReportStatus.DRAFT: return 'bg-gray-200 text-gray-700 badge';
+    case ReportStatus.PENDING: return 'bg-yellow-500 text-white badge';
+    case ReportStatus.ACTIVE: return 'bg-blue-600 text-white badge';
+    case ReportStatus.IN_PROGRESS: return 'bg-purple-500 text-white badge';
+    case ReportStatus.FULFILLED: return 'bg-green-600 text-white badge';
+    case ReportStatus.RESOLVED: return 'bg-green-600 text-white badge';
+    case ReportStatus.CLOSED: return 'bg-gray-600 text-white badge';
+    case ReportStatus.EXPIRED: return 'bg-orange-500 text-white badge';
+    case ReportStatus.REJECTED: return 'bg-red-600 text-white badge';
+    case ReportStatus.ARCHIVED: return 'bg-gray-400 text-white badge';
+    default: return 'bg-gray-500 text-white badge';
   }
 };

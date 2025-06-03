@@ -1,6 +1,5 @@
 import { getCommentsByReportId, addComment } from "../models/commentsModel.js";
-import { validReportTypes } from "../helpers/validReportTypes.js";
-
+import { isValidReportType } from "../../../reportTypes.js";
 
 export const getReportComments = async (req, res) => {
   try {
@@ -14,7 +13,7 @@ export const getReportComments = async (req, res) => {
       return res.status(400).json({ message: "Report type is required" });
     }
     
-    if (!validReportTypes.includes(reportType)) {
+    if (!isValidReportType(reportType)) {
       return res.status(400).json({ message: "Invalid report type" });
     }
     
@@ -35,7 +34,6 @@ export const getReportComments = async (req, res) => {
     });
   }
 };
-
 
 export const createComment = async (req, res) => {
   try {
@@ -60,7 +58,7 @@ export const createComment = async (req, res) => {
       return res.status(400).json({ message: "Comment content is required" });
     }
     
-    if (!validReportTypes.includes(reportType)) {
+    if (!isValidReportType(reportType)) {
       return res.status(400).json({ message: "Invalid report type" });
     }
     

@@ -67,20 +67,21 @@ export default function SignUpForm() {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    // Validate latitude and longitude
-    if (formData.lat && (isNaN(formData.lat) || formData.lat < -90 || formData.lat > 90)) {
-      newErrors.lat = 'Latitude must be between -90 and 90';
+    
+    // Validate address and city
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
     }
     
-    if (formData.lng && (isNaN(formData.lng) || formData.lng < -180 || formData.lng > 180)) {
-      newErrors.lng = 'Longitude must be between -180 and 180';
+    if (!formData.city || !formData.city.trim()) {
+      newErrors.city = 'City is required - please select an address from the suggestions to automatically detect the city';
     }
     
-    // If one coordinate is provided, both should be provided
-    if ((formData.lat && !formData.lng) || (!formData.lat && formData.lng)) {
-      if (!newErrors.lat) newErrors.lat = 'Both latitude and longitude must be provided';
-      if (!newErrors.lng) newErrors.lng = 'Both latitude and longitude must be provided';
+    // Validate location coordinates
+    if (!formData.location || !formData.location.lat || !formData.location.lng) {
+      newErrors.location = 'Please select an address from the suggestions to get coordinates';
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -196,6 +197,9 @@ export default function SignUpForm() {
           onAddressSelect={handleAddressInputFormChange}
           ref={addressInputRef}
         />
+        {errors.address && <span className="text-error text-xs mt-1">{errors.address}</span>}
+        {errors.city && <span className="text-error text-xs mt-1">{errors.city}</span>}
+        {errors.location && <span className="text-error text-xs mt-1">{errors.location}</span>}
         </div>
         <button 
           type="submit" 

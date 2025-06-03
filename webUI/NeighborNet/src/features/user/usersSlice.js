@@ -5,6 +5,7 @@ import { loginUser } from './thunks/LogInThunk';
 import { logoutUser } from './thunks/logoutThunk';
 import { refreshToken } from './thunks/refreshTokenThunk';
 import { editUser } from './thunks/editUserThunk';
+import { getNeighborhoodById } from '../neighborhoods/getNeighborhoodThunk.js'
 
 const initialState = {
     currentUser: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
@@ -15,7 +16,8 @@ const initialState = {
     address: '',
     location: {lat: '', lng: ''},
     city: '',
-    neighborhood_id: null
+    neighborhood_id: null,
+    neighborhood: null
 };
 
 const usersSlice = createSlice({
@@ -28,6 +30,7 @@ const usersSlice = createSlice({
                 state.currentUser = null;
                 state.isAuthenticated = false;
                 state.accessToken = null;
+                state.neighborhood = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 return;
@@ -44,6 +47,7 @@ const usersSlice = createSlice({
                 state.location = user.location,
                 state.city = user.city,
                 state.neighborhood_id = user.neighborhood_id
+
             }
             
             if (accessToken) {
@@ -110,6 +114,10 @@ const usersSlice = createSlice({
                 localStorage.setItem('token', action.payload.accessToken);
                 localStorage.setItem('user', JSON.stringify(action.payload.user));
                 state.error = null;
+                state.address = action.payload.user.address;
+                state.location = action.payload.user.location
+                state.city = action.payload.user.city
+                state.neighborhood_id = action.payload.user.neighborhood_id
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
@@ -126,9 +134,11 @@ const usersSlice = createSlice({
                 state.currentUser = null;
                 state.isAuthenticated = false;
                 state.accessToken = null;
+                state.neighborhood = null;
+                state.neighborhoodLoading = false;
+                state.error = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                state.error = null;
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;
@@ -192,7 +202,20 @@ const usersSlice = createSlice({
                 state.error = action.payload || 'Failed to update profile';
             })
 
-            
+            // Get Neighborhood By ID
+            .addCase(getNeighborhoodById.pending, (state) => {
+                state.neighborhoodLoading = true;
+                state.error = null;
+            })
+            .addCase(getNeighborhoodById.fulfilled, (state, action) => {
+                state.neighborhoodLoading = false;
+                state.neighborhood = action.payload;
+                state.error = null;
+            })
+            .addCase(getNeighborhoodById.rejected, (state, action) => {
+                state.neighborhoodLoading = false;
+                state.error = action.payload || 'Failed to fetch neighborhood';
+            })
     }
 })
 

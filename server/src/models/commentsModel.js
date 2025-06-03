@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { isValidReportType } from "../../../reportTypes.js";
 
 
 export const getCommentsByReportId = async (reportId, reportType) => {
@@ -9,6 +10,11 @@ export const getCommentsByReportId = async (reportId, reportType) => {
     
     if (!reportType) {
       throw new Error('Report type is required');
+    }
+    
+    // Use centralized validation
+    if (!isValidReportType(reportType)) {
+      throw new Error(`Invalid report type: ${reportType}`);
     }
     
     // Join with users table to get the latest username and photo_url
@@ -38,6 +44,18 @@ export const getCommentsByReportId = async (reportId, reportType) => {
   }
 };
 
+// Helper function for table mapping
+const getTableForReportType = (reportType) => {
+  const tableMap = {
+    'offer_help': 'offer_help',
+    'help_request': 'help_requests',
+    'give_away': 'give_aways',
+    'issue_report': 'issue_reports'
+  };
+  
+  return tableMap[reportType];
+};
+
 export const addComment = async (commentData) => {
   try {
     const {
@@ -52,16 +70,13 @@ export const addComment = async (commentData) => {
     if (!report_type) throw new Error('Report type is required');
     if (!content) throw new Error('Comment content is required');
     
-    // Check if the referenced report exists
-    const reportTable = 
-      report_type === 'offer_help' ? 'offer_help' :
-      report_type === 'help_request' ? 'help_requests' :
-      report_type === 'give_away' ? 'give_aways' :
-      report_type === 'issue_report' ? 'issue_reports' : null;
-      
-    if (!reportTable) {
+    // Use centralized validation
+    if (!isValidReportType(report_type)) {
       throw new Error(`Invalid report type: ${report_type}`);
     }
+    
+    // Get table name using helper function
+    const reportTable = getTableForReportType(report_type);
     
     const reportExists = await db(reportTable)
       .where({ id: report_id })

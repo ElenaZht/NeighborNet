@@ -15,7 +15,7 @@ export default function FeedFilter() {
   
   // Filter state
   const [filters, setFilters] = useState({
-    areaFilter: currentFilters?.areaFilter || (hasNeighborhood ? areaFilters[2] : areaFilters[1]), // Default to CITY if no neighborhood
+    areaFilter: hasNeighborhood ? areaFilters[2] : areaFilters[1], // Default to CITY if no neighborhood
     categoryFilter: currentFilters?.categoryFilter || [...categoryFilters],
     order: currentFilters?.order || orderOptions[0],
     allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0],

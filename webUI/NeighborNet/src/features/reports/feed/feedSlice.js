@@ -16,7 +16,7 @@ const initialState = {
     loading: false,
     error: null,
     status: '',
-    neighborhood: {},
+    neighborhood: null,
     neighborhoodLoading: false,
     pagination: {
         limit: 10,

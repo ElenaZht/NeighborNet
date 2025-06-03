@@ -29,7 +29,7 @@ export default function Feed() {
         filters
       }));
     }
-  }, [dispatch, currentUser, filters]);
+  }, [dispatch, currentUser]);
 
   useEffect(() => {
     const generateTitle = () => {
@@ -60,6 +60,7 @@ export default function Feed() {
   const refreshFeed = () => {
     if (currentUser) {
       dispatch(clearFeed());
+
       dispatch(getAllReports({ 
         offset: 0, 
         limit: 10, 
@@ -74,6 +75,7 @@ export default function Feed() {
   const handleLoadMore = () => {
     if (!loading && pagination.hasMore && currentUser) {
       dispatch(nextOffset())
+
       dispatch(getAllReports({ 
         offset: pagination.offset+pagination.limit, 
         limit: pagination.limit, 

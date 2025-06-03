@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import issueReportsRouter from './routes/issueReportsRouter.js'
 import giveAwaysReportsRouter from './routes/giveAwaysRouter.js'
 import offerHelpReportsRouter from './routes/offerHelpRouter.js'
-import helpRequestReporstRouter from './routes/helpRequestRouter.js'
+import helpRequestReportsRouter from './routes/helpRequestRouter.js'
 import commentsRouter from './routes/commentsRouter.js'
 import reportsRouter from './routes/reportsRouter.js'
 import neighborhoodRouter from './routes/neighborhoodRouter.js'
@@ -37,7 +37,7 @@ app.use('/users', usersRouter)
 app.use('/issue-reports', issueReportsRouter)
 app.use('/give-aways', giveAwaysReportsRouter)
 app.use('/offer-help', offerHelpReportsRouter)
-app.use('/help-requests', helpRequestReporstRouter)
+app.use('/help-requests', helpRequestReportsRouter)
 app.use('/comments', commentsRouter)
 app.use('/reports', reportsRouter)
 app.use('/neighborhoods', neighborhoodRouter)

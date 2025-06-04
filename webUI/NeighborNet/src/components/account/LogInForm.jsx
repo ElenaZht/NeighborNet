@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../features/user/thunks/LogInThunk';
 
 function LogInForm() {
@@ -147,9 +147,9 @@ function LogInForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/signup" className="text-blue-600 hover:underline font-medium">
+            <Link to="/signup" className="text-blue-600 hover:underline font-medium">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </form>

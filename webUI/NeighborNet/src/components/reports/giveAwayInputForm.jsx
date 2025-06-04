@@ -14,7 +14,7 @@ const FORM_STORAGE_KEY = 'give_away_draft';
 export default function GiveAwayInputForm() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated);
-  const { loading: reduxLoading, error: reduxError } = useSelector(state => state.giveAways);
+  // const { loading: reduxLoading, error: reduxError } = useSelector(state => state.giveAways);
   const addressInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -321,7 +321,7 @@ export default function GiveAwayInputForm() {
                 <div className="form-control mt-4">
                   <button 
                     type="submit" 
-                    className={`btn btn-primary w-full ${isSubmitting || reduxLoading ? 'loading' : ''}`}
+                    className={`btn btn-primary w-full ${isSubmitting ? 'loading' : ''}`}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (

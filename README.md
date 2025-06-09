@@ -22,6 +22,7 @@ NeighborNet is a neighborhood social platform that enables residents to:
 - **React** with Redux Toolkit for state management
 - **Tailwind CSS** + **DaisyUI** for styling
 - **React Router** for navigation
+- **Redux** for state management
 - **FontAwesome** icons
 
 ### Backend

@@ -91,31 +91,39 @@ export default function SignUpForm() {
     
     if (validateForm()) {
       const { confirmPassword, ...userData } = formData;
-      dispatch(signUpUser(userData));
+      try {
+        const result = await dispatch(signUpUser(userData)).unwrap();
+        
+        // Only clear the form if signup was successful
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          address: '',
+          location: {lat: '', lng: ''},
+          city: ''
+        });
 
-      // clear the form
-      setFormData({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        address: '',
-        lat: '',
-        lng: '',
-      })
-
-      // Clear the address input
-      if (addressInputRef.current) {
-        addressInputRef.current.clearAddress();
+        // Clear the address input
+        if (addressInputRef.current) {
+          addressInputRef.current.clearAddress();
+        }
+      } catch (error) {
+        // Error handling is already done in the Redux slice
+        // The error will be shown via the error state
+        console.error('Signup failed:', error);
       }
     }
   };
 
   const handleAddressInputFormChange = (addressResult) => {
-    formData.address = addressResult.address
-    formData.city = addressResult.city
-    formData.location = addressResult.location
-    setFormData(formData)
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      address: addressResult.address,
+      city: addressResult.city,
+      location: addressResult.location
+    }));
   }
 
   return (

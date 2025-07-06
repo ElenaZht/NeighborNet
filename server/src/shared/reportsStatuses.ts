@@ -16,13 +16,15 @@ export const ReportStatus = {
     EXPIRED: 'EXPIRED',       // Time-based expiration
     REJECTED: 'REJECTED',     // Didn't meet community guidelines
     ARCHIVED: 'ARCHIVED'      // Historical record
+} as const;
+
+export type ReportStatusType = typeof ReportStatus[keyof typeof ReportStatus];
+
+export const validateStatus = (status: string): status is ReportStatusType => {
+    return Object.values(ReportStatus).includes(status as ReportStatusType);
 };
 
-export const validateStatus = (status) => {
-    return Object.values(ReportStatus).includes(status);
-};
-
-export const getStatusColorClass = (status) => {
+export const getStatusColorClass = (status: ReportStatusType): string => {
   switch(status) {
     case ReportStatus.DRAFT: return 'bg-gray-200 text-gray-700 badge';
     case ReportStatus.PENDING: return 'bg-yellow-500 text-white badge';

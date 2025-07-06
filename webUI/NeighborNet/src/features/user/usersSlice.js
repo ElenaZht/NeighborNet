@@ -55,6 +55,9 @@ const usersSlice = createSlice({
                 localStorage.setItem('token', accessToken);
             }
         },
+        clearError: (state) => {
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -220,6 +223,7 @@ const usersSlice = createSlice({
 })
 
 export const {
+    setCurrentUser,
     clearError
 } = usersSlice.actions
 export default usersSlice.reducer;

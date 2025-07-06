@@ -33,7 +33,7 @@ WHERE ST_DWithin(location, ST_Point(32.010069, 34.800074)::GEOGRAPHY , 11000);
 CREATE TABLE issue_reports (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    userid INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     username VARCHAR(255) NOT NULL,
     img_url VARCHAR(2048),
     title VARCHAR(255) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE issue_reports (
 CREATE TABLE give_aways (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    userid INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     username VARCHAR(255) NOT NULL,
     img_url VARCHAR(2048),
     title VARCHAR(255) NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE give_aways (
 CREATE TABLE offer_help (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    userid INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     username VARCHAR(255) NOT NULL,
     img_url VARCHAR(2048),
     title VARCHAR(255) NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE offer_help (
 CREATE TABLE help_requests (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    userid INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     username VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(500),

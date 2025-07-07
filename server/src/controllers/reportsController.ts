@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { getAllReportsFromDB } from '../models/reportsModel.js';
-import { AuthRequest } from '../types/index.js';
+import { Response } from 'express';
+import { getAllReportsFromDB } from '../models/reportsModel';
+import { AuthRequest } from '../types/index';
 
 interface ReportsQuery {
     neighborhood_id?: string;

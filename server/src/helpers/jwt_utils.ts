@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { JwtPayload } from '../types/index.js';
+import { JwtPayload } from '../types/index';
 import { config } from '../config/index';
 
 interface User {

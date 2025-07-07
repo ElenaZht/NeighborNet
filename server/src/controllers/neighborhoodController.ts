@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getNeighborhoodDB } from '../models/neighborhoodModel.js';
+import { getNeighborhoodDB } from '../models/neighborhoodModel';
 
 export const getNeighborhoodById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;

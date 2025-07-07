@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
-import { validateToken } from '../helpers/jwt_utils.js';
-import { AuthRequest } from '../types/index.js';
+import { validateToken } from '../helpers/jwt_utils';
+import { AuthRequest } from '../types/index';
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     const authHeader = req.headers.authorization;
@@ -12,7 +12,6 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     const token = authHeader.split(' ')[1];
 
     try {
-        console.log('Authorization header:', authHeader);
         const secret = process.env.ACCESS_TOKEN_SECRET;
         if (!secret) {
             res.status(500).json({ message: 'Server configuration error.' });
@@ -20,7 +19,6 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
         }
 
         const decoded = validateToken(token!, secret);
-        console.log('Decoded token:', decoded);
         if (!decoded) {
             res.status(401).json({ message: 'Invalid or expired access token.' });
             return;

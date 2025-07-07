@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { validateToken } from '../helpers/jwt_utils.js';
-import { AuthRequest } from '../types/index.js';
+import { Response, NextFunction } from 'express';
+import { validateToken } from '../helpers/jwt_utils';
+import { AuthRequest } from '../types/index';
 
 export const verifyAccessToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
-    console.log("jwt verifyAccessToken req.", req);
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN format
     

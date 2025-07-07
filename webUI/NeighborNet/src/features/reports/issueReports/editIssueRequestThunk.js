@@ -12,11 +12,11 @@ export const editIssueReport = createAsyncThunk(
                 { credentials: 'include' }
             );
             
-            if (!response || !response.updatedReport) {
+            if (!response || !response.editedReport) {
                 throw new Error('Invalid response from server');
             }
 
-            return response.updatedReport;
+            return response.editedReport;
             
         } catch (error) {
             return rejectWithValue(error.message || 'Failed to update issue report');

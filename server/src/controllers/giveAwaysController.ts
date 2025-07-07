@@ -1,13 +1,13 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { 
     createGiveAwayReport, 
     getReportById, 
     removeGiveAwayReportDB,
     updateGiveAwayReportDB,
     updateGiveAwayStatusDB
-} from "../models/giveAwaysModel.js";
-import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
-import { AuthRequest, GiveAway } from '../types/index.js';
+} from "../models/giveAwaysModel";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel";
+import { AuthRequest } from '../types/index';
 
 interface GiveAwayData {
     user_id: number;

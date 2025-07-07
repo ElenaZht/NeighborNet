@@ -1,5 +1,5 @@
-import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils.js";
-import { HelpRequest } from "../types/index.js";
+import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils";
+import { HelpRequest } from "../types/index";
 
 interface HelpRequestData extends ReportData {
   user_id: number; // Added user_id to ensure it is included in the data

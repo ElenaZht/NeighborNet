@@ -1,13 +1,13 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { 
     createOfferHelpReport, 
     getReportById, 
     removeOfferHelpDBReport,
     updateOfferHelpReportDB,
     updateOfferHelpStatusDB
-} from "../models/offerHelpModel.js";
-import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
-import { AuthRequest, OfferHelp } from '../types/index.js';
+} from "../models/offerHelpModel";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel";
+import { AuthRequest } from '../types/index';
 
 interface OfferHelpData {
     user_id: number;
@@ -76,7 +76,6 @@ export const addOfferHelp = async (req: AuthRequest, res: Response): Promise<voi
         if (barter_options) offerHelpData.barter_options = barter_options;
         if (location) offerHelpData.location = location;
         
-        // Add latitude and longitude if provided
         if (location) {
             // Detect neighborhood if possible
             const neighborhood = await getNeighborhoodByCoordinates(location.lat, location.lng);
@@ -85,7 +84,6 @@ export const addOfferHelp = async (req: AuthRequest, res: Response): Promise<voi
             }
         }
         
-        // Call model function
         const offerHelp = await createOfferHelpReport(offerHelpData);
         
         res.status(201).json({

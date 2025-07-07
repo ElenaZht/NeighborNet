@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
-import { getReport } from "../models/modelsUtils.js";
-import { AuthRequest } from '../types/index.js';
+import { getReport } from "../models/modelsUtils";
+import { AuthRequest } from '../types/index';
 
 export const isAccountOwner = (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -9,10 +9,29 @@ export const isAccountOwner = (req: AuthRequest, res: Response, next: NextFuncti
     }
 
     const requestedUserId = req.params.user_id;
-    const authenticatedUserId = req.user.user_id; // Updated to match `user_id` naming convention
-
+    const authenticatedUserId = req.user.user_id; 
+    
+    if (!requestedUserId) {
+        res.status(400).json({ message: 'User ID is required in URL parameters' });
+        return;
+    }
+    
+    if (!authenticatedUserId) {
+        res.status(401).json({ message: 'User ID missing from authentication token' });
+        return;
+    }
+    
+    // Convert both to numbers for comparison
+    const requestedUserIdNum = parseInt(requestedUserId);
+    const authenticatedUserIdNum = parseInt(authenticatedUserId.toString());
+    
+    if (isNaN(requestedUserIdNum) || isNaN(authenticatedUserIdNum)) {
+        res.status(400).json({ message: 'Invalid user ID format' });
+        return;
+    }
+    
     // Check if authenticated user matches the requested user ID
-    if (authenticatedUserId != parseInt(requestedUserId || '0')) {
+    if (authenticatedUserIdNum !== requestedUserIdNum) {
         res.status(403).json({ 
             message: 'Forbidden: You can only perform this action on your own account' 
         });

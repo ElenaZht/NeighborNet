@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.js';
-import { getNeighborhoodById } from '../controllers/neighborhoodController.js';
+import { authenticate } from '../middleware/auth';
+import { getNeighborhoodById } from '../controllers/neighborhoodController';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
-import { db } from "../config/db.js";
-import { categoryFilters, allOwnFollowed, CategoryFilter, AllOwnFollowed } from "../shared/filters.js";
+import { db } from "../config/db";
+import { categoryFilters, allOwnFollowed, CategoryFilter, AllOwnFollowed } from "../shared/filters";
 
 interface Location {
     coordinates: [number, number];
@@ -85,8 +85,9 @@ export const getAllReportsFromDB = async (
     }
 
     // Add allOwnFollowed filter to queryFilters
+    let userIdFilter: number | null = null;
     if (filters.allOwnFollowed === allOwnFollowed[1] && userId) {
-        queryFilters.user_id = userId;
+        userIdFilter = userId;
     } 
     
     // Determine if we need distance calculation
@@ -127,6 +128,10 @@ export const getAllReportsFromDB = async (
                 })
                 .where(queryFilters);
 
+                if (userIdFilter) {
+                    categoryQuery = categoryQuery.where('issue_reports.user_id', userIdFilter);
+                }
+
                 if (filters.allOwnFollowed === 'FOLLOWED' && userId) {
                     categoryQuery = categoryQuery.whereNotNull('f.user_id');
                 }
@@ -154,6 +159,10 @@ export const getAllReportsFromDB = async (
                           .andOn('f.user_id', '=', db.raw('?', [userId || -1]));
                   })
                   .where(queryFilters);
+
+                if (userIdFilter) {
+                    categoryQuery = categoryQuery.where('give_aways.user_id', userIdFilter);
+                }
 
                 if (filters.allOwnFollowed === 'FOLLOWED' && userId) {
                     categoryQuery = categoryQuery.whereNotNull('f.user_id');
@@ -183,6 +192,10 @@ export const getAllReportsFromDB = async (
                     })
                     .where(queryFilters);
 
+                if (userIdFilter) {
+                    categoryQuery = categoryQuery.where('offer_help.user_id', userIdFilter);
+                }
+
                 // Handle FOLLOWED filter separately
                 if (filters.allOwnFollowed === 'FOLLOWED' && userId) {
                     categoryQuery = categoryQuery.whereNotNull('f.user_id');
@@ -211,6 +224,10 @@ export const getAllReportsFromDB = async (
                             .andOn('f.user_id', '=', db.raw('?', [userId || -1]));
                     })
                     .where(queryFilters);
+
+                if (userIdFilter) {
+                    categoryQuery = categoryQuery.where('help_requests.user_id', userIdFilter);
+                }
 
                 if (filters.allOwnFollowed === 'FOLLOWED' && userId) {
                     categoryQuery = categoryQuery.whereNotNull('f.user_id');

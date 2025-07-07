@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.js';
-import { addFollower, removeFollower } from '../controllers/followersController.js';
+import { authenticate } from '../middleware/auth';
+import { addFollower, removeFollower } from '../controllers/followersController';
 
 const router = express.Router();
 

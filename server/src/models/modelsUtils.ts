@@ -1,5 +1,5 @@
-import { db } from "../config/db.js";
-import { ReportStatus } from "../shared/reportsStatuses.js";
+import { db } from "../config/db";
+import { ReportStatus } from "../shared/reportsStatuses";
 
 interface LocationData {
   lat: number;
@@ -88,17 +88,16 @@ export const createReport = async (reportData: ReportData, tableName: string): P
     const insertData = { ...reportData };
     
     // Remove category field for tables that don't support it
-    // Only help_requests table has a category column
     if (tableName !== 'help_requests' && insertData.category) {
       delete insertData.category;
     }
     
     // Ensure correct column name for user reference
     if (insertData.user_id) {
-      insertData.user_id = insertData.user_id; // Retain user_id
+      insertData.user_id = insertData.user_id;
     }
     
-    console.log('Data being inserted:', insertData); // Log the data being inserted
+    console.log('Data being inserted:', insertData);
     
     const [insertedReport] = await db(tableName)
       .insert(insertData)

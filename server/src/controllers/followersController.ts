@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { addFollowerRecord, removeFollowerRecord } from '../models/followersModel.js';
-import { isValidReportType } from '../shared/reportTypes.js';
-import { AuthRequest } from '../types/index.js';
+import { Response } from 'express';
+import { addFollowerRecord, removeFollowerRecord } from '../models/followersModel';
+import { isValidReportType } from '../shared/reportTypes';
+import { AuthRequest } from '../types/index';
 
 export const addFollower = async (req: AuthRequest, res: Response): Promise<void> => {
     try {

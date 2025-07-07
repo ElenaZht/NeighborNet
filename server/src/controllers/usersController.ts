@@ -4,14 +4,14 @@ import {
     deleteUser, 
     authenticateUser,
     updateUserInDB
-} from '../models/usersModel.js';
+} from '../models/usersModel';
 import { 
     validateToken,    
     generateAccessToken, 
     generateRefreshToken, 
-} from '../helpers/jwt_utils.js';
-import { getNeighborhoodByCoordinates } from '../models/neighborhoodModel.js';
-import { UserSignUp, AuthRequest } from '../types/index.js';
+} from '../helpers/jwt_utils';
+import { getNeighborhoodByCoordinates } from '../models/neighborhoodModel';
+import { UserSignUp, AuthRequest } from '../types/index';
 
 export const signUpUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -62,6 +62,7 @@ export const signUpUser = async (req: Request, res: Response): Promise<void> => 
             if (neighborhood) {
                 userData.neighborhood_id = neighborhood.id;
             }
+            console.log("detect neibh: ", location, neighborhood)
         }
         
         const user = await addUser(userData);
@@ -176,7 +177,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         res.status(200).json({
             message: 'Login successful',
             user: {
-                id: user.user_id,
+                id: user.id,
                 username: user.username,
                 email: user.email,
                 photo_url: user.photo_url,

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { deleteAccount } from '../features/user/thunks/deleteAccountThunk'
 import { editUser } from '../features/user/thunks/editUserThunk'
+import { refreshToken } from '../features/user/thunks/refreshTokenThunk'
 import AddressInputForm from '../components/AddressInputForm'
 import { FaTimes } from 'react-icons/fa'
 import { useBodyScrollLock } from '../utils/useBodyScrollLock'
@@ -110,7 +111,20 @@ export default function AccountPage() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(editUser({ userId: currentUser.id, userData: dataToSubmit })).unwrap();
+      // Try to get user ID from various possible fields
+      let userId = currentUser.id || currentUser.user_id || currentUser.userId;
+      
+      // If no user ID, try to refresh the token to get user_id
+      if (!userId) {
+        const refreshResult = await dispatch(refreshToken()).unwrap();
+        userId = refreshResult.user_id;
+      }
+      
+      if (!userId) {
+        throw new Error('User ID not found. Please log in again.');
+      }
+      
+      await dispatch(editUser({ userId: userId, userData: dataToSubmit })).unwrap();
       setShowEditModal(false);
        // Clear the address input
       if (addressInputRef.current) {

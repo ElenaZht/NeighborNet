@@ -1,6 +1,5 @@
-import { db } from '../config/db.js';
-import { isValidReportType } from '../shared/reportTypes.js';
-import { Follower } from '../types/index.js';
+import { db } from '../config/db';
+import { isValidReportType } from '../shared/reportTypes';
 
 interface FollowerData {
     user_id: number; 
@@ -37,12 +36,10 @@ export const addFollowerRecord = async (followerData: FollowerData): Promise<Fol
         if (!report_id) throw new Error('Report ID is required');
         if (!report_type) throw new Error('Report type is required');
 
-        // Validate report type using centralized validation
         if (!isValidReportType(report_type)) {
             throw new Error(`Invalid report type: ${report_type}`);
         }
 
-        // Use transaction for atomic operation
         return await db.transaction(async (trx) => {
             // Check if already following
             const existingFollower = await trx('followers')
@@ -99,12 +96,10 @@ export const removeFollowerRecord = async (followerData: FollowerData): Promise<
         if (!report_id) throw new Error('Report ID is required');
         if (!report_type) throw new Error('Report type is required');
 
-        // Validate report type using centralized validation
         if (!isValidReportType(report_type)) {
             throw new Error(`Invalid report type: ${report_type}`);
         }
 
-        // Use transaction for atomic operation
         return await db.transaction(async (trx) => {
             const deletedCount = await trx('followers')
                 .where({
@@ -149,7 +144,6 @@ const getReportTable = (reportType: string): string => {
 
 export const getFollowersByReport = async (reportType: string, reportId: number): Promise<FollowerWithUserInfo[]> => {
     try {
-        // Validate report type using centralized validation
         if (!isValidReportType(reportType)) {
             throw new Error(`Invalid report type: ${reportType}`);
         }

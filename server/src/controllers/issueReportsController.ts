@@ -1,17 +1,17 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { 
     createIssueReport, 
     removeIssueReportDB, 
     getReportById,
     updateIssueReportDB,
     updateIssueReportStatusDB
-} from "../models/issueReportsModel.js";
-import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
-import { AuthRequest, IssueReport } from '../types/index.js';
+} from "../models/issueReportsModel";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel";
+import { AuthRequest } from '../types/index';
 
 interface IssueReportData {
-    user_id: number; // Updated from user_id
-    neighborhood_id: number; // Made non-optional to resolve type compatibility
+    user_id: number; 
+    neighborhood_id: number;
     username: string;
     title: string;
     description: string;
@@ -181,8 +181,10 @@ export const editIssueReport = async (req: AuthRequest, res: Response): Promise<
         if (editedReport) {
             console.info("Report edited: ", editedReport);
             res.status(200).json({ message: 'Report info edited successfully', editedReport });
-            return;
+        } else {
+            res.status(500).json({ message: 'Failed to update issue report - no data returned' });
         }
+        return;
         
     } catch (error) {
         if (error && typeof error === 'object' && 'type' in error && error.type === 'NOT_FOUND') {
@@ -220,8 +222,10 @@ export const updateReportStatus = async (req: AuthRequest, res: Response): Promi
         if (updatedReport) {
             console.info("Report status updated: ", updatedReport);
             res.status(200).json({ message: 'Report status updated successfully', updatedReport });
-            return;
+        } else {
+            res.status(500).json({ message: 'Failed to update report status - no data returned' });
         }
+        return;
         
     } catch (error) {
         if (error && typeof error === 'object' && 'type' in error && error.type === 'NOT_FOUND') {

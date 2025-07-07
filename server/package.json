@@ -8,9 +8,7 @@
     "dev": "tsx src/app.ts",
     "start": "node dist/app.js",
     "build": "tsc",
-    "build:watch": "tsc --watch",
-    "migrate": "knex --knexfile src/db/knexfile.js migrate:latest",
-    "seed": "knex --knexfile src/db/knexfile.js seed:run"
+    "build:watch": "tsc --watch"
   },
   "keywords": [],
   "author": "",

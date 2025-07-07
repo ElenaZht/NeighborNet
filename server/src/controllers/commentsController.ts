@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { getCommentsByReportId, addComment } from "../models/commentsModel.js";
-import { isValidReportType } from "../shared/reportTypes.js";
-import { AuthRequest } from '../types/index.js';
+import { getCommentsByReportId, addComment } from "../models/commentsModel";
+import { isValidReportType } from "../shared/reportTypes";
+import { AuthRequest } from '../types/index';
 
 export const getReportComments = async (req: Request, res: Response): Promise<void> => {
   try {

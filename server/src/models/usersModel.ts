@@ -1,20 +1,15 @@
-import { db } from '../config/db.js';
+import { db } from '../config/db';
 import bcrypt from 'bcrypt';
-import { User, UserSignUp } from '../types/index.js';
+import { User, UserSignUp } from '../types/index';
 
 interface UserInDB extends User {
     id: number;
     hashed_password?: string;
 }
 
-interface LocationGeoJSON {
-    type: string;
-    coordinates: [number, number];
-}
-
 export const addUser = async (userData: UserSignUp): Promise<User> => {
     try {
-        const { username, email, photo_url, password, location, city, address } = userData;
+        const { username, email, photo_url, password, location, city, address, neighborhood_id } = userData;
 
         // check if email already exists
         const existingUser = await db('users').where({ email }).first();
@@ -31,7 +26,8 @@ export const addUser = async (userData: UserSignUp): Promise<User> => {
             photo_url,
             hashed_password,
             city, 
-            address
+            address,
+            neighborhood_id
         };
         
         if (location) {

@@ -1,5 +1,5 @@
-import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils.js";
-import { IssueReport } from "../types/index.js";
+import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils";
+import { IssueReport } from "../types/index";
 
 interface IssueReportData extends ReportData {
   priority?: 'low' | 'medium' | 'high';

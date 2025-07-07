@@ -8,18 +8,18 @@ export const updateIssueReportStatus = createAsyncThunk(
         try {
             const response = await patch(
                 `${BASE_URL}/issue-reports/${reportId}/status`,
-                { newStatus },
+                { status: newStatus },
                 { credentials: 'include' } // Include cookies for authentication
             );
             
-            if (!response || !response.report) {
+            if (!response || !response.updatedReport) {
                 throw new Error('Invalid response from server');
             }
 
             return {
                 reportId,
                 newStatus,
-                updatedReport: response.report
+                updatedReport: response.updatedReport
             };
             
         } catch (error) {

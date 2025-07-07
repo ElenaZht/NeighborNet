@@ -5,9 +5,9 @@ import {
     removeHelpRequestReportDB,   
     updateHelpRequestStatusDB,
     getReportById
-} from "../models/helpRequestModel.js";
-import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel.js";
-import { AuthRequest } from '../types/index.js';
+} from "../models/helpRequestModel";
+import { getNeighborhoodByCoordinates } from "../models/neighborhoodModel";
+import { AuthRequest } from '../types/index';
 
 
 interface HelpRequestData {

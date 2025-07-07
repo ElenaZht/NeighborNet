@@ -1,5 +1,5 @@
-import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils.js";
-import { OfferHelp } from "../types/index.js";
+import { getReport, createReport, removeReport, updateStatus, updateReport, ReportData } from "./modelsUtils";
+import { OfferHelp } from "../types/index";
 
 interface OfferHelpData extends ReportData {
   availability?: string;

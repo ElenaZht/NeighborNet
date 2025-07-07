@@ -1,6 +1,6 @@
-import { db } from "../config/db.js";
-import { isValidReportType } from "../shared/reportTypes.js";
-import { Comment } from "../types/index.js";
+import { db } from "../config/db";
+import { isValidReportType } from "../shared/reportTypes";
+import { Comment } from "../types/index";
 
 interface CommentData {
   user_id: number;
@@ -104,7 +104,6 @@ export const addComment = async (commentData: CommentData): Promise<CommentWithU
       throw new Error(`Report with ID ${report_id} not found in ${reportTable}`);
     }
     
-    // Create the comment
     const [insertedComment] = await db('comments')
       .insert({
         user_id,

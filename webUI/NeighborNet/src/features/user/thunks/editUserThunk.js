@@ -8,6 +8,10 @@ export const editUser = createAsyncThunk(
     async ({ userId, userData }, { rejectWithValue }) => {
         
         try {
+            if (!userId || userId === 'undefined' || userId === 'null') {
+                throw new Error('User ID is required and cannot be undefined or null');
+            }
+            
             const response = await patch(`${BASE_URL}/users/${userId}`, 
                 userData,
                 {credentials: 'include'}

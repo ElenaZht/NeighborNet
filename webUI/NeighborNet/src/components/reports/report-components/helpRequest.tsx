@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from './comments'
 import { format, parseISO } from 'date-fns'
-import { ReportStatus, getStatusColorClass } from '../../../../../../reportsStatuses'
-import placeholderImage from '../../assets/help_request_placeholder.jpeg';
+import { ReportStatus, getStatusColorClass, ReportStatusType } from '../../../../../../reportsStatuses'
+import placeholderImage from '../../../assets/help_request_placeholder.jpeg';
 import {removeHelpRequest} from '../../../features/reports/helpRequests/removeHelpRequestThunk';
 import { clearFeed } from '../../../features/reports/feed/feedSlice';
 import { getAllReports } from '../../../features/reports/feed/getAllReportsThunk';
@@ -16,21 +16,23 @@ import { updateHelpRequestStatus } from '../../../features/reports/helpRequests/
 import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock'
 
+import { RootState } from '../../../store/store';
+import { HelpRequestProps } from './types';
 
-export default function HelpRequest({report}) {
-  const dispatch = useDispatch()
-  const [showMap, setShowMap] = useState(false);
-  const [showActions, setShowActions] = useState(false)
-  const [showComments, setShowComments] = useState(false)
-  const [showBackToTop, setShowBackToTop] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const currentUser = useSelector(state => state.user.currentUser);
-  const feedFilters = useSelector(state => state.feed.filters);
+export default function HelpRequest({ report }: HelpRequestProps) {
+  const dispatch = useAppDispatch();
+  const [showMap, setShowMap] = useState<boolean>(false);
+  const [showActions, setShowActions] = useState<boolean>(false);
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+  const [isFollowLoading, setIsFollowLoading] = useState<boolean>(false);
+  const [isUnfollowLoading, setIsUnfollowLoading] = useState<boolean>(false);
+  const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<boolean>(false);
+  const currentUser = useAppSelector((state: RootState) => state.user.currentUser);
+  const feedFilters = useAppSelector((state: RootState) => state.feed.filters);
 
   // Prevent body scroll when edit dialog is open
   useBodyScrollLock(showEditDialog || showDeleteConfirmation);
@@ -70,7 +72,10 @@ export default function HelpRequest({report}) {
         limit: 10,
         neighborhood_id: currentUser?.neighborhood_id,
         city: currentUser?.city,
-        loc: currentUser?.location,
+        loc: currentUser?.location ? {
+          lat: String(currentUser.location.lat),
+          lng: String(currentUser.location.lng)
+        } : undefined,
         filters: feedFilters
       }));
       
@@ -97,7 +102,7 @@ export default function HelpRequest({report}) {
     try {
       await dispatch(followReport({
         reportType: 'help_request',
-        reportId: report.id
+        reportId: String(report.id)
       })).unwrap();
     } catch (error) {
       console.error('Failed to follow:', error);
@@ -117,7 +122,7 @@ export default function HelpRequest({report}) {
     try {
       await dispatch(unfollowReport({
         reportType: 'help_request',
-        reportId: report.id
+        reportId: String(report.id)
       })).unwrap();
     } catch (error) {
       console.error('Failed to unfollow:', error);
@@ -131,13 +136,13 @@ export default function HelpRequest({report}) {
     setShowEditDialog(true);
   };
 
-  const handleEditSuccess = (updatedReport) => {
+  const handleEditSuccess = () => {
     setShowEditDialog(false);
     
     dispatch(refreshFeed());
   };
 
-  const handleEditError = (errorMessage) => {
+  const handleEditError = (errorMessage: string) => {
     console.error('Failed to edit help request:', errorMessage);
   };
 
@@ -145,7 +150,7 @@ export default function HelpRequest({report}) {
     setShowEditDialog(false);
   };
 
-  const handleStatusUpdate = async (newStatus) => {
+  const handleStatusUpdate = async (newStatus: ReportStatusType) => {
     if (!currentUser || !report.isAuthor) {
       alert('You can only update status of your own reports');
       return;
@@ -200,9 +205,10 @@ export default function HelpRequest({report}) {
                   src={report.img_url || placeholderImage} 
                   alt={report.title || "Help request"} 
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null
-                    e.target.src = placeholderImage
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    const imgElement = e.target as HTMLImageElement;
+                    imgElement.onerror = null;
+                    imgElement.src = placeholderImage;
                   }}
                 />
               </figure>
@@ -227,7 +233,7 @@ export default function HelpRequest({report}) {
                         <span>Following</span>
                       </div>
                     )}
-                    <div className={`${getStatusColorClass(report.status)} mt-1`}>
+                    <div className={`${getStatusColorClass(report.status as ReportStatusType)} mt-1`}>
                       {report.status || 'No status'}
                     </div>
                     <button 
@@ -305,7 +311,7 @@ export default function HelpRequest({report}) {
                         title="Location Map"
                         className="w-full h-full"
                         frameBorder="0"
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address || '')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                         allowFullScreen
                       ></iframe>
                     </div>
@@ -506,7 +512,20 @@ export default function HelpRequest({report}) {
             </div>
 
             <EditHelpRequestForm 
-              reportData={report}
+              reportData={{
+                id: String(report.id),
+                title: report.title,
+                description: report.description,
+                address: report.address,
+                img_url: report.img_url,
+                category: report.category,
+                urgency: report.urgency,
+                city: report.city,
+                location: report.location ? {
+                  lat: String(report.location.lat),
+                  lng: String(report.location.lng)
+                } : undefined
+              }}
               onSuccess={handleEditSuccess}
               onError={handleEditError}
             />

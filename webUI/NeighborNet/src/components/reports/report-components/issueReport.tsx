@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from './comments'
 import { format, parseISO } from 'date-fns'
-import { ReportStatus, getStatusColorClass } from '../../../../../../reportsStatuses'
-import placeholderImage from "../../assets/issue_placeholder.jpg"
+import { ReportStatus, getStatusColorClass, ReportStatusType } from '../../../../../../reportsStatuses'
+import placeholderImage from "../../../assets/issue_placeholder.jpg"
 import { removeIssueReport } from '../../../features/reports/issueReports/removeIssueReportThunk';
 import { clearFeed } from '../../../features/reports/feed/feedSlice';
 import { getAllReports } from '../../../features/reports/feed/getAllReportsThunk';
@@ -12,22 +12,24 @@ import { followReport } from '../../../features/reports/feed/followThunk';
 import { unfollowReport } from '../../../features/reports/feed/unfollowThunk';
 import EditIssueReportForm from '../edit-forms/editIssueReportForm';
 import { FaTimes } from 'react-icons/fa';
-import { updateIssueReportStatus } from '../../../features/reports/issueReports/updateIssueReportStatusThunk'; // Add this import
+import { updateIssueReportStatus } from '../../../features/reports/issueReports/updateIssueReportStatusThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock'
+import { IssueReportProps } from './types';
+import { RootState } from '../../../store/store';
 
-export default function IssueReport({ report }) {
-  const dispatch = useDispatch()
-  const [showMap, setShowMap] = useState(false);
-  const [showActions, setShowActions] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isUnfollowLoading, setIsUnfollowLoading] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false); // Add this state
-  const currentUser = useSelector(state => state.user.currentUser);
-  const feedFilters = useSelector(state => state.feed.filters);
+export default function IssueReport({ report }: IssueReportProps) {
+  const dispatch = useAppDispatch();
+  const [showMap, setShowMap] = useState<boolean>(false);
+  const [showActions, setShowActions] = useState<boolean>(false);
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+  const [isFollowLoading, setIsFollowLoading] = useState<boolean>(false);
+  const [isUnfollowLoading, setIsUnfollowLoading] = useState<boolean>(false);
+  const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<boolean>(false);
+  const currentUser = useAppSelector((state: RootState) => state.user.currentUser);
+  const feedFilters = useAppSelector((state: RootState) => state.feed.filters);
 
   // Prevent body scroll when edit dialog is open
   useBodyScrollLock(showEditDialog || showDeleteConfirmation);
@@ -51,7 +53,7 @@ export default function IssueReport({ report }) {
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      await dispatch(removeIssueReport(report.id)).unwrap();
+      await dispatch(removeIssueReport(report.id as any)).unwrap();
       
       // Refresh the feed after successful deletion
       dispatch(clearFeed());
@@ -60,7 +62,10 @@ export default function IssueReport({ report }) {
         limit: 10,
         neighborhood_id: currentUser?.neighborhood_id,
         city: currentUser?.city,
-        loc: currentUser?.location,
+        loc: currentUser?.location ? {
+          lat: String(currentUser.location.lat),
+          lng: String(currentUser.location.lng)
+        } : undefined,
         filters: feedFilters
       }));
       
@@ -87,7 +92,7 @@ export default function IssueReport({ report }) {
     try {
       await dispatch(followReport({
         reportType: 'issue_report',
-        reportId: report.id
+        reportId: String(report.id)
       })).unwrap();
     } catch (error) {
       console.error('Failed to follow:', error);
@@ -107,7 +112,7 @@ export default function IssueReport({ report }) {
     try {
       await dispatch(unfollowReport({
         reportType: 'issue_report',
-        reportId: report.id
+        reportId: String(report.id)
       })).unwrap();
     } catch (error) {
       console.error('Failed to unfollow:', error);
@@ -131,12 +136,15 @@ export default function IssueReport({ report }) {
       limit: 20, // Load more items to ensure we get the updated report
       neighborhood_id: currentUser?.neighborhood_id,
       city: currentUser?.city,
-      loc: currentUser?.location,
+      loc: currentUser?.location ? {
+        lat: String(currentUser.location.lat),
+        lng: String(currentUser.location.lng)
+      } : undefined,
       filters: feedFilters
     }));
   };
 
-  const handleEditError = (errorMessage) => {
+  const handleEditError = (errorMessage: string) => {
     console.error('Failed to edit issue report:', errorMessage);
   };
 
@@ -144,7 +152,7 @@ export default function IssueReport({ report }) {
     setShowEditDialog(false);
   };
 
-  const handleStatusUpdate = async (newStatus) => {
+  const handleStatusUpdate = async (newStatus: ReportStatusType) => {
     if (!currentUser || !report.isAuthor) {
       alert('You can only update status of your own reports');
       return;
@@ -187,9 +195,10 @@ export default function IssueReport({ report }) {
               src={report.img_url || placeholderImage} 
               alt={report.title || "Issue report"} 
               className="h-full w-full object-cover"
-              onError={(e) => {
-                e.target.onerror = null
-                e.target.src = placeholderImage
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.onerror = null;
+                imgElement.src = placeholderImage;
               }}
             />
           </figure>
@@ -214,7 +223,7 @@ export default function IssueReport({ report }) {
                     <span>Following</span>
                   </div>
                 )}
-                <div className={`${getStatusColorClass(report.status)} mt-1`}>
+                <div className={`${getStatusColorClass(report.status as ReportStatusType)} mt-1`}>
                   {report.status || 'No status'}
                 </div>
                 <button 
@@ -263,7 +272,7 @@ export default function IssueReport({ report }) {
                     title="Location Map"
                     className="w-full h-full"
                     frameBorder="0"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(report.address || '')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                     allowFullScreen
                   ></iframe>
                 </div>
@@ -473,7 +482,18 @@ export default function IssueReport({ report }) {
             </div>
 
             <EditIssueReportForm 
-              reportData={report}
+              reportData={{
+                id: String(report.id),
+                title: report.title,
+                description: report.description,
+                address: report.address,
+                img_url: report.img_url,
+                city: report.city,
+                location: report.location ? {
+                  lat: String(report.location.lat),
+                  lng: String(report.location.lng)
+                } : undefined
+              }}
               onSuccess={handleEditSuccess}
               onError={handleEditError}
             />

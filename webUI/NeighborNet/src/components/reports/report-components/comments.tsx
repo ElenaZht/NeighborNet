@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { getComments } from '../../../features/reports/comments/getCommentsThunk';
 import { addComment } from '../../../features/reports/comments/addCommentThunk';
-import placeholderAvatar from '../../assets/Profile_avatar_placeholder_large.png';
+import placeholderAvatar from '../../../assets/Profile_avatar_placeholder_large.png';
+import { CommentsProps, Comment } from './types';
+import { RootState } from '../../../store/store';
 
-export const Comments = ({ reportId, reportType, isVisible }) => {
-  const [comments, setComments] = useState([]);
+export const Comments = ({ reportId, reportType, isVisible }: CommentsProps) => {
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [addingComment, setAddingComment] = useState(false);
   const [hasLoadedComments, setHasLoadedComments] = useState(false);
   
-  const dispatch = useDispatch();
-  const currentUser = useSelector(state => state.user.currentUser);
+  const dispatch = useAppDispatch();
+  const currentUser = useAppSelector((state: RootState) => state.user.currentUser);
 
   // Fetch comments only when section becomes visible and hasn't been loaded yet
   useEffect(() => {
@@ -39,7 +41,7 @@ export const Comments = ({ reportId, reportType, isVisible }) => {
     }
   };
 
-  const handleSubmitComment = async (e) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !currentUser) return;
 
@@ -127,9 +129,10 @@ export const Comments = ({ reportId, reportType, isVisible }) => {
                       <img 
                         src={comment.img_url || placeholderAvatar} 
                         alt={comment.username} 
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = placeholderAvatar;
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                          const imgElement = e.target as HTMLImageElement;
+                          imgElement.onerror = null;
+                          imgElement.src = placeholderAvatar;
                         }}
                       />
                     </div>

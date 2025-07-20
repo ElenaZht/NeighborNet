@@ -1,33 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react'
 import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
-import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { addOfferHelp } from '../../features/reports/offerhelp/addOfferHeplThunk';
-import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk';
-import { useClickAway } from '../../utils/useClickAway';
+import { addOfferHelp } from '../../../features/reports/offerhelp/addOfferHeplThunk';
+import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
+import { useClickAway } from '../../../utils/useClickAway';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { RootState } from '../../../store/store';
 
-import AddressInputForm from '../AddressInputForm'
-import { barterChoices } from '../../utils/barterChoises';
+import AddressInputForm, { AddressInputFormRef } from '../../AddressInputForm'
+import { barterChoices } from '../../../utils/barterChoises';
+import { AddressResult, OfferHelpInputFormData } from './types';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'offer_help_draft';
 
 export default function OfferHelpInputForm() {
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(state => state.user.isAuthenticated);
-  const addressInputRef = useRef(null);
-  const [formData, setFormData] = useState({
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state: RootState) => state.user.isAuthenticated);
+  const addressInputRef = useRef<AddressInputFormRef>(null);
+  const [formData, setFormData] = useState<OfferHelpInputFormData>({
     title: '',
     description: '',
     img_url: '',
-    barterOptions: [],
+    barter_options: [],
     city: '',
     address: '',
     location: {lat: '', lng: ''}
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
@@ -61,7 +63,7 @@ export default function OfferHelpInputForm() {
       formData.description || 
       formData.location || 
       formData.img_url || 
-      formData.barterOptions.length > 0) {
+      formData.barter_options.length > 0) {
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
     }
   }, [formData]);
@@ -78,7 +80,7 @@ export default function OfferHelpInputForm() {
     setImageError(false);
   }, [formData.img_url]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -98,13 +100,13 @@ export default function OfferHelpInputForm() {
     setImageError(false);
   };
 
-  const handleBarterOptionChange = (id) => {
+  const handleBarterOptionChange = (id: string) => {
     setFormData(prev => {
-      const options = [...prev.barterOptions];
+      const options = [...prev.barter_options];
       if (options.includes(id)) {
-        return { ...prev, barterOptions: options.filter(item => item !== id) };
+        return { ...prev, barter_options: options.filter(item => item !== id) };
       } else {
-        return { ...prev, barterOptions: [...options, id] };
+        return { ...prev, barter_options: [...options, id] };
       }
     });
     setShowBarterDropdown(false);
@@ -136,7 +138,7 @@ export default function OfferHelpInputForm() {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     
@@ -147,7 +149,17 @@ export default function OfferHelpInputForm() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(addOfferHelp(formData)).unwrap();
+      // Convert formData to CreateOfferHelpPayload
+      const reportPayload = {
+        ...formData,
+        category: 'general', // Add missing required property
+        location: {
+          lat: parseFloat(formData.location.lat as string),
+          lng: parseFloat(formData.location.lng as string)
+        }
+      };
+      
+      await dispatch(addOfferHelp(reportPayload)).unwrap();
       
       dispatch(refreshFeed());
       
@@ -162,7 +174,7 @@ export default function OfferHelpInputForm() {
         title: '',
         description: '',
         img_url: '',
-        barterOptions: [],
+        barter_options: [],
         city: '',
         address: '',
         location: {lat: '', lng: ''}
@@ -176,19 +188,25 @@ export default function OfferHelpInputForm() {
       setTimeout(() => {
         setSuccess(false);
       }, 5000);
-    } catch (error) {
-      setError(error.message || "Failed to submit help offer. Please try again.");
-      console.error("Error submitting help offer:", error);
+    } catch (err: any) {
+      setError(err?.message || "Failed to submit help offer. Please try again.");
+      console.error("Error submitting help offer:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleAddressInputFormChange = (addressResult) => {
-    formData.address = addressResult.address
-    formData.city = addressResult.city
-    formData.location = addressResult.location
-    setFormData(formData)
+  const handleAddressInputFormChange = (addressResult: AddressResult) => {
+    const updatedFormData = {
+      ...formData,
+      address: addressResult.address,
+      city: addressResult.city,
+      location: {
+        lat: String(addressResult.location.lat),
+        lng: String(addressResult.location.lng)
+      }
+    };
+    setFormData(updatedFormData);
   }
 
   return (
@@ -281,10 +299,10 @@ export default function OfferHelpInputForm() {
                       onClick={toggleBarterDropdown}
                     >
                       <div className="flex flex-wrap gap-2">
-                        {formData.barterOptions.length === 0 ? (
+                        {formData.barter_options.length === 0 ? (
                           <span className="text-gray-500">Select what you'd accept in exchange</span>
                         ) : (
-                          formData.barterOptions.map(id => {
+                          formData.barter_options.map((id: string) => {
                             const option = barterChoices.find(choice => choice.id === id);
                             return option ? (
                               <div key={id} className="badge badge-primary gap-2">
@@ -304,7 +322,7 @@ export default function OfferHelpInputForm() {
                           <div 
                             key={option.id}
                             className={`flex items-center gap-2 p-3 hover:bg-base-200 cursor-pointer ${
-                              formData.barterOptions.includes(option.id) 
+                              formData.barter_options.includes(option.id) 
                                 ? 'bg-primary/10' 
                                 : ''
                             }`}
@@ -313,7 +331,7 @@ export default function OfferHelpInputForm() {
                             <input 
                               type="checkbox" 
                               className="checkbox checkbox-primary checkbox-sm"
-                              checked={formData.barterOptions.includes(option.id)}
+                              checked={formData.barter_options.includes(option.id)}
                               onChange={() => {}} // Handled by the div click
                               onClick={e => e.stopPropagation()}
                             />
@@ -324,12 +342,12 @@ export default function OfferHelpInputForm() {
                       </div>
                     )}
                   </div>
-                  {formData.barterOptions.length > 0 && (
+                  {formData.barter_options.length > 0 && (
                     <div className="mt-2">
                       <button
                         type="button"
                         className="btn btn-xs btn-ghost"
-                        onClick={() => setFormData({...formData, barterOptions: []})}
+                        onClick={() => setFormData({...formData, barter_options: []})}
                       >
                         Clear all
                       </button>
@@ -362,7 +380,7 @@ export default function OfferHelpInputForm() {
                     value={formData.description}
                     onChange={handleChange}
                     className="textarea textarea-bordered w-full" 
-                    rows="5"
+                    rows={5}
                     placeholder="Describe your service - your experience, what you can help with, when you're available, etc."
                   ></textarea>
                 </div>

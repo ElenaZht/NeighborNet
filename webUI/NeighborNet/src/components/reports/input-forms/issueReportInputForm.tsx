@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react'
 import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
-import { useDispatch, useSelector } from 'react-redux';
-import { addIssueReport } from '../../features/reports/issueReports/addIssueReportThunk';
 import { Link } from 'react-router-dom';
-import AddressInputForm from '../AddressInputForm'
-import { refreshFeed } from '../../features/reports/feed/refreshFeedThunk';
-import { useClickAway } from '../../utils/useClickAway';
-
+import AddressInputForm, { AddressInputFormRef } from '../../AddressInputForm'
+import { addIssueReport } from '../../../features/reports/issueReports/addIssueReportThunk';
+import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { RootState } from '../../../store/store';
+import { AddressResult, IssueReportInputFormData } from './types';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'issue_report_draft';
 
 export default function IssueReportInputForm() {
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(state => state.user.isAuthenticated);
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state: RootState) => state.user.isAuthenticated);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<IssueReportInputFormData>({
     title: '',
     description: '',
     address: '',
@@ -24,11 +24,11 @@ export default function IssueReportInputForm() {
     location: {lat: '', lng: ''}
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const addressInputRef = useRef(null);
+  const addressInputRef = useRef<AddressInputFormRef>(null);
 
   // Load saved form data on component mount
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function IssueReportInputForm() {
     setImageError(false);
   }, [formData.img_url]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const updatedFormData = {
       ...formData,
@@ -95,7 +95,7 @@ export default function IssueReportInputForm() {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     
@@ -106,7 +106,17 @@ export default function IssueReportInputForm() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(addIssueReport(formData)).unwrap();
+      // Convert formData to CreateIssueReportPayload
+      const reportPayload = {
+        ...formData,
+        category: 'general', // Add missing required property
+        location: {
+          lat: parseFloat(formData.location.lat as string),
+          lng: parseFloat(formData.location.lng as string)
+        }
+      };
+      
+      await dispatch(addIssueReport(reportPayload)).unwrap();
       setSuccess(true);
 
       // Reset form
@@ -135,8 +145,8 @@ export default function IssueReportInputForm() {
         setSuccess(false);
       }, 5000);
       
-    } catch (err) {
-      setError(err.message || "Failed to submit report. Please try again.");
+    } catch (err: any) {
+      setError(err?.message || "Failed to submit report. Please try again.");
       console.error("Error submitting report:", err);
       
     } finally {
@@ -161,11 +171,17 @@ export default function IssueReportInputForm() {
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
   };
 
-    const handleAddressInputFormChange = (addressResult) => {
-    formData.address = addressResult.address
-    formData.city = addressResult.city
-    formData.location = addressResult.location
-    setFormData(formData)
+    const handleAddressInputFormChange = (addressResult: AddressResult) => {
+    const updatedFormData = {
+      ...formData,
+      address: addressResult.address,
+      city: addressResult.city,
+      location: {
+        lat: String(addressResult.location.lat),
+        lng: String(addressResult.location.lng)
+      }
+    };
+    setFormData(updatedFormData);
   }
 
   return (
@@ -274,7 +290,7 @@ export default function IssueReportInputForm() {
                     value={formData.description}
                     onChange={handleChange}
                     className="textarea textarea-bordered w-full" 
-                    rows="5"
+                    rows={5}
                     maxLength={500}
                     placeholder="Describe the issue (max 500 characters)"
                     disabled={isSubmitting}

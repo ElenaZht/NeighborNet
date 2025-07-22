@@ -234,7 +234,6 @@ export const updateReportStatus = async (req: AuthRequest, res: Response): Promi
         }
         
         const updatedReport = await updateOfferHelpStatusDB(reportId, newStatus);
-        console.log("updatedreport", updatedReport);
         if (!updatedReport.status || updatedReport.status !== newStatus) {
             res.status(500).json({ message: "Failed to update report status" });
             return;

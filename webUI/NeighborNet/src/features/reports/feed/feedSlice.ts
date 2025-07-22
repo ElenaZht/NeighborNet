@@ -10,6 +10,7 @@ import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatus
 import {areaFilters, categoryFilters, orderOptions, allOwnFollowed} from '../../../../../../filters'
 import { refreshFeed } from './refreshFeedThunk.js';
 import { FeedState } from './types';
+import { removeGiveAwayThunk } from '../giveaways/removeGiveAwayThunk';
 
 
 const initialState: FeedState = {
@@ -165,7 +166,7 @@ const feedSlice = createSlice({
             .addCase(updateOfferHelpStatus.fulfilled, (state, action) => {
                 const { reportId, newStatus } = action.payload;
                 const report = state.feedItems.find(item => 
-                    item.id === parseInt(reportId) && item.record_type === 'offer_help'
+                    item.id === reportId && item.record_type === 'offer_help'
                 );
                 if (report) {
                     report.status = newStatus;
@@ -174,7 +175,7 @@ const feedSlice = createSlice({
             .addCase(updateIssueReportStatus.fulfilled, (state, action) => {
                 const { reportId, newStatus } = action.payload;
                 const report = state.feedItems.find(item => 
-                    item.id === parseInt(reportId) && item.record_type === 'issue_report'
+                    item.id === reportId && item.record_type === 'issue_report'
                 );
                 if (report) {
                     report.status = newStatus;
@@ -190,6 +191,12 @@ const feedSlice = createSlice({
             .addCase(refreshFeed.rejected, (state, action) => {
                 state.loading = false;
                 state.error = typeof action.payload === 'string' ? action.payload : 'Failed to refresh feed';
+            })
+            .addCase(removeGiveAwayThunk.fulfilled, (state, action) => {
+                const reportId = parseInt(action.payload, 10); // Convert reportId to a number
+                state.feedItems = state.feedItems.filter(item => 
+                    !(item.id === reportId && item.record_type === 'give_away')
+                );
             });
     },
 });

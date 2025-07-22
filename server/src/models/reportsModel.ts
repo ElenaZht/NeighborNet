@@ -55,6 +55,7 @@ export const getAllReportsFromDB = async (
     userId: number | null = null
 ): Promise<ReportResult[]> => {
 
+
     const queryFilters: QueryFilters = {};
     switch (filters.areaFilter) {
         case 'COUNTRY':
@@ -92,7 +93,14 @@ export const getAllReportsFromDB = async (
     
     // Determine if we need distance calculation
     const orderByDistance = filters.order === 'DISTANCE';
-    const userLocation = location ? `ST_Point(${location.coordinates[0]}, ${location.coordinates[1]})::GEOGRAPHY` : null;
+    // Validate location before using it
+    const userLocation = location && location.coordinates && location.coordinates.length === 2
+        ? `ST_Point(${location.coordinates[0]}, ${location.coordinates[1]})::GEOGRAPHY`
+        : null;
+
+    if (!userLocation && filters.order === 'DISTANCE') {
+        console.warn('Invalid or missing location for distance-based ordering.');
+    }
 
     try {
         let allReportsQuery: any = null;
@@ -242,6 +250,12 @@ export const getAllReportsFromDB = async (
             }
         }
 
+        // Ensure allReportsQuery is not null before applying ordering
+        if (!allReportsQuery) {
+            console.warn('No valid query constructed for the given filters. Returning empty result set.');
+            return [] as ReportResult[];
+        }
+
         // Apply ordering based on the orderBy filter
         let orderedQuery = allReportsQuery;
         if (orderByDistance && userLocation) {
@@ -253,7 +267,13 @@ export const getAllReportsFromDB = async (
         const allReports = await orderedQuery
             .limit(limit)
             .offset(offset);
-        
+
+
+        if (!allReports || allReports.length === 0) {
+            console.warn('No reports found for the given query.');
+            return [] as ReportResult[];
+        }
+
         return allReports as ReportResult[];
 
     } catch (error: any) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from './comments';
 import { format, parseISO } from 'date-fns';
@@ -17,7 +17,20 @@ import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock';
 import { GiveAwayProps } from './types';
 
+type Location = {
+    coordinates: [number, number];
+    type: string;
+};
+
+// Update the type for currentUser.location
 export default function GiveAway({ report }: GiveAwayProps) {
+  const currentUser = useAppSelector((state) => state.user.currentUser) as {
+    location?: Location;
+    neighborhood_id?: number;
+    city?: string;
+    // ...other properties
+  };
+
   const [showMap, setShowMap] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -29,7 +42,6 @@ export default function GiveAway({ report }: GiveAwayProps) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const dispatch = useAppDispatch();
-  const currentUser = useAppSelector((state) => state.user.currentUser);
   const feedFilters = useAppSelector((state) => state.feed.filters);
 
   // Replace the useEffect with the custom hook
@@ -52,33 +64,51 @@ export default function GiveAway({ report }: GiveAwayProps) {
   };
 
   const handleConfirmDelete = async () => {
+    if (!report || !report.id) {
+      console.error('Invalid report object:', report);
+      alert('Failed to delete giveaway: Report data is no longer valid.');
+      setIsDeleting(false); // Ensure spinner is reset
+      setShowDeleteConfirmation(false); // Ensure dialog is closed
+      return;
+    }
+
+    const reportId = report.id; // Capture report.id before any async operations
     setIsDeleting(true);
+
     try {
-      await dispatch(removeGiveAwayThunk(report.id.toString())).unwrap();
+      await dispatch(removeGiveAwayThunk(reportId)).unwrap(); // Use the captured reportId
 
       // Refresh the feed after successful deletion
-      dispatch(clearFeed());
+      await dispatch(clearFeed());
       await dispatch(
         getAllReports({
           offset: 0,
           limit: 10,
           neighborhood_id: currentUser?.neighborhood_id,
           city: currentUser?.city,
-          loc: currentUser?.location
+          loc: Array.isArray(currentUser?.location?.coordinates)
             ? {
-                lat: currentUser.location.lat.toString(),
-                lng: currentUser.location.lng.toString(),
+                  lat: currentUser.location.coordinates[1].toString(),
+                  lng: currentUser.location.coordinates[0].toString(),
               }
             : undefined,
           filters: feedFilters,
         })
       );
+
+      // Handle UI updates to reflect the deletion
+      setShowDeleteConfirmation(false);
     } catch (error) {
       console.error('Failed to delete giveaway:', error);
-      alert('Failed to delete giveaway. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage === 'Invalid or expired access token.') {
+        alert('Your session has expired. Please log in again.');
+      } else {
+        alert('Failed to delete giveaway. Please try again.');
+      }
     } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirmation(false);
+      setIsDeleting(false); // Ensure spinner is reset
+      setShowDeleteConfirmation(false); // Ensure dialog is closed
     }
   };
 
@@ -489,12 +519,16 @@ export default function GiveAway({ report }: GiveAwayProps) {
             </div>
 
             <EditGiveAwayForm
-              reportData={{ ...report, id: report.id.toString(), location: report.location
-                ? {
-                    lat: report.location.lat.toString(),
-                    lng: report.location.lng.toString(),
-                  }
-                : undefined }}
+              reportData={{
+                ...report,
+                id: report.id.toString(),
+                location: report.location && report.location.lat && report.location.lng
+                  ? {
+                      lat: report.location.lat.toString(),
+                      lng: report.location.lng.toString(),
+                    }
+                  : undefined,
+              }}
               onSuccess={handleEditSuccess}
               onError={handleEditError}
             />

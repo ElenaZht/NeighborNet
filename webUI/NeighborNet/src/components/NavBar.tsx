@@ -25,7 +25,7 @@ function NavBar() {
   const neighborhoodLoading = useAppSelector(state => state.user.neighborhoodLoading) || false;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
+
   const accountDropdownRef = useClickAway(() => {
     setShowAccount(false);
   });
@@ -110,7 +110,7 @@ function NavBar() {
         {neighborhood && !neighborhoodLoading && 
           <div className="flex items-center gap-2 ml-4">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <h1 className="text-lg font-semibold">{neighborhood.name}</h1>
+            <h1 className="text-lg font-semibold">{neighborhood.nbr_name_en}</h1>
           </div>
         }
       </div>

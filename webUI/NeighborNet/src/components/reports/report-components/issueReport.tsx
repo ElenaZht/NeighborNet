@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from './comments'
@@ -31,6 +31,7 @@ export default function IssueReport({ report }: IssueReportProps) {
   const currentUser = useAppSelector((state: RootState) => state.user.currentUser);
   const feedFilters = useAppSelector((state: RootState) => state.feed.filters);
 
+
   // Prevent body scroll when edit dialog is open
   useBodyScrollLock(showEditDialog || showDeleteConfirmation);
 
@@ -51,30 +52,38 @@ export default function IssueReport({ report }: IssueReportProps) {
   };
 
   const handleConfirmDelete = async () => {
+    if (!report || !report.id) {
+      console.error('Invalid report object:', report);
+      alert('Failed to delete issue report: Invalid report data.');
+      return;
+    }
+
     setIsDeleting(true);
     try {
-      await dispatch(removeIssueReport(report.id as any)).unwrap();
-      
+      await dispatch(removeIssueReport({ reportId: String(report.id) })).unwrap();
+
       // Refresh the feed after successful deletion
       dispatch(clearFeed());
-      await dispatch(getAllReports({
-        offset: 0,
-        limit: 10,
-        neighborhood_id: currentUser?.neighborhood_id,
-        city: currentUser?.city,
-        loc: currentUser?.location ? {
-          lat: String(currentUser.location.lat),
-          lng: String(currentUser.location.lng)
-        } : undefined,
-        filters: feedFilters
-      }));
-      
+      await dispatch(
+        getAllReports({
+          offset: 0,
+          limit: 10,
+          neighborhood_id: currentUser?.neighborhood_id,
+          city: currentUser?.city,
+          loc: currentUser?.location && currentUser.location.lat && currentUser.location.lng
+            ? {
+                lat: String(currentUser.location.lat),
+                lng: String(currentUser.location.lng),
+              }
+            : null,
+          filters: feedFilters,
+        })
+      );
     } catch (error) {
       console.error('Failed to delete issue report:', error);
       alert('Failed to delete issue report. Please try again.');
     } finally {
       setIsDeleting(false);
-      setShowDeleteConfirmation(false);
     }
   };
 
@@ -136,7 +145,7 @@ export default function IssueReport({ report }: IssueReportProps) {
       limit: 20, // Load more items to ensure we get the updated report
       neighborhood_id: currentUser?.neighborhood_id,
       city: currentUser?.city,
-      loc: currentUser?.location ? {
+      loc: currentUser?.location && currentUser.location.lat && currentUser.location.lng ? {
         lat: String(currentUser.location.lat),
         lng: String(currentUser.location.lng)
       } : undefined,
@@ -489,10 +498,12 @@ export default function IssueReport({ report }: IssueReportProps) {
                 address: report.address,
                 img_url: report.img_url,
                 city: report.city,
-                location: report.location ? {
-                  lat: String(report.location.lat),
-                  lng: String(report.location.lng)
-                } : undefined
+                location: report.location && report.location.lat && report.location.lng
+                  ? {
+                      lat: String(report.location.lat),
+                      lng: String(report.location.lng),
+                    }
+                  : undefined
               }}
               onSuccess={handleEditSuccess}
               onError={handleEditError}

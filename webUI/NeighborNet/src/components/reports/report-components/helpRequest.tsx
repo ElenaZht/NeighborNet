@@ -15,6 +15,7 @@ import { FaTimes } from 'react-icons/fa';
 import { updateHelpRequestStatus } from '../../../features/reports/helpRequests/updateHelpRequestStatusThunk';
 import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock'
+import { reloadFiltersFromLocalStorage } from '../../../features/reports/feed/feedSlice';
 
 import { RootState } from '../../../store/store';
 import { HelpRequestProps } from './types';
@@ -180,6 +181,11 @@ export default function HelpRequest({ report }: HelpRequestProps) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Ensure filters are reloaded from localStorage when the component mounts
+  useEffect(() => {
+    dispatch(reloadFiltersFromLocalStorage());
+  }, [dispatch]);
 
   if (!report) {
     return (

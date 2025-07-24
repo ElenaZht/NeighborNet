@@ -1,53 +1,67 @@
-import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { getAllReports } from '../features/reports/feed/getAllReportsThunk';
-import { setStoreFilters, resetOffset, clearFeed} from '../features/reports/feed/feedSlice'
+import { clearFeed, setStoreFilters, resetOffset } from '../features/reports/feed/feedSlice';
 import { areaFilters, categoryFilters, orderOptions, allOwnFollowed } from '../../../../filters';
+import type { RootState } from '../store/store';
+import type { GetAllReportsParams } from '../features/reports/feed/types';
 
 export default function FeedFilter() {
-  const dispatch = useAppDispatch();
-  const { filters: currentFilters, pagination, loading } = useAppSelector(state => state.feed);
-  const currentUser = useAppSelector(state => state.user.currentUser) || null;
-  
-  // Check if user has a neighborhood
+  const dispatch = useDispatch();
+  const { filters: currentFilters, pagination, loading } = useSelector((state: RootState) => state.feed);
+  const currentUser = useSelector((state: RootState) => state.user.currentUser) || null;
+
   const hasNeighborhood = currentUser?.neighborhood_id;
-  
-  // Filter state
-  const [filters, setFilters] = useState({
-    areaFilter: hasNeighborhood ? areaFilters[2] : areaFilters[1], // Default to CITY if no neighborhood
-    categoryFilter: currentFilters?.categoryFilter || [...categoryFilters],
-    order: currentFilters?.order || orderOptions[0],
-    allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0],
+
+  const [filters, setFilters] = useState(() => {
+    // Initialize with current store filters or defaults
+    return {
+      areaFilter: currentFilters?.areaFilter || (hasNeighborhood ? areaFilters[2] : areaFilters[1]),
+      categoryFilter: currentFilters?.categoryFilter || [...categoryFilters],
+      order: currentFilters?.order || orderOptions[0],
+      allOwnFollowed: currentFilters?.allOwnFollowed || allOwnFollowed[0],
+    };
   });
 
-  // Filter options to labels - dynamically create based on neighborhood availability
-  const areaFilterOptions = hasNeighborhood 
+  // Sync local state with store filters when they change
+  useEffect(() => {
+    if (currentFilters) {
+      setFilters({
+        areaFilter: currentFilters.areaFilter || (hasNeighborhood ? areaFilters[2] : areaFilters[1]),
+        categoryFilter: currentFilters.categoryFilter || [...categoryFilters],
+        order: currentFilters.order || orderOptions[0],
+        allOwnFollowed: currentFilters.allOwnFollowed || allOwnFollowed[0],
+      });
+    }
+  }, [currentFilters, hasNeighborhood]);
+
+  const areaFilterOptions = hasNeighborhood
     ? [
         { key: 'COUNTRY', label: 'Country' },
         { key: 'CITY', label: 'City' },
-        { key: 'NBR', label: 'Neighborhood' }
+        { key: 'NBR', label: 'Neighborhood' },
       ]
     : [
         { key: 'COUNTRY', label: 'Country' },
-        { key: 'CITY', label: 'City' }
+        { key: 'CITY', label: 'City' },
       ];
 
   const categoryFilterOptions = [
     { key: 'GIVEAWAY', label: 'Give Away' },
     { key: 'ISSUEREPORT', label: 'Issue Report' },
     { key: 'OFFERHELP', label: 'Offer Help' },
-    { key: 'HELPREQUEST', label: 'Help Request' }
+    { key: 'HELPREQUEST', label: 'Help Request' },
   ];
 
   const orderFilterOptions = [
     { key: 'DATE', label: 'Date' },
-    { key: 'DISTANCE', label: 'Distance' }
+    { key: 'DISTANCE', label: 'Distance' },
   ];
 
   const allOwnFollowedOptions = [
     { key: 'ALL', label: 'All Reports' },
     { key: 'OWN', label: 'My Reports' },
-    { key: 'FOLLOWED', label: 'Followed Reports' }
+    { key: 'FOLLOWED', label: 'Followed Reports' },
   ];
 
   const handleAreaFilterChange = (areaFilter: string) => {
@@ -55,73 +69,67 @@ export default function FeedFilter() {
     if (areaFilter === 'NBR' && !hasNeighborhood) {
       return;
     }
-    setFilters(prev => ({ ...prev, areaFilter }));
+    setFilters((prevFilters) => ({ ...prevFilters, areaFilter }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setFilters(prev => {
-      const currentCategories = prev.categoryFilter;
-      const isSelected = currentCategories.includes(category);
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          categoryFilter: currentCategories.filter(cat => cat !== category)
-        };
-      } else {
-        return {
-          ...prev,
-          categoryFilter: [...currentCategories, category]
-        };
-      }
+    setFilters((prevFilters) => {
+      const currentCategories = prevFilters.categoryFilter;
+      return {
+        ...prevFilters,
+        categoryFilter: currentCategories.includes(category)
+          ? currentCategories.filter((cat) => cat !== category)
+          : [...currentCategories, category],
+      };
     });
   };
 
   // Handle order change
   const handleOrderChange = (order: string) => {
-    setFilters(prev => ({ ...prev, order }));
+    setFilters((prevFilters) => ({ ...prevFilters, order }));
   };
 
   // Handle allOwnFollowed filter change
   const handleAllOwnFollowedChange = (allOwnFollowed: string) => {
-    setFilters(prev => ({ ...prev, allOwnFollowed }));
+    setFilters((prevFilters) => ({ ...prevFilters, allOwnFollowed }));
   };
 
   // Clear all filters
   const clearFilters = () => {
-    setFilters({
+    const defaultFilters = {
       areaFilter: hasNeighborhood ? areaFilters[2] : areaFilters[1], // Default to CITY if no neighborhood
       categoryFilter: [...categoryFilters],
       order: orderOptions[0],
       allOwnFollowed: allOwnFollowed[0],
-    });
+    };
+    
+    setFilters(defaultFilters);
+    
+    // Also update the store with the cleared filters
+    dispatch(setStoreFilters(defaultFilters));
   };
 
   // Apply filters
   const applyFilters = () => {
-    const filterParams = {
-      areaFilter: filters.areaFilter,
-      categoryFilter: filters.categoryFilter,
-      order: filters.order,
-      allOwnFollowed: filters.allOwnFollowed
+    // First, persist the filters to the store and localStorage
+    dispatch(setStoreFilters(filters));
+    
+    // Clear the current feed and reset pagination
+    dispatch(clearFeed());
+    dispatch(resetOffset());
+    
+    const params: GetAllReportsParams = {
+      offset: 0,
+      limit: pagination.limit,
+      neighborhood_id: currentUser?.neighborhood_id || null,
+      city: currentUser?.city || null,
+      loc: currentUser?.location
+        ? { lat: String(currentUser.location.lat), lng: String(currentUser.location.lng) }
+        : null,
+      filters,
     };
-
-    if (currentUser) {
-      dispatch(setStoreFilters(filterParams));
-      dispatch(resetOffset())
-      dispatch(clearFeed())
-      dispatch(getAllReports({ 
-                offset: 0, 
-                limit: pagination.limit, 
-                neighborhood_id: currentUser.neighborhood_id,
-                city: currentUser.city,
-                loc: currentUser.location,
-                filters: filterParams
-            }));
-    }
-  
+    dispatch(getAllReports(params) as unknown as any);
   };
-
 
   return (
     <div className="space-y-6">
@@ -133,20 +141,20 @@ export default function FeedFilter() {
       <div>
         <h3 className="text-sm font-medium text-gray-700 mb-3">Area</h3>
         <div className="relative bg-gray-100 rounded-lg p-1">
-          <div 
+          <div
             className="absolute top-1 bottom-1 bg-blue-500 rounded-md transition-all duration-200 ease-in-out"
             style={{
               width: `${100 / areaFilterOptions.length}%`,
-              left: `${(areaFilterOptions.findIndex(opt => opt.key === filters.areaFilter) * 100) / areaFilterOptions.length}%`
+              left: `${(areaFilterOptions.findIndex((opt) => opt.key === filters.areaFilter) * 100) / areaFilterOptions.length}%`,
             }}
           />
           <div className="relative flex">
-            {areaFilterOptions.map(option => (
+            {areaFilterOptions.map((option) => (
               <button
                 key={option.key}
                 className={`flex-1 py-2 px-2 text-xs font-medium rounded-md transition-colors duration-200 relative z-10 ${
-                  filters.areaFilter === option.key 
-                    ? 'text-white' 
+                  filters.areaFilter === option.key
+                    ? 'text-white'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 onClick={() => handleAreaFilterChange(option.key)}
@@ -168,20 +176,20 @@ export default function FeedFilter() {
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-3">Show</h3>
           <div className="relative bg-gray-100 rounded-lg p-1">
-            <div 
+            <div
               className="absolute top-1 bottom-1 bg-green-500 rounded-md transition-all duration-200 ease-in-out"
               style={{
                 width: `${100 / allOwnFollowedOptions.length}%`,
-                left: `${(allOwnFollowedOptions.findIndex(opt => opt.key === filters.allOwnFollowed) * 100) / allOwnFollowedOptions.length}%`
+                left: `${(allOwnFollowedOptions.findIndex((opt) => opt.key === filters.allOwnFollowed) * 100) / allOwnFollowedOptions.length}%`,
               }}
             />
             <div className="relative flex">
-              {allOwnFollowedOptions.map(option => (
+              {allOwnFollowedOptions.map((option) => (
                 <button
                   key={option.key}
                   className={`flex-1 py-2 px-1 text-xs font-medium rounded-md transition-colors duration-200 relative z-10 ${
-                    filters.allOwnFollowed === option.key 
-                      ? 'text-white' 
+                    filters.allOwnFollowed === option.key
+                      ? 'text-white'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                   onClick={() => handleAllOwnFollowedChange(option.key)}
@@ -198,7 +206,7 @@ export default function FeedFilter() {
       <div>
         <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
         <div className="space-y-1">
-          {categoryFilterOptions.map(option => (
+          {categoryFilterOptions.map((option) => (
             <button
               key={option.key}
               className={`w-full py-1.5 px-2 text-xs font-medium rounded-md border transition-colors duration-200 text-left ${
@@ -218,20 +226,20 @@ export default function FeedFilter() {
       <div>
         <h3 className="text-sm font-medium text-gray-700 mb-3">Order By</h3>
         <div className="relative bg-gray-100 rounded-lg p-1">
-          <div 
+          <div
             className="absolute top-1 bottom-1 bg-blue-500 rounded-md transition-all duration-200 ease-in-out"
             style={{
               width: `${100 / orderFilterOptions.length}%`,
-              left: `${(orderFilterOptions.findIndex(opt => opt.key === filters.order) * 100) / orderFilterOptions.length}%`
+              left: `${(orderFilterOptions.findIndex((opt) => opt.key === filters.order) * 100) / orderFilterOptions.length}%`,
             }}
           />
           <div className="relative flex">
-            {orderFilterOptions.map(option => (
+            {orderFilterOptions.map((option) => (
               <button
                 key={option.key}
                 className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors duration-200 relative z-10 ${
-                  filters.order === option.key 
-                    ? 'text-white' 
+                  filters.order === option.key
+                    ? 'text-white'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 onClick={() => handleOrderChange(option.key)}
@@ -245,14 +253,14 @@ export default function FeedFilter() {
 
       {/* Action Buttons */}
       <div className="flex gap-2 pt-4">
-        <button 
+        <button
           className="flex-1 py-2 px-3 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
           onClick={clearFilters}
           disabled={loading}
         >
           Clear All
         </button>
-        <button 
+        <button
           className="flex-1 py-2 px-3 text-sm font-medium text-white bg-green-500 border border-green-500 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
           onClick={applyFilters}
           disabled={loading}

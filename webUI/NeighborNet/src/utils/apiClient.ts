@@ -123,11 +123,13 @@ export const apiClient = async (url: string, options: RequestOptions = {}): Prom
 
 // Convenience methods for common HTTP methods
 export const get = (url: string, options: RequestOptions = {}) => apiClient(url, { ...options, method: 'GET' });
-export const post = (url: string, data: any, options: RequestOptions = {}) => apiClient(url, { 
-  ...options, 
-  method: 'POST', 
-  body: JSON.stringify(data) 
-});
+export const post = (url: string, data: any, options: RequestOptions = {}) => {
+  return apiClient(url, { 
+    ...options, 
+    method: 'POST', 
+    body: JSON.stringify(data) 
+  });
+};
 export const patch = (url: string, data: any, options: RequestOptions = {}) => apiClient(url, { 
   ...options, 
   method: 'PATCH', 

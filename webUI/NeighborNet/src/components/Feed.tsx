@@ -8,12 +8,12 @@ import OfferHelp from './reports/report-components/offerHelp'
 import GiveAway from './reports/report-components/giveAways'
 
 export default function Feed() {
-  const dispatch = useAppDispatch()
-  const { feedItems, loading, error, pagination } = useAppSelector(state => state.feed)
-  const { currentUser } = useAppSelector(state => state.user)
-  const { filters } = useAppSelector(state => state.feed)
-  const neighborhood = useAppSelector(state => state.user.neighborhood)
-  const [title, setTitle] = useState('')
+  const dispatch = useAppDispatch();
+  const { feedItems, loading, error, pagination } = useAppSelector(state => state.feed);
+  const { currentUser } = useAppSelector(state => state.user);
+  const { filters } = useAppSelector(state => state.feed);
+  const neighborhood = useAppSelector(state => state.user.neighborhood);
+  const [title, setTitle] = useState('Local Area');
 
   useEffect(() => {
     if (currentUser) {
@@ -25,69 +25,95 @@ export default function Feed() {
         limit: 10, 
         neighborhood_id: currentUser.neighborhood_id,
         city: currentUser.city,
-        loc: currentUser.location,
+        loc: currentUser.location ? { lat: String(currentUser.location.lat), lng: String(currentUser.location.lng) } : undefined,
         filters
       }));
     }
-  }, [dispatch, currentUser]);
+  }, [dispatch, currentUser, filters]);
 
   useEffect(() => {
     const generateTitle = () => {
-      if (!filters) return
-      
-      if (filters.areaFilter == 'NBR' && neighborhood){
-        setTitle(neighborhood.name)
-        return
-      }
-      if (filters.areaFilter == 'NBR' && !neighborhood){
-        // Fallback to city name if NBR filter is selected but no neighborhood
-        setTitle(currentUser?.city || 'Local Area')
-        return
-      }
-      if (filters.areaFilter == 'CITY' && currentUser){
-        setTitle(currentUser.city)
-        return
-      }
-      if (filters.areaFilter == 'COUNTRY'){
-        setTitle('Israel')
-        return
-      }
-    }
+      let newTitle = 'Local Area';
 
-    generateTitle()
+      if (filters && currentUser) {
+        if (filters.areaFilter === 'NBR') {
+          if (neighborhood) {
+            newTitle = neighborhood.nbr_name_en || neighborhood.nbr_name || 'Local Area';
+          } else {
+            newTitle = currentUser.city || 'Local Area';
+          }
+        } else if (filters.areaFilter === 'CITY') {
+          newTitle = currentUser.city || 'Local Area';
+        } else if (filters.areaFilter === 'COUNTRY') {
+          newTitle = 'Israel';
+        }
+      }
+
+      if (title !== newTitle) {
+        setTitle(newTitle);
+      }
+    };
+
+    generateTitle();
   }, [neighborhood, filters, currentUser])
-
 
   const handleLoadMore = () => {
     if (!loading && pagination.hasMore && currentUser) {
-      dispatch(nextOffset())
+      dispatch(nextOffset());
 
       dispatch(getAllReports({ 
-        offset: pagination.offset+pagination.limit, 
+        offset: pagination.offset + pagination.limit, 
         limit: pagination.limit, 
         neighborhood_id: currentUser.neighborhood_id,
         city: currentUser.city,
-        loc: currentUser.location,
+        loc: currentUser.location ? { lat: String(currentUser.location.lat), lng: String(currentUser.location.lng) } : undefined,
         filters
       }));
       
     }
   };
 
-  const renderReport = (report: { id: number; record_type: string }) => {
+  const renderReport = (report: { id: number; record_type: string; [key: string]: any }) => {
+    const baseReport = {
+      ...report,
+      username: report.username || '',
+      img_url: report.img_url || '',
+      isAuthor: report.isAuthor || false,
+      isFollowed: report.isFollowed || false,
+      followers: report.followers || 0,
+      user_id: report.user_id || 0,
+      title: report.title || '',
+      description: report.description || '',
+      category: report.category || '',
+      status: report.status || 'UNKNOWN',
+      address: report.address || '',
+      is_free: report.is_free || false,
+      barter_options: report.barter_options || [],
+      urgency: report.urgency || '',
+      city: report.city || '',
+      created_at: report.created_at || new Date().toISOString(),
+    };
+
     switch (report.record_type) {
       case 'issue_report':
-        return <IssueReport key={`issue-${report.id}`} report={report} />;
+        return <IssueReport key={`issue-${report.id}`} report={baseReport} />;
       case 'help_request':
-        return <HelpRequest key={`help-${report.id}`} report={report} />;
+        return <HelpRequest key={`help-${report.id}`} report={baseReport} />;
       case 'offer_help':
-        return <OfferHelp key={`offer-${report.id}`} report={report} />;
+        return <OfferHelp key={`offer-${report.id}`} report={baseReport} />;
       case 'give_away':
-        return <GiveAway key={`give-${report.id}`} report={report} />;
+        return <GiveAway key={`give-${report.id}`} report={baseReport} />;
       default:
         return null;
     }
   };
+
+  useEffect(() => {
+    const savedFilters = localStorage.getItem('feedFilters');
+    if (savedFilters) {
+      dispatch({ type: 'feed/reloadFiltersFromLocalStorage' });
+    }
+  }, [dispatch]);
 
   if (!currentUser) {
     return (

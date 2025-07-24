@@ -9,7 +9,7 @@ export const signUpUser = createAsyncThunk<
     { rejectValue: string }
 >(
     'user/signup',
-    async (userData, {rejectWithValue}) => {
+    async (userData, { rejectWithValue }) => {
         try {
             const response = await fetch(`${BASE_URL}/users/signup`, {
                 body: JSON.stringify(userData),
@@ -24,6 +24,7 @@ export const signUpUser = createAsyncThunk<
             if (!response.ok) {
                 return rejectWithValue(data.message || 'Sign up failed');
             }
+
             return data;
             
         } catch (error) {

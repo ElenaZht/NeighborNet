@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 import * as FaIcons from 'react-icons/fa';
 import { FaTimes } from 'react-icons/fa';
@@ -17,6 +17,7 @@ import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock'
 import { OfferHelpProps } from './types';
 import { RootState } from '../../../store/store';
+import { reloadFiltersFromLocalStorage } from '../../../features/reports/feed/feedSlice';
 
 export default function OfferHelp({ report }: OfferHelpProps) {
   const dispatch = useAppDispatch();
@@ -36,6 +37,10 @@ export default function OfferHelp({ report }: OfferHelpProps) {
 
   // Replace the useEffect with the custom hook
   useBodyScrollLock(showEditDialog);
+
+  useEffect(() => {
+    dispatch(reloadFiltersFromLocalStorage());
+  }, [dispatch]);
   
   const toggleActionBar = () => {
     setShowActions(!showActions);

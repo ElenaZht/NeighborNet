@@ -109,7 +109,8 @@ export interface UserState {
     isAuthenticated: boolean;
     accessToken: string | null;
     loading: boolean;
-    error: string | null;
+    loginError: string | null;
+    signupError: string | null;
     address: string;
     location: {
         lat: string | number;

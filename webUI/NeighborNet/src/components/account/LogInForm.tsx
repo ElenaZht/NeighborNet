@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../features/user/thunks/LogInThunk';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -14,10 +14,28 @@ function LogInForm() {
     password: ''
   });
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [isSubmitted, setIsSubmitted] = useState(false); // Track form submission
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
-  const { loading, error } = useAppSelector(state => state.user);
+
+  const { loading, loginError } = useAppSelector(state => state.user); // Use loginError from Redux
+
+  const clearError = () => {
+    dispatch({ type: 'users/clearLoginError' }); // Clear login error
+  };
+
+  const handleFormSwitch = () => {
+    clearError();
+    setValidationErrors({}); // Clear validation errors when switching forms
+    setIsSubmitted(false); // Reset submission state
+    setFormData({ email: '', password: '' }); // Reset form data to ensure no lingering input
+  };
+
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,12 +43,22 @@ function LogInForm() {
       ...formData,
       [name]: value
     });
-    // Clear validation errors when user types
-    if (validationErrors[name as keyof ValidationErrors]) {
-      setValidationErrors({
-        ...validationErrors,
-        [name]: ''
-      });
+
+    // Clear validation error for the specific field
+    setValidationErrors((prevErrors) => {
+        const updatedErrors = { ...prevErrors };
+        delete updatedErrors[name as keyof ValidationErrors];
+        return updatedErrors;
+    });
+
+    // Clear global error when user starts typing
+    if (loginError !== null) {
+      clearError();
+    }
+
+    // Clear submission state when user starts typing
+    if (isSubmitted) {
+      setIsSubmitted(false);
     }
   };
 
@@ -55,6 +83,8 @@ function LogInForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitted(true); // Mark form as submitted
+    clearError();
     
     if (validateForm()) {
       try {
@@ -82,12 +112,19 @@ function LogInForm() {
       <h2 className="text-2xl font-bold mb-2 text-gray-800 text-center">Welcome Back</h2>
       <p className="text-gray-600 text-center mb-6">Sign in to your account</p>
       
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          <p>{error}</p>
+      {isSubmitted && loginError && ( // Display loginError from Redux
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative">
+          <p>{loginError}</p>
+          <button
+            onClick={clearError}
+            className="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900"
+            aria-label="Close error message"
+          >
+            &times;
+          </button>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -152,7 +189,7 @@ function LogInForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-blue-600 hover:underline font-medium">
+            <Link to="/signup" onClick={handleFormSwitch} className="text-blue-600 hover:underline font-medium">
               Sign up
             </Link>
           </p>

@@ -2,6 +2,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { del } from '../../../utils/apiClient'
 import { BASE_URL } from "../../../config";
 import { DeleteAccountResponse, UserState } from '../types';
+import { logoutUser } from './logoutThunk';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Thunk to delete a user account
@@ -15,16 +17,21 @@ export const deleteAccount = createAsyncThunk<
     }
 >(
     'user/delete',
-    async (userId, { rejectWithValue }) => {
-        
+    async (userId, { dispatch, rejectWithValue }) => {
+        const navigate = useNavigate();
+
         try {
-            // We don't need to use accessToken here since we're using credentials: 'include'
-            
             const response = await del(
                 `${BASE_URL}/users/${userId}`,
                 { credentials: 'include' }
             );
-            
+
+            // Clear user state by dispatching logout
+            dispatch(logoutUser());
+
+            // Redirect to login/signup page
+            navigate('/login');
+
             return response;
             
         } catch (error: any) {

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getAllReports } from './getAllReportsThunk';
 import { followReport } from './followThunk';
 import { unfollowReport } from './unfollowThunk';
@@ -7,11 +7,25 @@ import { updateGiveAwayStatus } from '../giveaways/updateGiveAwayStatusThunk';
 import { updateHelpRequestStatus } from '../helpRequests/updateHelpRequestStatusThunk';
 import { updateOfferHelpStatus } from '../offerhelp/updateOfferHelpStatusThunk';
 import { updateIssueReportStatus } from '../issueReports/updateIssueReportStatusThunk';
-import {areaFilters, categoryFilters, orderOptions, allOwnFollowed} from '../../../../../../filters'
+import { areaFilters, categoryFilters, orderOptions, allOwnFollowed } from '../../../../../../filters';
 import { refreshFeed } from './refreshFeedThunk.js';
-import { FeedState } from './types';
-import { removeGiveAwayThunk } from '../giveaways/removeGiveAwayThunk';
+import { FeedState as OriginalFeedState } from './types';
 
+// Extend the Filters type to include the _initialized property
+interface ExtendedFilters {
+    areaFilter: string;
+    categoryFilter: string[];
+    order: string;
+    allOwnFollowed: string;
+    _initialized?: boolean;
+}
+
+// Extend the FeedState type to use ExtendedFilters
+interface FeedState extends Omit<OriginalFeedState, 'filters'> {
+    filters: ExtendedFilters;
+}
+
+const savedFilters = localStorage.getItem('feedFilters');
 
 const initialState: FeedState = {
     feedItems: [],
@@ -25,12 +39,13 @@ const initialState: FeedState = {
         offset: 0,
         hasMore: true
     },
-    filters: {
-        areaFilter: areaFilters[2],
+    filters: savedFilters ? { ...JSON.parse(savedFilters), _initialized: true } : {
+        areaFilter: areaFilters.includes('NBR') ? 'NBR' : 'CITY',
         categoryFilter: categoryFilters,
         order: orderOptions[0],
         allOwnFollowed: allOwnFollowed[0],
-    }
+        _initialized: true,
+    },
 };
 
 const feedSlice = createSlice({
@@ -38,27 +53,97 @@ const feedSlice = createSlice({
     initialState,
     reducers: {
         nextOffset: (state) => {
-            state.pagination.offset += state.pagination.limit
+            state.pagination.offset += state.pagination.limit;
         },
         resetOffset: (state) => {
-            state.pagination.offset = 0
-            state.pagination.hasMore = true
+            state.pagination.offset = 0;
+            state.pagination.hasMore = true;
         },
-        setStoreFilters: (state, action) => {
-            state.filters = action.payload
+        setStoreFilters: (state, action: PayloadAction<ExtendedFilters>) => {
+            const updatedFilters = action.payload;
+            state.filters = { ...updatedFilters, _initialized: true };
+            // Persist filters to localStorage
+            localStorage.setItem('feedFilters', JSON.stringify(state.filters));
         },
         clearFeed: (state) => {
-            state.feedItems = []
+            state.feedItems = [];
         },
         updateReportStatus: (state, action) => {
             const { reportId, reportType, newStatus } = action.payload;
             const report = state.feedItems.find(item => 
-                item.id === parseInt(reportId) && item.record_type === reportType
+                Number(item.id) === Number(reportId) && item.record_type === reportType
             );
             if (report) {
                 report.status = newStatus;
             }
-        }
+        },
+        reloadFiltersFromLocalStorage: (state) => {
+
+            if (state.filters._initialized) {
+                return;
+            }
+
+            const savedFilters = localStorage.getItem('feedFilters');
+
+            if (savedFilters) {
+                try {
+                    const parsedFilters = JSON.parse(savedFilters);
+
+                    // Validate areaFilter
+                    if (!['COUNTRY', 'CITY', 'NBR'].includes(parsedFilters.areaFilter)) {
+                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY'; // Default to NBR, fallback to CITY
+                    }
+
+                    // Only update state if filters have changed
+                    if (JSON.stringify(state.filters) !== JSON.stringify(parsedFilters)) {
+                        state.filters = { ...parsedFilters, _initialized: true };
+                    }
+                } catch (error) {
+                    console.error('Failed to parse saved filters from localStorage:', error);
+                }
+            } else {
+                state.filters = {
+                    areaFilter: areaFilters.includes('NBR') ? 'NBR' : 'CITY',
+                    categoryFilter: categoryFilters,
+                    order: orderOptions[0],
+                    allOwnFollowed: allOwnFollowed[0],
+                    _initialized: true,
+                };
+            }
+        },
+        applyFilters: (state) => {
+
+            // Check if filters are valid before saving
+            if (!state.filters || typeof state.filters !== 'object') {
+                return;
+            }
+
+
+            // Persist the updated filters to localStorage
+            try {
+                localStorage.setItem('feedFilters', JSON.stringify(state.filters));
+            } catch (error) {
+                console.error('Failed to save filters to localStorage:', error); // Debugging log
+            }
+        },
+        setError(state, action: PayloadAction<string>) {
+            state.error = action.payload;
+        },
+        initializeFilters: (state) => {
+            const savedFilters = localStorage.getItem('feedFilters');
+            if (savedFilters) {
+                try {
+                    const parsedFilters = JSON.parse(savedFilters);
+                    // Validate areaFilter
+                    if (!['COUNTRY', 'CITY', 'NBR'].includes(parsedFilters.areaFilter)) {
+                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY'; // Default to NBR, fallback to CITY
+                    }
+                    state.filters = parsedFilters;
+                } catch (error) {
+                    console.error('Failed to parse saved filters from localStorage:', error);
+                }
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -69,10 +154,9 @@ const feedSlice = createSlice({
             })
             .addCase(getAllReports.fulfilled, (state, action) => {
                 state.loading = false;
-                if (action.payload.reports.length == 0 && state.feedItems.length > 0){
+                if (action.payload.reports.length === 0 && state.feedItems.length > 0) {
                     state.pagination.hasMore = false;
-                } 
-                else {
+                } else {
                     // Check if this is a fresh load (offset 0) or pagination
                     if (state.pagination.offset === 0) {
                         // Fresh load - replace all items
@@ -82,7 +166,6 @@ const feedSlice = createSlice({
                         state.feedItems.push(...action.payload.reports);
                     }
                 }
-                state.error = null;
             })
             .addCase(getAllReports.rejected, (state, action) => {
                 state.loading = false;
@@ -123,6 +206,12 @@ const feedSlice = createSlice({
                     report.isFollowed = false;
                     report.followers = Math.max((report.followers || 1) - 1, 0);
                 }
+                // Remove the report from the feed if the 'Followed Reports' filter is active
+                if (state.filters.allOwnFollowed === 'followed') {
+                    state.feedItems = state.feedItems.filter(item => 
+                        !(item.id === parseInt(reportId) && item.record_type === reportType)
+                    );
+                }
                 state.error = null;
             })
             .addCase(unfollowReport.rejected, (state, action) => {
@@ -148,7 +237,7 @@ const feedSlice = createSlice({
             .addCase(updateGiveAwayStatus.fulfilled, (state, action) => {
                 const { reportId, newStatus } = action.payload;
                 const report = state.feedItems.find(item => 
-                    item.id === parseInt(reportId) && item.record_type === 'give_away'
+                    Number(item.id) === Number(reportId) && item.record_type === 'give_away'
                 );
                 if (report) {
                     report.status = newStatus;
@@ -157,7 +246,7 @@ const feedSlice = createSlice({
             .addCase(updateHelpRequestStatus.fulfilled, (state, action) => {
                 const { reportId, newStatus } = action.payload;
                 const report = state.feedItems.find(item => 
-                    item.id === parseInt(reportId) && item.record_type === 'help_request'
+                    Number(item.id) === Number(reportId) && item.record_type === 'help_request'
                 );
                 if (report) {
                     report.status = newStatus;
@@ -191,15 +280,9 @@ const feedSlice = createSlice({
             .addCase(refreshFeed.rejected, (state, action) => {
                 state.loading = false;
                 state.error = typeof action.payload === 'string' ? action.payload : 'Failed to refresh feed';
-            })
-            .addCase(removeGiveAwayThunk.fulfilled, (state, action) => {
-                const reportId = parseInt(action.payload, 10); // Convert reportId to a number
-                state.feedItems = state.feedItems.filter(item => 
-                    !(item.id === reportId && item.record_type === 'give_away')
-                );
             });
     },
 });
 
-export const {nextOffset, resetOffset, setStoreFilters, clearFeed, updateReportStatus} = feedSlice.actions;
+export const {nextOffset, resetOffset, setStoreFilters, clearFeed, updateReportStatus, reloadFiltersFromLocalStorage, applyFilters, setError, initializeFilters} = feedSlice.actions;
 export default feedSlice.reducer;

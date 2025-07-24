@@ -16,6 +16,7 @@ import { updateIssueReportStatus } from '../../../features/reports/issueReports/
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock'
 import { IssueReportProps } from './types';
 import { RootState } from '../../../store/store';
+import { reloadFiltersFromLocalStorage } from '../../../features/reports/feed/feedSlice';
 
 export default function IssueReport({ report }: IssueReportProps) {
   const dispatch = useAppDispatch();
@@ -34,6 +35,10 @@ export default function IssueReport({ report }: IssueReportProps) {
 
   // Prevent body scroll when edit dialog is open
   useBodyScrollLock(showEditDialog || showDeleteConfirmation);
+
+  useEffect(() => {
+    dispatch(reloadFiltersFromLocalStorage());
+  }, [dispatch]);
 
   const toggleActionBar = () => {
     setShowActions(!showActions);

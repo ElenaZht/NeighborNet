@@ -24,6 +24,10 @@ export const getAllReports = async (req: AuthRequest, res: Response): Promise<vo
             res.status(400).json({ message: "City is required" });
             return;
         }
+        if (!filters || !Array.isArray(filters.categoryFilter) || filters.categoryFilter.length === 0) {
+            res.status(400).json({ message: "At least one category filter must be selected" });
+            return;
+        }
         const allReports = await getAllReportsFromDB(
             city, 
             neighborhood_id ? parseInt(neighborhood_id) : null, 

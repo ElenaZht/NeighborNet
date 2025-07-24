@@ -14,7 +14,8 @@ interface RouteWrapperProps {
 // Protected Route Component
 function ProtectedRoute({ children }: RouteWrapperProps) {
   const currentUser = useAppSelector((state) => state.user.currentUser);
-  
+
+  // Redirect to login if user is not authenticated
   return currentUser ? <>{children}</> : <Navigate to="/login" replace />;
 }
 

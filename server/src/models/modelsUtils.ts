@@ -57,6 +57,18 @@ export const getReport = async (reportId: number, tableName?: string): Promise<R
             .where({ id: reportId })
             .first();
 
+        // Debug log to inspect the report object before setting default status
+        console.log('Fetched report from DB:', report);
+
+        // Ensure the status field is always set
+        if (report && !report.status) {
+            console.warn('Report status is missing. Setting default to "No status".');
+            report.status = 'No status';
+        }
+
+        // Debug log to inspect the report object after setting default status
+        console.log('Report after ensuring status:', report);
+
         return report || null;
         
     } catch (error) {
@@ -160,6 +172,11 @@ export const updateStatus = async (reportId: number, newStatus: string, tableNam
       const error = new Error(`Report with id ${reportId} not found`) as any;
       error.type = 'NOT_FOUND';
       throw error;
+    }
+
+    // Validate newStatus to prevent empty strings
+    if (!newStatus || newStatus.trim() === '') {
+      newStatus = 'No status';
     }
 
     // Update the status

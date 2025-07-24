@@ -55,6 +55,7 @@ export const getAllReportsFromDB = async (
     userId: number | null = null
 ): Promise<ReportResult[]> => {
 
+    console.log('getAllReportsFromDB called with:', { city, neighborhoodId, location, limit, offset, filters, userId });
 
     const queryFilters: QueryFilters = {};
     switch (filters.areaFilter) {
@@ -77,7 +78,7 @@ export const getAllReportsFromDB = async (
     
 
     if (!filters.categoryFilter || filters.categoryFilter.length === 0) {
-        throw new Error("At least one category filter must be selected");
+        throw new Error('At least one category filter must be selected');
     }
 
     // Validate allOwnFollowed filter

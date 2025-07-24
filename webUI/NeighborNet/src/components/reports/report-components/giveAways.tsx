@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as FaIcons from 'react-icons/fa';
 import { Comments } from './comments';
 import { format, parseISO } from 'date-fns';
@@ -16,6 +16,7 @@ import { updateGiveAwayStatus } from '../../../features/reports/giveaways/update
 import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { useBodyScrollLock } from '../../../utils/useBodyScrollLock';
 import { GiveAwayProps } from './types';
+import { reloadFiltersFromLocalStorage } from '../../../features/reports/feed/feedSlice';
 
 type Location = {
     coordinates: [number, number];
@@ -46,6 +47,10 @@ export default function GiveAway({ report }: GiveAwayProps) {
 
   // Replace the useEffect with the custom hook
   useBodyScrollLock(showEditDialog);
+
+  useEffect(() => {
+    dispatch(reloadFiltersFromLocalStorage());
+  }, [dispatch]);
 
   const toggleActionBar = () => {
     setShowActions(!showActions);
@@ -212,6 +217,8 @@ export default function GiveAway({ report }: GiveAwayProps) {
     ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date';
 
+  const statusDisplay = report.status && report.status.trim() !== '' ? report.status : 'No status'; // Handle empty strings
+
   return (
     <div className="relative max-w-4xl mx-auto m-4">
       <div className="flex">
@@ -242,7 +249,7 @@ export default function GiveAway({ report }: GiveAwayProps) {
                       </div>
                     )}
                     <div className={`badge ${getStatusColorClass(report.status as ReportStatusType)} mt-1`}>
-                      {report.status ? report.status : ''}
+                      {statusDisplay}
                     </div>
                     <button
                       onClick={toggleActionBar}

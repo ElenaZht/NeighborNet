@@ -1,21 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa'
+import React, { useState, useEffect, useRef } from 'react';
+import { FaInfoCircle, FaImage, FaTimes } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { addHelpRequest } from '../../../features/reports/helpRequests/addHelpRequestThunk'
+import { addHelpRequest } from '../../../features/reports/helpRequests/addHelpRequestThunk';
 import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
-import AddressInputForm from '../../AddressInputForm'
+import AddressInputForm from '../../AddressInputForm';
 import { categories } from '../../../utils/requestCategories';
-import { useClickAway } from '../../../utils/useClickAway';
-import { HelpRequestInputFormData, AddressInputRef } from './types';
+import { HelpRequestInputFormData } from './types';
 
 // Form storage key for localStorage
 const FORM_STORAGE_KEY = 'help_request_draft';
 
 export default function HelpRequestInputForm() {
   const dispatch = useAppDispatch();
-  const isAuthenticated = useAppSelector(state => state.user.isAuthenticated);
-  const addressInputRef = useRef<AddressInputRef | null>(null);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const addressInputRef = useRef(null);
   const [formData, setFormData] = useState<HelpRequestInputFormData>({
     title: '',
     description: '',
@@ -24,7 +23,7 @@ export default function HelpRequestInputForm() {
     category: '',
     urgency: 'normal',
     city: '',
-    location: {lat: '', lng: ''}
+    location: { lat: '', lng: '' }, // Changed to strings
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +40,7 @@ export default function HelpRequestInputForm() {
       try {
         setFormData(JSON.parse(savedFormData));
       } catch (e) {
-        console.error("Error parsing saved form data", e);
+        console.error('Error parsing saved form data', e);
       }
     }
   }, []);
@@ -58,28 +57,28 @@ export default function HelpRequestInputForm() {
     setImageError(false);
   }, [formData.img_url]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const updatedFormData = {
       ...formData,
-      [name]: value
+      [name]: value,
     };
-    
+
     setFormData(updatedFormData);
-    
+
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
-    
+
     if (showAuthPrompt) {
       setShowAuthPrompt(false);
     }
   };
 
-  const handleCategorySelect = (categoryId) => {
+  const handleCategorySelect = (categoryId: string) => {
     const updatedFormData = {
       ...formData,
-      category: categoryId
+      category: categoryId,
     };
-    
+
     setFormData(updatedFormData);
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
     setShowCategoryDropdown(false);
@@ -92,12 +91,12 @@ export default function HelpRequestInputForm() {
   const clearImage = () => {
     const updatedFormData = {
       ...formData,
-      img_url: ''
+      img_url: '',
     };
-    
+
     setFormData(updatedFormData);
     setImageError(false);
-    
+
     // Update localStorage
     localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updatedFormData));
   };
@@ -112,31 +111,31 @@ export default function HelpRequestInputForm() {
       setShowAuthPrompt(true);
       return false;
     }
-    
+
     if (!formData.title.trim()) {
-      setError("Title is required");
+      setError('Title is required');
       return false;
     }
     if (!formData.urgency.trim()) {
-        setError("Urgency level is required");
-        return false;
-      }
+      setError('Urgency level is required');
+      return false;
+    }
 
     if (!formData.location) {
-      setError("Location is required");
+      setError('Location is required');
       return false;
     }
     if (!formData.category) {
-      setError("Please select a category");
+      setError('Please select a category');
       return false;
     }
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!validateForm()) {
       return;
     }
@@ -144,89 +143,110 @@ export default function HelpRequestInputForm() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(addHelpRequest(formData)).unwrap();
-      
+      const payload = {
+        ...formData,
+        location: {
+          lat: parseFloat(formData.location.lat),
+          lng: parseFloat(formData.location.lng),
+        },
+      };
+
+      await dispatch(addHelpRequest(payload)).unwrap();
+
       dispatch(refreshFeed());
-      
+
       setSuccess(true);
-      
+
       // Clear saved form data after successful submission
       localStorage.removeItem(FORM_STORAGE_KEY);
-      
+
       // Reset form
       setFormData({
-      title: '',
-      description: '',
-      address: '',
-      img_url: '',
-      category: '',
-      urgency: 'normal',
-      city: '',
-      location: {lat: '', lng: ''}
+        title: '',
+        description: '',
+        address: '',
+        img_url: '',
+        category: '',
+        urgency: 'normal',
+        city: '',
+        location: { lat: '', lng: '' },
       });
-      
+
       // Clear address input
       if (addressInputRef.current) {
-        addressInputRef.current.clearAddress();
+        // Ensure addressInputRef.current is properly typed and has clearAddress method
+        (addressInputRef.current as any).clearAddress?.();
       }
-      
+
       // Hide success message after 5 seconds
       setTimeout(() => {
-      setSuccess(false);
+        setSuccess(false);
       }, 5000);
-      
-    } catch (error) {
-      setError(error.message || "Failed to submit help request. Please try again.");
-      console.error("Error submitting help request:", error);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit help request. Please try again.';
+      setError(errorMessage);
+      console.error('Error submitting help request:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const getSelectedCategory = () => {
-    return categories.find(cat => cat.id === formData.category);
+    return categories.find((cat) => cat.id === formData.category);
   };
 
-    const handleAddressInputFormChange = (addressResult) => {
-    formData.address = addressResult.address
-    formData.city = addressResult.city
-    formData.location = addressResult.location
-    setFormData(formData)
-  }
-
-  const dropdownRef = useClickAway(() => {
-    setShowCategoryDropdown(false);
-  });
+  const handleAddressInputFormChange = (addressResult: { address: string; city: string; location: { lat: number; lng: number } }) => {
+    const updatedFormData = {
+      ...formData,
+      address: addressResult.address,
+      city: addressResult.city,
+      location: {
+        lat: addressResult.location.lat.toString(),
+        lng: addressResult.location.lng.toString(),
+      },
+    };
+    setFormData(updatedFormData);
+  };
 
   return (
     <div className="max-w-4xl mx-auto m-4">
       <div className="card bg-base-100">
         <div className="card-body">
           <h2 className="card-title text-left text-2xl mb-4">Request Help from Neighbors</h2>
-          
+
           {error && (
             <div className="alert alert-error mb-4">
               <FaInfoCircle />
               <span>{error}</span>
             </div>
           )}
-          
+
           {success && (
             <div className="alert alert-success mb-4">
               <FaInfoCircle />
               <span>Help request posted successfully!</span>
             </div>
           )}
-          
+
           {showAuthPrompt && (
             <div className="alert alert-info mb-4 py-3">
               <div className="flex flex-col items-start">
-                <p>Please <Link to="/login" className="text-primary font-medium hover:underline">log in</Link> or <Link to="/signup" className="text-primary font-medium hover:underline">sign up</Link> to submit a help request.</p>
+                <p>
+                  Please{' '}
+                  <Link to="/login" className="text-primary font-medium hover:underline">
+                    log in
+                  </Link>{' '}
+                  or{' '}
+                  <Link to="/signup" className="text-primary font-medium hover:underline">
+                    sign up
+                  </Link>{' '}
+                  to submit a help request.
+                </p>
                 <p className="text-xs mt-1">Your form data will be saved.</p>
               </div>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-4">
@@ -236,7 +256,7 @@ export default function HelpRequestInputForm() {
                     <span className="label-text font-medium">Category of Help Needed</span>
                   </label>
                   <div className="relative">
-                    <div 
+                    <div
                       className="flex items-center justify-between p-3 border rounded-lg cursor-pointer"
                       onClick={toggleCategoryDropdown}
                     >
@@ -250,16 +270,14 @@ export default function HelpRequestInputForm() {
                       )}
                       <span className="text-gray-500">▼</span>
                     </div>
-                    
+
                     {showCategoryDropdown && (
                       <div className="absolute left-0 right-0 mt-1 bg-base-100 border rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
-                        {categories.map(category => (
-                          <div 
+                        {categories.map((category) => (
+                          <div
                             key={category.id}
                             className={`flex items-center gap-2 p-3 hover:bg-base-200 cursor-pointer ${
-                              formData.category === category.id 
-                                ? 'bg-primary/10' 
-                                : ''
+                              formData.category === category.id ? 'bg-primary/10' : ''
                             }`}
                             onClick={() => handleCategorySelect(category.id)}
                           >
@@ -278,50 +296,62 @@ export default function HelpRequestInputForm() {
                     <span className="label-text font-medium">Urgency Level</span>
                   </label>
                   <div className="flex gap-2">
-                    <label className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${formData.urgency === 'low' ? 'bg-success/20 border-success' : ''}`}>
-                      <input 
-                        type="radio" 
-                        name="urgency" 
-                        value="low" 
-                        checked={formData.urgency === 'low'} 
+                    <label
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${
+                        formData.urgency === 'low' ? 'bg-success/20 border-success' : ''
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="urgency"
+                        value="low"
+                        checked={formData.urgency === 'low'}
                         onChange={handleChange}
-                        className="radio radio-success radio-sm" 
+                        className="radio radio-success radio-sm"
                       />
                       <span>Low</span>
                     </label>
-                    
-                    <label className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${formData.urgency === 'normal' ? 'bg-warning/20 border-warning' : ''}`}>
-                      <input 
-                        type="radio" 
-                        name="urgency" 
-                        value="normal" 
-                        checked={formData.urgency === 'normal'} 
-                        onChange={handleChange} 
+
+                    <label
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${
+                        formData.urgency === 'normal' ? 'bg-warning/20 border-warning' : ''
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="urgency"
+                        value="normal"
+                        checked={formData.urgency === 'normal'}
+                        onChange={handleChange}
                         className="radio radio-warning radio-sm"
                       />
                       <span>Normal</span>
                     </label>
-                    
-                    <label className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${formData.urgency === 'high' ? 'bg-error/20 border-error' : ''}`}>
-                      <input 
-                        type="radio" 
-                        name="urgency" 
-                        value="high" 
-                        checked={formData.urgency === 'high'} 
-                        onChange={handleChange} 
+
+                    <label
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer ${
+                        formData.urgency === 'high' ? 'bg-error/20 border-error' : ''
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="urgency"
+                        value="high"
+                        checked={formData.urgency === 'high'}
+                        onChange={handleChange}
                         className="radio radio-error radio-sm"
                       />
                       <span>High</span>
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text font-medium">Image URL (Optional)</span>
                   </label>
                   <div className="flex items-center">
-                    <input 
+                    <input
                       type="text"
                       name="img_url"
                       value={formData.img_url}
@@ -331,9 +361,9 @@ export default function HelpRequestInputForm() {
                       disabled={isSubmitting}
                     />
                     {formData.img_url && (
-                      <button 
-                        type="button" 
-                        onClick={clearImage} 
+                      <button
+                        type="button"
+                        onClick={clearImage}
                         className="btn btn-sm btn-ghost ml-2"
                         disabled={isSubmitting}
                       >
@@ -345,13 +375,13 @@ export default function HelpRequestInputForm() {
                     <span className="text-error text-xs mt-1">Invalid image URL</span>
                   )}
                 </div>
-                
+
                 {/* Image preview */}
                 <div className={`border-2 ${formData.img_url ? 'border-solid' : 'border-dashed'} border-gray-200 rounded-md h-48 flex items-center justify-center overflow-hidden`}>
                   {formData.img_url ? (
-                    <img 
+                    <img
                       src={formData.img_url}
-                      alt="Request preview" 
+                      alt="Request preview"
                       className="h-full w-full object-contain"
                       onError={handleImageError}
                     />
@@ -363,46 +393,46 @@ export default function HelpRequestInputForm() {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-4">
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text font-medium">Title</span>
                   </label>
-                  <input 
+                  <input
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    className="input input-bordered w-full" 
+                    className="input input-bordered w-full"
                     placeholder="E.g., Need help fixing leaky faucet"
                   />
                 </div>
-                
+
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text font-medium">Description</span>
                   </label>
-                  <textarea 
+                  <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="textarea textarea-bordered w-full" 
-                    rows="5"
+                    className="textarea textarea-bordered w-full"
+                    rows={5} // Changed to number
                     placeholder="Describe what you need help with, when you need it, any specific requirements, etc."
                   ></textarea>
                 </div>
-                
+
                 <div className="form-control w-full">
-                  <AddressInputForm 
+                  <AddressInputForm
                     onAddressSelect={handleAddressInputFormChange}
                     ref={addressInputRef}
                   />
                 </div>
-                
+
                 <div className="form-control mt-4">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className={`btn btn-primary w-full ${isSubmitting ? 'loading' : ''}`}
                     disabled={isSubmitting}
                   >
@@ -411,8 +441,10 @@ export default function HelpRequestInputForm() {
                         <span className="loading loading-spinner loading-sm"></span>
                         <span>Submitting...</span>
                       </span>
-                    ) : 'Post Help Request Report'}                 
-                    </button>
+                    ) : (
+                      'Post Help Request Report'
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

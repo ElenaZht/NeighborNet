@@ -26,7 +26,7 @@ export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { currentUser, error } = useAppSelector((state) => state.user);
+  const { currentUser, loginError, signupError } = useAppSelector((state) => state.user);
   const typedUser = currentUser as ExtendedUser | null;
   const addressInputRef = useRef<AddressInputFormRef>(null);
 
@@ -156,8 +156,8 @@ export default function AccountPage() {
     try {
       if (typedUser && typedUser.id) {
         await dispatch(deleteAccount(typedUser.id)).unwrap();
-        // On successful deletion, navigate to home page
-        navigate('/');
+        // On successful deletion, navigate to login page
+        navigate('/login');
       } else {
         throw new Error('User not found');
       }
@@ -186,12 +186,23 @@ export default function AccountPage() {
   return (
     <>
       <div className="p-4">
-        {error && (
+        {/* Display signup-specific error */}
+        {signupError && (
           <div className="alert alert-error mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{error}</span>
+            <span>{signupError}</span>
+          </div>
+        )}
+
+        {/* Display login-specific error */}
+        {loginError && (
+          <div className="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{loginError}</span>
           </div>
         )}
         
@@ -219,15 +230,15 @@ export default function AccountPage() {
             <div className="flex flex-col gap-1 text-sm text-gray-700 text-center mb-4">
               <div className="flex items-center justify-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <span className="text-xs">{typedUser.email}</span>
               </div>
               {typedUser.address && (
                 <div className="flex items-center justify-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <span className="text-xs">{typedUser.address}</span>
                 </div>
@@ -270,12 +281,12 @@ export default function AccountPage() {
               </button>
             </div>
 
-            {error && (
+            {signupError && (
               <div className="alert alert-error mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>{error}</span>
+                <span>{signupError}</span>
               </div>
             )}
 

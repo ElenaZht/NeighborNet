@@ -13,51 +13,24 @@ const initialState: UserState = {
     isAuthenticated: !!localStorage.getItem('user'),
     accessToken: localStorage.getItem('token') || null,
     loading: false,
-    error: null,
+    loginError: null,
+    signupError: null,
     address: '',
     location: {lat: '', lng: ''},
     city: '',
     neighborhood_id: null,
-    neighborhood: null
+    neighborhood: null,
 };
 
 const usersSlice = createSlice({
     name: 'users',
     initialState,
     reducers: {
-        setCurrentUser: (state, action) => {
-            if (!action.payload) {
-                // If no payload, clear the user
-                state.currentUser = null;
-                state.isAuthenticated = false;
-                state.accessToken = null;
-                state.neighborhood = null;
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                return;
-            }
-            
-            const { user, accessToken } = action.payload;
-            
-            if (user) {
-                state.currentUser = user;
-                state.isAuthenticated = true;
-                state.error = null;
-                localStorage.setItem('user', JSON.stringify(user));
-                state.address = user.address
-                state.location = user.location,
-                state.city = user.city,
-                state.neighborhood_id = user.neighborhood_id
-
-            }
-            
-            if (accessToken) {
-                state.accessToken = accessToken;
-                localStorage.setItem('token', accessToken);
-            }
+        clearLoginError: (state) => {
+            state.loginError = null;
         },
-        clearError: (state) => {
-            state.error = null;
+        clearSignupError: (state) => {
+            state.signupError = null;
         },
     },
     extraReducers: (builder) => {
@@ -65,11 +38,11 @@ const usersSlice = createSlice({
             // Sign Up User
             .addCase(signUpUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.signupError = null;
             })
             .addCase(signUpUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.error = null;
+                state.signupError = null;
                 state.isAuthenticated = true;
                 state.currentUser = action.payload.user;
                 state.accessToken = action.payload.accessToken;
@@ -79,17 +52,16 @@ const usersSlice = createSlice({
                 state.location = action.payload.user.location
                 state.city = action.payload.user.city
                 state.neighborhood_id = action.payload.user.neighborhood_id
-                
             })
             .addCase(signUpUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = (action.payload as string) || 'Failed to sign up';
+                state.signupError = (action.payload as string) || 'Failed to sign up';
             })
             
             // Delete account
             .addCase(deleteAccount.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.signupError = null;
             })
             .addCase(deleteAccount.fulfilled, (state) => {
                 state.loading = false;
@@ -98,40 +70,45 @@ const usersSlice = createSlice({
                 state.accessToken = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                state.error = null;
+                localStorage.removeItem('feedFilters');
+                localStorage.removeItem('give_away_draft');
+                localStorage.removeItem('help_request_draft');
+                localStorage.removeItem('issue_report_draft');
+                localStorage.removeItem('offer_help_draft');
+                state.signupError = null;
             })
             .addCase(deleteAccount.rejected, (state, action) => {
                 state.loading = false;
-                state.error = (action.payload as string) || 'Failed to delete account';
+                state.signupError = (action.payload as string) || 'Failed to delete account';
             })
 
             // Login
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.loginError = null;
             })
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
+                state.loginError = null;
                 state.currentUser = action.payload.user;
                 state.isAuthenticated = true;
                 state.accessToken = action.payload.accessToken;
                 localStorage.setItem('token', action.payload.accessToken);
                 localStorage.setItem('user', JSON.stringify(action.payload.user));
-                state.error = null;
                 state.address = action.payload.user.address;
-                state.location = action.payload.user.location
-                state.city = action.payload.user.city
-                state.neighborhood_id = action.payload.user.neighborhood_id
+                state.location = action.payload.user.location;
+                state.city = action.payload.user.city;
+                state.neighborhood_id = action.payload.user.neighborhood_id;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = (action.payload as string) || 'Failed to login';
+                state.loginError = (action.payload as string) || 'Failed to login';
             })
 
             // Logout
             .addCase(logoutUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.loginError = null;
             })
             .addCase(logoutUser.fulfilled, (state) => {
                 state.loading = false;
@@ -140,25 +117,34 @@ const usersSlice = createSlice({
                 state.accessToken = null;
                 state.neighborhood = null;
                 state.neighborhoodLoading = false;
-                state.error = null;
+                state.loginError = null;
+                state.address = '';
+                state.location = { lat: '', lng: '' };
+                state.city = '';
+                state.neighborhood_id = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                localStorage.removeItem('feedFilters');
+                localStorage.removeItem('give_away_draft');
+                localStorage.removeItem('help_request_draft');
+                localStorage.removeItem('issue_report_draft');
+                localStorage.removeItem('offer_help_draft');
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = (action.payload as string) || 'Failed to logout';
+                state.loginError = (action.payload as string) || 'Failed to logout';
             })
 
             // Refresh token
             .addCase(refreshToken.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.loginError = null;
             })
             .addCase(refreshToken.fulfilled, (state, action) => {
                 state.loading = false;
+                state.loginError = null;
                 state.accessToken = action.payload.accessToken;
                 localStorage.setItem('token', action.payload.accessToken);
-                state.error = null;
             })
             .addCase(refreshToken.rejected, (state, action) => {
                 state.loading = false;
@@ -166,65 +152,57 @@ const usersSlice = createSlice({
                 state.currentUser = null;
                 state.isAuthenticated = false;
                 state.accessToken = null;
+                state.neighborhood = null;
+                state.neighborhoodLoading = false;
+                state.address = '';
+                state.location = { lat: '', lng: '' };
+                state.city = '';
+                state.neighborhood_id = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                state.error = action.payload || 'Failed to refresh token';
+                localStorage.removeItem('feedFilters');
+                localStorage.removeItem('give_away_draft');
+                localStorage.removeItem('help_request_draft');
+                localStorage.removeItem('issue_report_draft');
+                localStorage.removeItem('offer_help_draft');
+                state.loginError = action.payload || 'Failed to refresh token';
             })
 
             // Edit user
             .addCase(editUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.signupError = null;
             })
             .addCase(editUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.error = null;
-                
-                if (action.payload) {
-                    const userData = action.payload.editedUser || action.payload.user || {};
-                    
-                    // Update currentUser with merged data
-                    if (Object.keys(userData).length > 0) {
-                        state.currentUser = {
-                            ...state.currentUser,
-                            ...userData
-                        };
-                        
-                        // Update individual location fields
-                        state.address = userData.address || state.address;
-                        state.location = userData.location || state.location;
-                        state.city = userData.city || state.city;
-                        state.neighborhood_id = userData.neighborhood_id || state.neighborhood_id;
-                        
-                        // Update localStorage
-                        localStorage.setItem('user', JSON.stringify(state.currentUser));
-                    }
-                }
+                state.signupError = null;
+                state.currentUser = action.payload.editedUser;
+                localStorage.setItem('user', JSON.stringify(action.payload.editedUser));
             })
             .addCase(editUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = (action.payload as string) || 'Failed to update profile';
+                state.signupError = (action.payload as string) || 'Failed to update profile';
             })
 
             // Get Neighborhood By ID
             .addCase(getNeighborhoodById.pending, (state) => {
                 state.neighborhoodLoading = true;
-                state.error = null;
+                state.signupError = null;
             })
             .addCase(getNeighborhoodById.fulfilled, (state, action) => {
                 state.neighborhoodLoading = false;
+                state.signupError = null;
                 state.neighborhood = action.payload;
-                state.error = null;
             })
             .addCase(getNeighborhoodById.rejected, (state, action) => {
                 state.neighborhoodLoading = false;
-                state.error = (action.payload as string) || 'Failed to fetch neighborhood';
-            })
+                state.signupError = (action.payload as string) || 'Failed to fetch neighborhood';
+            });
     }
 })
 
 export const {
-    setCurrentUser,
-    clearError
+    clearLoginError,
+    clearSignupError
 } = usersSlice.actions
 export default usersSlice.reducer;

@@ -1,10 +1,10 @@
 // Singleton loader to prevent duplicate script tags
 let isScriptLoaded = false;
 let isScriptLoading = false;
-let loadCallbacks = [];
+let loadCallbacks: Array<(error?: any) => void> = [];
 
-export const loadGoogleMapsScript = () => {
-  return new Promise((resolve, reject) => {
+export const loadGoogleMapsScript = (): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
     // If already loaded, resolve immediately
     if (window.google && window.google.maps) {
       isScriptLoaded = true;
@@ -14,7 +14,13 @@ export const loadGoogleMapsScript = () => {
     
     // If already in process of loading
     if (isScriptLoading) {
-      loadCallbacks.push(resolve);
+      loadCallbacks.push((error?: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
       return;
     }
     

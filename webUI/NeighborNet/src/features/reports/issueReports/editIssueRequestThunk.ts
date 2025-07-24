@@ -11,9 +11,6 @@ interface EditIssueReportArg {
     issueReportData: Partial<UpdateIssueReportPayload>;
 }
 
-/**
- * Thunk to edit an existing issue report
- */
 export const editIssueReport = createAsyncThunk<
     IssueReport,
     EditIssueReportArg,

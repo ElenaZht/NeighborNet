@@ -31,7 +31,7 @@ export const Comments = ({ reportId, reportType, isVisible }: CommentsProps) => 
     try {
       const result = await dispatch(getComments({ reportType, reportId })).unwrap();
       setComments(result || []);
-      setHasLoadedComments(true); // Mark as loaded
+      setHasLoadedComments(true);
     } catch (error) {
       console.error('Error fetching comments:', error);
       setError('Failed to load comments');

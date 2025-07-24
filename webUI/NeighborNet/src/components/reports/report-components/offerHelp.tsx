@@ -24,8 +24,7 @@ export default function OfferHelp({ report }: OfferHelpProps) {
   const [showMap, setShowMap] = useState<boolean>(false);
   const [showActions, setShowActions] = useState<boolean>(false);
   const [showComments, setShowComments] = useState<boolean>(false);
-  // This state will be used in a future version for the help request form
-  const [showForm] = useState<boolean>(false);
+  const [showForm, setShowForm] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
@@ -35,7 +34,6 @@ export default function OfferHelp({ report }: OfferHelpProps) {
   const currentUser = useAppSelector((state: RootState) => state.user.currentUser);
   const feedFilters = useAppSelector((state: RootState) => state.feed.filters);
 
-  // Replace the useEffect with the custom hook
   useBodyScrollLock(showEditDialog);
 
   useEffect(() => {
@@ -56,7 +54,7 @@ export default function OfferHelp({ report }: OfferHelpProps) {
 
   const handleEditOfferHelp = () => {
     setShowEditDialog(true);
-    setShowActions(false); // Close action bar
+    setShowActions(false);
   };
 
   const handleCancelEdit = () => {

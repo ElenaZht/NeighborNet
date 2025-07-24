@@ -23,13 +23,11 @@ type Location = {
     type: string;
 };
 
-// Update the type for currentUser.location
 export default function GiveAway({ report }: GiveAwayProps) {
   const currentUser = useAppSelector((state) => state.user.currentUser) as {
     location?: Location;
     neighborhood_id?: number;
     city?: string;
-    // ...other properties
   };
 
   const [showMap, setShowMap] = useState(false);
@@ -45,7 +43,6 @@ export default function GiveAway({ report }: GiveAwayProps) {
   const dispatch = useAppDispatch();
   const feedFilters = useAppSelector((state) => state.feed.filters);
 
-  // Replace the useEffect with the custom hook
   useBodyScrollLock(showEditDialog);
 
   useEffect(() => {
@@ -72,8 +69,8 @@ export default function GiveAway({ report }: GiveAwayProps) {
     if (!report || !report.id) {
       console.error('Invalid report object:', report);
       alert('Failed to delete giveaway: Report data is no longer valid.');
-      setIsDeleting(false); // Ensure spinner is reset
-      setShowDeleteConfirmation(false); // Ensure dialog is closed
+      setIsDeleting(false); 
+      setShowDeleteConfirmation(false); 
       return;
     }
 
@@ -81,7 +78,7 @@ export default function GiveAway({ report }: GiveAwayProps) {
     setIsDeleting(true);
 
     try {
-      await dispatch(removeGiveAwayThunk(reportId)).unwrap(); // Use the captured reportId
+      await dispatch(removeGiveAwayThunk(reportId)).unwrap();
 
       // Refresh the feed after successful deletion
       await dispatch(clearFeed());
@@ -112,8 +109,8 @@ export default function GiveAway({ report }: GiveAwayProps) {
         alert('Failed to delete giveaway. Please try again.');
       }
     } finally {
-      setIsDeleting(false); // Ensure spinner is reset
-      setShowDeleteConfirmation(false); // Ensure dialog is closed
+      setIsDeleting(false); 
+      setShowDeleteConfirmation(false); 
     }
   };
 
@@ -217,7 +214,7 @@ export default function GiveAway({ report }: GiveAwayProps) {
     ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date';
 
-  const statusDisplay = report.status && report.status.trim() !== '' ? report.status : 'No status'; // Handle empty strings
+  const statusDisplay = report.status && report.status.trim() !== '' ? report.status : 'No status'; 
 
   return (
     <div className="relative max-w-4xl mx-auto m-4">

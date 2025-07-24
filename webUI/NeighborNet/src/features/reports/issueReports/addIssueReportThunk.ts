@@ -3,9 +3,7 @@ import { post } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { CreateIssueReportPayload, IssueReportResponse } from "./types";
 
-/**
- * Thunk to add a new issue report
- */
+
 export const addIssueReport = createAsyncThunk<
     IssueReportResponse,
     CreateIssueReportPayload,

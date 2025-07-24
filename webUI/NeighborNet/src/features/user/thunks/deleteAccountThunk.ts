@@ -5,9 +5,7 @@ import { DeleteAccountResponse, UserState } from '../types';
 import { logoutUser } from './logoutThunk';
 import { useNavigate } from 'react-router-dom';
 
-/**
- * Thunk to delete a user account
- */
+
 export const deleteAccount = createAsyncThunk<
     DeleteAccountResponse,
     number,

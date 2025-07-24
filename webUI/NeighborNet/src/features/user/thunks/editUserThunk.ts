@@ -3,9 +3,7 @@ import { patch } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { EditUserPayload, EditUserResponse } from "../types";
 
-/**
- * Thunk to edit user information
- */
+
 export const editUser = createAsyncThunk<
     EditUserResponse,
     EditUserPayload,

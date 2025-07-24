@@ -2,9 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { BASE_URL } from "../../../config";
 import { RefreshTokenResponse } from "../types";
 
-/**
- * Thunk to refresh the user's authentication token
- */
+
 export const refreshToken = createAsyncThunk<
     RefreshTokenResponse,
     void,

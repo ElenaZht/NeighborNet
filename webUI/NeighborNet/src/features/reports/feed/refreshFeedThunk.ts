@@ -48,7 +48,6 @@ export const refreshFeed = createAsyncThunk(
             }));
         } catch (error) {
             console.error('Error refreshing feed:', error);
-            // Dispatch an action to update the UI state with the error
             dispatch(setError('Failed to refresh feed. Please try again later.'));
         }
     }

@@ -117,16 +117,14 @@ export default function AccountPage() {
 
     // Check if there are any changes to submit
     if (Object.keys(dataToSubmit).length === 0) {
-      return; // This shouldn't happen now since button is disabled
+      return; 
     }
 
     setIsSubmitting(true);
 
     try {
-      // Try to get user ID from various possible fields
       let userId = typedUser.id || typedUser.user_id || typedUser.userId;
       
-      // If no user ID, try to refresh the token to get user_id
       if (!userId) {
         const refreshResult = await dispatch(refreshToken()).unwrap();
         userId = refreshResult.user_id;
@@ -138,7 +136,6 @@ export default function AccountPage() {
       
       await dispatch(editUser({ userId, userData: dataToSubmit })).unwrap();
       setShowEditModal(false);
-       // Clear the address input
       if (addressInputRef.current) {
         addressInputRef.current.clearAddress();
       }

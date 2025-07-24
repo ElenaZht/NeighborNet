@@ -8,7 +8,6 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { RootState } from '../../../store/store';
 import { AddressResult, IssueReportInputFormData } from './types';
 
-// Form storage key for localStorage
 const FORM_STORAGE_KEY = 'issue_report_draft';
 
 export default function IssueReportInputForm() {
@@ -109,7 +108,7 @@ export default function IssueReportInputForm() {
       // Convert formData to CreateIssueReportPayload
       const reportPayload = {
         ...formData,
-        category: 'general', // Add missing required property
+        category: 'general', 
         location: {
           lat: parseFloat(formData.location.lat as string),
           lng: parseFloat(formData.location.lng as string)

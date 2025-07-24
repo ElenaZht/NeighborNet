@@ -11,7 +11,6 @@ import AddressInputForm, { AddressInputFormRef } from '../../AddressInputForm'
 import { barterChoices } from '../../../utils/barterChoises';
 import { AddressResult, OfferHelpInputFormData } from './types';
 
-// Form storage key for localStorage
 const FORM_STORAGE_KEY = 'offer_help_draft';
 
 export default function OfferHelpInputForm() {
@@ -56,7 +55,6 @@ export default function OfferHelpInputForm() {
     }
   }, []);
 
-  // Save form changes to localStorage
   useEffect(() => {
     // Only save if user has started filling out the form
     if (formData.title || 
@@ -152,7 +150,7 @@ export default function OfferHelpInputForm() {
       // Convert formData to CreateOfferHelpPayload
       const reportPayload = {
         ...formData,
-        category: 'general', // Add missing required property
+        category: 'general', 
         location: {
           lat: parseFloat(formData.location.lat as string),
           lng: parseFloat(formData.location.lng as string)
@@ -332,7 +330,7 @@ export default function OfferHelpInputForm() {
                               type="checkbox" 
                               className="checkbox checkbox-primary checkbox-sm"
                               checked={formData.barter_options.includes(option.id)}
-                              onChange={() => {}} // Handled by the div click
+                              onChange={() => {}}
                               onClick={e => e.stopPropagation()}
                             />
                             {option.icon}

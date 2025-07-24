@@ -3,9 +3,7 @@ import { patch } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { UpdateStatusPayload, UpdateStatusResponse } from "./types";
 
-/**
- * Thunk to update the status of an offer help
- */
+
 export const updateOfferHelpStatus = createAsyncThunk<
     UpdateStatusResponse,
     UpdateStatusPayload,

@@ -2,9 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { BASE_URL } from "../../../config";
 import { LogoutResponse } from "../types";
 
-/**
- * Thunk to handle user logout
- */
+
 export const logoutUser = createAsyncThunk<
     LogoutResponse,
     void,

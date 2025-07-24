@@ -195,7 +195,6 @@ export default function HelpRequest({ report }: HelpRequestProps) {
     )
   }
 
-  // Format the date
   const formattedDate = report.created_at 
     ? format(parseISO(report.created_at), 'MMM d, yyyy')
     : 'Unknown date'

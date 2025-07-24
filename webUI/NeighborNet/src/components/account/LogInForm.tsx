@@ -14,14 +14,14 @@ function LogInForm() {
     password: ''
   });
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  const [isSubmitted, setIsSubmitted] = useState(false); // Track form submission
+  const [isSubmitted, setIsSubmitted] = useState(false); 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const { loading, loginError } = useAppSelector(state => state.user); // Use loginError from Redux
+  const { loading, loginError } = useAppSelector(state => state.user); 
 
   const clearError = () => {
-    dispatch({ type: 'users/clearLoginError' }); // Clear login error
+    dispatch({ type: 'users/clearLoginError' });
   };
 
   const handleFormSwitch = () => {
@@ -83,7 +83,7 @@ function LogInForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true); // Mark form as submitted
+    setIsSubmitted(true);
     clearError();
     
     if (validateForm()) {
@@ -112,7 +112,7 @@ function LogInForm() {
       <h2 className="text-2xl font-bold mb-2 text-gray-800 text-center">Welcome Back</h2>
       <p className="text-gray-600 text-center mb-6">Sign in to your account</p>
       
-      {isSubmitted && loginError && ( // Display loginError from Redux
+      {isSubmitted && loginError && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative">
           <p>{loginError}</p>
           <button

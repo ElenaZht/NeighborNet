@@ -11,7 +11,6 @@ import { areaFilters, categoryFilters, orderOptions, allOwnFollowed } from '../.
 import { refreshFeed } from './refreshFeedThunk.js';
 import { FeedState as OriginalFeedState } from './types';
 
-// Extend the Filters type to include the _initialized property
 interface ExtendedFilters {
     areaFilter: string;
     categoryFilter: string[];
@@ -20,7 +19,6 @@ interface ExtendedFilters {
     _initialized?: boolean;
 }
 
-// Extend the FeedState type to use ExtendedFilters
 interface FeedState extends Omit<OriginalFeedState, 'filters'> {
     filters: ExtendedFilters;
 }
@@ -62,7 +60,6 @@ const feedSlice = createSlice({
         setStoreFilters: (state, action: PayloadAction<ExtendedFilters>) => {
             const updatedFilters = action.payload;
             state.filters = { ...updatedFilters, _initialized: true };
-            // Persist filters to localStorage
             localStorage.setItem('feedFilters', JSON.stringify(state.filters));
         },
         clearFeed: (state) => {
@@ -91,7 +88,7 @@ const feedSlice = createSlice({
 
                     // Validate areaFilter
                     if (!['COUNTRY', 'CITY', 'NBR'].includes(parsedFilters.areaFilter)) {
-                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY'; // Default to NBR, fallback to CITY
+                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY';
                     }
 
                     // Only update state if filters have changed
@@ -123,7 +120,7 @@ const feedSlice = createSlice({
             try {
                 localStorage.setItem('feedFilters', JSON.stringify(state.filters));
             } catch (error) {
-                console.error('Failed to save filters to localStorage:', error); // Debugging log
+                console.error('Failed to save filters to localStorage:', error);
             }
         },
         setError(state, action: PayloadAction<string>) {
@@ -136,7 +133,7 @@ const feedSlice = createSlice({
                     const parsedFilters = JSON.parse(savedFilters);
                     // Validate areaFilter
                     if (!['COUNTRY', 'CITY', 'NBR'].includes(parsedFilters.areaFilter)) {
-                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY'; // Default to NBR, fallback to CITY
+                        parsedFilters.areaFilter = areaFilters.includes('NBR') ? 'NBR' : 'CITY'; 
                     }
                     state.filters = parsedFilters;
                 } catch (error) {

@@ -3,9 +3,7 @@ import { patch } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { EditOfferHelpArg, EditOfferHelpResponse } from "./types";
 
-/**
- * Thunk to edit an existing offer help
- */
+
 export const editOfferHelp = createAsyncThunk<
     EditOfferHelpResponse,
     EditOfferHelpArg,

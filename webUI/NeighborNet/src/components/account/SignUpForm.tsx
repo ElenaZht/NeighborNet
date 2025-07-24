@@ -45,7 +45,7 @@ export default function SignUpForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const addressInputRef = useRef<AddressInputFormRef>(null);
-  const { loading, error, isAuthenticated } = useAppSelector(state => state.user);
+  const { loading, isAuthenticated, signupError } = useAppSelector(state => state.user);
 
   useEffect(() => {
     // Redirect to home if user is authenticated
@@ -67,10 +67,6 @@ export default function SignUpForm() {
       });
     }
 
-    // Clear global error when user starts typing
-    if (error !== null) {
-      clearError();
-    }
   };
 
   const validateForm = (): boolean => {
@@ -121,7 +117,7 @@ export default function SignUpForm() {
   };
 
   const clearError = () => {
-    dispatch({ type: 'user/clearError' });
+    dispatch({ type: 'users/clearSignupError' });
   };
 
   const handleClearError = () => {
@@ -184,9 +180,9 @@ export default function SignUpForm() {
       <h2 className="text-2xl font-bold mb-2 text-gray-800 text-center">Create an Account</h2>
       <p className="text-gray-600 text-center mb-6">Sign up to get started</p>
       
-      {error && (
+      {signupError && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative">
-          <p>{error}</p>
+          <p>{signupError}</p>
           <button
             onClick={handleClearError}
             className="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900"

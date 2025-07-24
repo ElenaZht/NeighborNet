@@ -3,7 +3,6 @@ import { patch } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { HelpRequest, UpdateHelpRequestPayload } from "./types";
 
-// Define the edit request payload structure
 interface EditHelpRequestArg {
     reportId: number;
     helpRequestData: Partial<UpdateHelpRequestPayload>;

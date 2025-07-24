@@ -7,7 +7,6 @@ import AddressInputForm from '../../AddressInputForm';
 import { refreshFeed } from '../../../features/reports/feed/refreshFeedThunk';
 import { GiveAwayInputFormData, AddressResult } from './types';
 
-// Form storage key for localStorage
 const FORM_STORAGE_KEY = 'give_away_draft';
 
 export default function GiveAwayInputForm() {
@@ -48,7 +47,6 @@ export default function GiveAwayInputForm() {
     }
   }, []);
 
-  // Save form changes to localStorage
   useEffect(() => {
     // Only save if user has started filling out the form
     if (formData.title || formData.description || formData.address || formData.img_url) {

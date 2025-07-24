@@ -2,9 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { del } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 
-/**
- * Thunk to remove an offer help by ID
- */
+
 export const removeOfferHelp = createAsyncThunk<
     number, // Return type is the ID of the removed offer help
     number, // Argument type is the ID of the offer help to remove

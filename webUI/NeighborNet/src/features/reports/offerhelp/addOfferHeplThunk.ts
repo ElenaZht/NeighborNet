@@ -3,9 +3,7 @@ import { post } from "../../../utils/apiClient";
 import { BASE_URL } from "../../../config";
 import { CreateOfferHelpPayload, OfferHelpResponse } from "./types";
 
-/**
- * Thunk to add a new offer to help
- */
+
 export const addOfferHelp = createAsyncThunk<
     OfferHelpResponse,
     CreateOfferHelpPayload,

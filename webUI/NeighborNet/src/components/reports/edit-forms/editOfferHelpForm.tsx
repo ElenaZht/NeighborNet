@@ -266,7 +266,7 @@ export default function EditOfferHelpForm({ reportData, onSuccess, onError }: Ed
                           type="checkbox" 
                           className="checkbox checkbox-primary checkbox-sm"
                           checked={Array.isArray(formData.barter_options) && formData.barter_options.includes(option.id)}
-                          onChange={() => {}} // Handled by the div click
+                          onChange={() => {}} 
                           onClick={e => e.stopPropagation()}
                         />
                         {option.icon}

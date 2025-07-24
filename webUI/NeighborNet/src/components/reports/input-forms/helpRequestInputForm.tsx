@@ -23,7 +23,7 @@ export default function HelpRequestInputForm() {
     category: '',
     urgency: 'normal',
     city: '',
-    location: { lat: '', lng: '' }, // Changed to strings
+    location: { lat: '', lng: '' }, 
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -174,7 +174,6 @@ export default function HelpRequestInputForm() {
 
       // Clear address input
       if (addressInputRef.current) {
-        // Ensure addressInputRef.current is properly typed and has clearAddress method
         (addressInputRef.current as any).clearAddress?.();
       }
 
@@ -418,7 +417,7 @@ export default function HelpRequestInputForm() {
                     value={formData.description}
                     onChange={handleChange}
                     className="textarea textarea-bordered w-full"
-                    rows={5} // Changed to number
+                    rows={5} 
                     placeholder="Describe what you need help with, when you need it, any specific requirements, etc."
                   ></textarea>
                 </div>

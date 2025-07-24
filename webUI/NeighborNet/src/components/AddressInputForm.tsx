@@ -37,7 +37,6 @@ const AddressInputForm = forwardRef<AddressInputFormRef, AddressInputFormProps>(
     }
   }, [initialAddress]);
 
-  // Permissioned actions for parent(addressInputRef.current.clearAddress())
   useImperativeHandle(ref, () => ({
     clearAddress: () => {
       setAddress('');
@@ -199,7 +198,7 @@ const AddressInputForm = forwardRef<AddressInputFormRef, AddressInputFormProps>(
             </label>
             
             <input
-              ref={inputRef}  // Keep the existing inputRef for the input element
+              ref={inputRef}
               type="text"
               value={address}
               onChange={handleAddressChange}

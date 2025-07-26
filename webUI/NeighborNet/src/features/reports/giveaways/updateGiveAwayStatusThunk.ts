@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { patch } from "../../../utils/apiClient";
-import { BASE_URL } from "../../../config.js";
+import { BASE_URL } from "../../../config";
 
 interface UpdateGiveAwayStatusParams {
     reportId: string;

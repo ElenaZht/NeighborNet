@@ -38,12 +38,12 @@ app.use('/neighborhoods', neighborhoodRouter);
 app.use('/followers', followersRouter);
 
 // Serve static files for the React app
-app.use(express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')));
+app.use(express.static(path.join(process.cwd(), '../webUI/NeighborNet/dist')));
 
 // Fallback for any other routes not handled by API or static files
 app.use((req, res) => {
     if (req.method === 'GET') {
-        const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
+        const indexPath = path.join(process.cwd(), '../webUI/NeighborNet/dist/index.html');
         res.sendFile(indexPath, (err) => {
             if (err) {
                 console.error('Error serving index.html:', err);

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve -s dist -l 5173"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -25,6 +26,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^24.0.10",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "autoprefixer": "^10.4.21",
@@ -33,6 +36,8 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "postcss": "^8.5.3",
+    "serve": "^14.2.4",
+    "typescript": "^5.8.3",
     "vite": "^6.3.5"
   }
 }

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import morgan from 'morgan';
 import { config } from './config/index';
 
@@ -14,6 +15,14 @@ import commentsRouter from './routes/commentsRouter';
 import reportsRouter from './routes/reportsRouter';
 import neighborhoodRouter from './routes/neighborhoodRouter';
 import followersRouter from './routes/followersRouter';
+
+// Get the directory of the current module (ES module equivalent of __dirname)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Build absolute path to the React build directory
+const distPath = path.join(__dirname, '../../webUI/NeighborNet/dist');
+const indexPath = path.join(distPath, 'index.html');
 
 const app = express();
 app.use(morgan('dev')); // Logging middleware for development
@@ -38,12 +47,11 @@ app.use('/neighborhoods', neighborhoodRouter);
 app.use('/followers', followersRouter);
 
 // Serve static files for the React app
-app.use(express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')));
+app.use(express.static(distPath));
 
 // Fallback for any other routes not handled by API or static files
 app.use((req, res) => {
     if (req.method === 'GET') {
-        const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
         res.sendFile(indexPath, (err) => {
             if (err) {
                 console.error('Error serving index.html:', err);

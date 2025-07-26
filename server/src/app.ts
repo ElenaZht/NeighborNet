@@ -33,27 +33,26 @@ app.use('/give-aways', giveAwaysReportsRouter);
 app.use('/offer-help', offerHelpReportsRouter);
 app.use('/help-requests', helpRequestReportsRouter);
 app.use('/comments', commentsRouter);
-
-// Serve static for client (moved to the end)
-app.use('/', express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')));
 app.use('/reports', reportsRouter);
 app.use('/neighborhoods', neighborhoodRouter);
 app.use('/followers', followersRouter);
 
-// Catch-all handler: send back React's index.html file for SPA routing
-app.get('*', (req, res) => {
-    const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error('Error serving index.html:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    });
-});
+// Serve static files for the React app
+app.use(express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')));
 
-// Handle non-GET requests to unknown routes
-app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+// Fallback for any other routes not handled by API or static files
+app.use((req, res) => {
+    if (req.method === 'GET') {
+        const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.error('Error serving index.html:', err);
+                res.status(500).send('Internal server error');
+            }
+        });
+    } else {
+        res.status(404).json({ error: 'Route not found' });
+    }
 });
 
 app.listen(config.server.port, (error?: Error) => {

@@ -39,8 +39,10 @@ app.use('/', express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')))
 app.use('/reports', reportsRouter);
 app.use('/neighborhoods', neighborhoodRouter);
 app.use('/followers', followersRouter);
-app.use((req, res, next) => {
-    res.redirect('/');
+
+// Catch-all handler: send back React's index.html file for SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html'));
 });
 
 app.listen(config.server.port, (error?: Error) => {

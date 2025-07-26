@@ -42,7 +42,18 @@ app.use('/followers', followersRouter);
 
 // Catch-all handler: send back React's index.html file for SPA routing
 app.get('*', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html'));
+    const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error('Error serving index.html:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+});
+
+// Handle non-GET requests to unknown routes
+app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
 });
 
 app.listen(config.server.port, (error?: Error) => {

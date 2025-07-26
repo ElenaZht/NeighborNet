@@ -40,19 +40,8 @@ app.use('/followers', followersRouter);
 // Serve static files for the React app
 app.use(express.static(path.join(process.cwd(), 'webUI/NeighborNet/dist')));
 
-// Catch-all handler: send back React's index.html file for SPA routing
-app.get('/', (req, res) => {
-    const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error('Error serving index.html:', err);
-            res.status(500).send('Internal server error');
-        }
-    });
-});
-
 // Fallback for any other routes not handled by API or static files
-app.use((req, res, next) => {
+app.use((req, res) => {
     if (req.method === 'GET') {
         const indexPath = path.join(process.cwd(), 'webUI/NeighborNet/dist/index.html');
         res.sendFile(indexPath, (err) => {
